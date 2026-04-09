@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Connect | Lost & Found Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>CampusLost&Found - Recover Your Lost Items</title>
     <style>
         * {
             margin: 0;
@@ -14,164 +12,95 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0f0c29;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             overflow-x: hidden;
-            position: relative;
         }
 
-        /* Animated Background Elements */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .bg-animation .circle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            animation: float 20s infinite;
-        }
-
-        .bg-animation .circle:nth-child(1) {
-            width: 300px;
-            height: 300px;
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
-        }
-
-        .bg-animation .circle:nth-child(2) {
-            width: 500px;
-            height: 500px;
-            bottom: -200px;
-            right: -200px;
-            animation-delay: 5s;
-        }
-
-        .bg-animation .circle:nth-child(3) {
-            width: 200px;
-            height: 200px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: 10s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(180deg); }
-        }
-
-        /* Main Container */
-        .container {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-        }
-
-        .glass-card {
-            max-width: 1400px;
-            width: 100%;
+        /* Header Styles */
+        .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 40px;
-            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
             display: flex;
-            flex-wrap: wrap;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Left Section - Hero */
-        .hero-section {
-            flex: 1.2;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            padding: 60px 50px;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 8s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-
-        .college-badge {
-            display: inline-flex;
+        .logo {
+            display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 0.9rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
             font-weight: 500;
-            margin-bottom: 30px;
-            letter-spacing: 0.5px;
-            position: relative;
-            z-index: 1;
+            transition: color 0.3s;
+            cursor: pointer;
         }
 
-        .college-badge i {
-            font-size: 1.1rem;
+        .nav-links a:hover {
+            color: #667eea;
         }
 
-        .hero-section h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 6rem 2rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 3rem;
         }
 
-        .hero-section h1 .gradient-text {
-            background: linear-gradient(135deg, #fff, #ffd89b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        .hero-left {
+            flex: 1;
+            animation: slideInLeft 1s ease;
         }
 
-        .hero-tagline {
-            font-size: 1.1rem;
+        .hero-left h1 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .hero-left p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
             line-height: 1.6;
-            opacity: 0.95;
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 1;
         }
 
         .stats {
             display: flex;
-            gap: 30px;
-            margin: 40px 0;
-            position: relative;
-            z-index: 1;
-            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
         }
 
         .stat-item {
@@ -180,582 +109,560 @@
 
         .stat-number {
             font-size: 2rem;
-            font-weight: 800;
-            display: block;
+            font-weight: bold;
+            color: #ffd700;
         }
 
         .stat-label {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            margin-top: 5px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 30px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.9rem;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s;
-        }
-
-        .feature-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(5px);
-        }
-
-        .feature-item i {
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            color: white;
             font-size: 0.9rem;
         }
 
-        /* Right Section - Auth */
-        .auth-section {
+        .hero-right {
             flex: 1;
-            padding: 50px 45px;
+            animation: slideInRight 1s ease;
+        }
+
+        /* Flip Card Container */
+        .flip-container {
             background: white;
-            position: relative;
-        }
-
-        /* Tab Styles */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            background: #f3f4f6;
-            padding: 8px;
-            border-radius: 60px;
-            margin-bottom: 35px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-            color: #6b7280;
-        }
-
-        .tab-btn i {
-            margin-right: 8px;
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        /* Form Styles */
-        .form-container {
-            display: none;
-            animation: slideUp 0.4s ease;
-        }
-
-        .form-container.active {
-            display: block;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .form-group {
-            margin-bottom: 22px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-wrapper i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            font-size: 1rem;
-        }
-
-        .input-wrapper input,
-        .input-wrapper select {
-            width: 100%;
-            padding: 14px 16px 14px 45px;
-            border: 2px solid #e5e7eb;
-            border-radius: 16px;
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s;
-            background: white;
-        }
-
-        .input-wrapper input:focus,
-        .input-wrapper select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Inter', sans-serif;
-            margin-top: 10px;
-            position: relative;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
 
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
+        .flip-card {
+            background: transparent;
+            width: 100%;
+            height: 500px;
+            perspective: 1000px;
         }
 
-        .btn-primary:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
-        }
-
-        .alternate-link {
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
             text-align: center;
-            margin-top: 25px;
-            font-size: 0.9rem;
-            color: #6b7280;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
         }
 
-        .alternate-link a {
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .flip-card-front {
+            background: white;
+            transform: rotateY(0deg);
+        }
+
+        .flip-card-back {
+            background: white;
+            transform: rotateY(180deg);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .toggle-btn {
+            margin-top: 1rem;
+            background: none;
             color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s;
-        }
-
-        .alternate-link a:hover {
-            color: #764ba2;
-            text-decoration: underline;
-        }
-
-        /* Message Styles */
-        .message {
-            padding: 14px 18px;
-            border-radius: 16px;
-            margin-bottom: 25px;
-            display: none;
-            animation: slideDown 0.3s ease;
+            border: none;
+            cursor: pointer;
             font-size: 0.9rem;
-            font-weight: 500;
         }
 
-        @keyframes slideDown {
+        /* Sections */
+        .section {
+            background: white;
+            padding: 5rem 2rem;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: #f8f9fa;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Campus News */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .news-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .news-content {
+            padding: 1.5rem;
+        }
+
+        .news-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .news-date {
+            color: #999;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Contact Form */
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .contact-info {
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .contact-form {
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Animations */
+        @keyframes slideInLeft {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateX(-100px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateX(0);
             }
         }
 
-        .message.error {
-            background: linear-gradient(135deg, #fee2e2, #fee);
-            color: #dc2626;
-            border-left: 4px solid #dc2626;
-        }
-
-        .message.success {
-            background: linear-gradient(135deg, #d1fae5, #e8f5e9);
-            color: #059669;
-            border-left: 4px solid #059669;
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         /* Responsive */
-        @media (max-width: 1024px) {
-            .hero-section h1 {
-                font-size: 2.5rem;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
         @media (max-width: 768px) {
-            .glass-card {
+            .hero {
                 flex-direction: column;
-                border-radius: 30px;
+                padding-top: 8rem;
             }
             
-            .hero-section {
-                padding: 40px 30px;
+            .nav-links {
+                display: none;
             }
             
-            .hero-section h1 {
-                font-size: 2rem;
-            }
-            
-            .auth-section {
-                padding: 35px 30px;
-            }
-            
-            .stats {
-                gap: 20px;
-            }
-            
-            .form-row {
+            .contact-container {
                 grid-template-columns: 1fr;
             }
         }
 
-        /* Custom Checkbox */
-        .terms {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 20px 0;
-            font-size: 0.85rem;
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
         }
 
-        .terms input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #667eea;
+        .toast.success {
+            border-left: 4px solid #4caf50;
         }
 
-        /* Floating Icons */
-        .floating-icon {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0.1;
-            pointer-events: none;
+        .toast.error {
+            border-left: 4px solid #f44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="bg-animation">
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-    </div>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <span>CampusLost&Found</span>
+            </div>
+            <ul class="nav-links">
+                <li><a onclick="scrollToSection('home')">Home</a></li>
+                <li><a onclick="scrollToSection('about')">About</a></li>
+                <li><a onclick="scrollToSection('features')">Features</a></li>
+                <li><a onclick="scrollToSection('news')">Campus News</a></li>
+                <li><a onclick="scrollToSection('contact')">Contact</a></li>
+            </ul>
+        </div>
+    </header>
 
-    <div class="container">
-        <div class="glass-card">
-            <!-- Left Hero Section -->
-            <div class="hero-section">
-                <div class="college-badge">
-                    <i class="fas fa-university"></i>
-                    <span>CAMPUS CONNECT</span>
-                </div>
-                
-                <h1>
-                    Lost & Found<br>
-                    <span class="gradient-text">Reunited & Restored</span>
-                </h1>
-                
-                <p class="hero-tagline">
-                    Your digital lost and found companion. Report lost items, 
-                    discover found belongings, and reconnect with what matters most.
-                </p>
-
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-left">
+                <h1>Lost Something?<br>We'll Help You Find It! 🔍</h1>
+                <p>Your campus-wide solution for lost and found items. Connect with fellow students and recover your belongings quickly and easily.</p>
                 <div class="stats">
                     <div class="stat-item">
-                        <span class="stat-number" id="itemsReturned">1,247+</span>
-                        <span class="stat-label">Items Returned</span>
+                        <div class="stat-number" id="lostCount">150+</div>
+                        <div class="stat-label">Items Lost</div>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number">98%</span>
-                        <span class="stat-label">Success Rate</span>
+                        <div class="stat-number" id="foundCount">89+</div>
+                        <div class="stat-label">Items Found</div>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number">24/7</span>
-                        <span class="stat-label">Support</span>
-                    </div>
-                </div>
-
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <i class="fas fa-search"></i>
-                        <span>Smart Search & Match</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-bell"></i>
-                        <span>Instant Notifications</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>Secure Verification</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-qrcode"></i>
-                        <span>QR Code Tracking</span>
+                        <div class="stat-number" id="recoveredCount">67+</div>
+                        <div class="stat-label">Recovered</div>
                     </div>
                 </div>
             </div>
-
-            <!-- Right Auth Section -->
-            <div class="auth-section">
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('login')">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                    <button class="tab-btn" onclick="switchTab('register')">
-                        <i class="fas fa-user-plus"></i> Register
-                    </button>
+            <div class="hero-right">
+                <div class="flip-container">
+                    <div class="flip-card">
+                        <div class="flip-card-inner" id="flipCard">
+                            <!-- Login Form -->
+                            <div class="flip-card-front">
+                                <h2 style="margin-bottom: 2rem;">Welcome Back! 👋</h2>
+                                <form id="loginForm">
+                                    <div class="form-group">
+                                        <input type="email" id="loginEmail" placeholder="Email Address" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" id="loginPassword" placeholder="Password" required>
+                                    </div>
+                                    <button type="submit" class="btn">Login</button>
+                                </form>
+                                <button class="toggle-btn" onclick="flipToRegister()">Don't have an account? Register</button>
+                            </div>
+                            <!-- Register Form -->
+                            <div class="flip-card-back">
+                                <h2 style="margin-bottom: 2rem;">Create Account 🚀</h2>
+                                <form id="registerForm" enctype="multipart/form-data">
+                                    <div class="form-group">
+                                        <input type="text" id="regFullName" placeholder="Full Name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="email" id="regEmail" placeholder="Email Address" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" id="regPassword" placeholder="Password" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="tel" id="regPhone" placeholder="Phone Number" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" id="regRollNumber" placeholder="Roll Number" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <select id="regDepartment">
+                                            <option value="">Select Department</option>
+                                            <option>Computer Science</option>
+                                            <option>Engineering</option>
+                                            <option>Business</option>
+                                            <option>Arts & Sciences</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="file" id="regProfilePic" accept="image/*">
+                                    </div>
+                                    <button type="submit" class="btn">Register</button>
+                                </form>
+                                <button class="toggle-btn" onclick="flipToLogin()">Already have an account? Login</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </section>
 
-                <div id="messageContainer"></div>
-
-                <!-- Login Form -->
-                <div id="loginForm" class="form-container active">
-                    <form id="login" onsubmit="handleLogin(event)">
-                        <div class="form-group">
-                            <label><i class="fas fa-envelope"></i> College Email</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" id="loginEmail" placeholder="your.name@college.edu" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-lock"></i> Password</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-lock"></i>
-                                <input type="password" id="loginPassword" placeholder="••••••••" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-arrow-right"></i> Login to Dashboard
-                        </button>
-                        <div class="alternate-link">
-                            <a href="#" onclick="switchTab('register'); return false;">
-                                Don't have an account? <strong>Create one</strong>
-                            </a>
-                        </div>
-                    </form>
+        <!-- About Section -->
+        <section id="about" class="section">
+            <div class="section-container">
+                <h2 class="section-title">About Us</h2>
+                <div style="max-width: 800px; margin: 0 auto; text-align: center; font-size: 1.1rem; line-height: 1.8;">
+                    <p>Welcome to CampusLost&Found - your trusted platform for reuniting lost items with their owners across our college campus.</p>
+                    <p style="margin-top: 1rem;">We understand how frustrating it can be to lose valuable items. Our mission is to create a seamless bridge between those who have lost something and those who have found something, making our campus a more connected and helpful community.</p>
                 </div>
+            </div>
+        </section>
 
-                <!-- Registration Form -->
-                <div id="registerForm" class="form-container">
-                    <form id="register" onsubmit="handleRegister(event)">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><i class="fas fa-user"></i> First Name</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-user"></i>
-                                    <input type="text" id="regFirstName" placeholder="John" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-user"></i> Last Name</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-user"></i>
-                                    <input type="text" id="regLastName" placeholder="Doe" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label><i class="fas fa-envelope"></i> College Email</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" id="regEmail" placeholder="john.doe@college.edu" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><i class="fas fa-phone"></i> Phone Number</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-phone"></i>
-                                    <input type="tel" id="regPhone" placeholder="+91 XXXXX XXXXX" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-id-card"></i> Roll Number</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-id-card"></i>
-                                    <input type="text" id="regRollNo" placeholder="2024CS001" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label><i class="fas fa-graduation-cap"></i> Department</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-graduation-cap"></i>
-                                <select id="regDepartment" required>
-                                    <option value="">Select Department</option>
-                                    <option value="cse">Computer Science & Engineering</option>
-                                    <option value="ece">Electronics & Communication</option>
-                                    <option value="mech">Mechanical Engineering</option>
-                                    <option value="civil">Civil Engineering</option>
-                                    <option value="ee">Electrical Engineering</option>
-                                    <option value="it">Information Technology</option>
-                                    <option value="mba">MBA</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><i class="fas fa-lock"></i> Password</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-lock"></i>
-                                    <input type="password" id="regPassword" placeholder="Min. 6 characters" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-check-circle"></i> Confirm Password</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-check-circle"></i>
-                                    <input type="password" id="regConfirmPassword" placeholder="Confirm password" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="terms">
-                            <input type="checkbox" id="termsCheckbox" required>
-                            <label for="termsCheckbox">I agree to the <a href="#" style="color:#667eea;">Terms of Service</a> and <a href="#" style="color:#667eea;">Privacy Policy</a></label>
-                        </div>
-                        
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-user-plus"></i> Create Free Account
-                        </button>
-                        
-                        <div class="alternate-link">
-                            <a href="#" onclick="switchTab('login'); return false;">
-                                Already have an account? <strong>Sign in</strong>
-                            </a>
-                        </div>
-                    </form>
+        <!-- Features Section -->
+        <section id="features" class="section" style="background: #f8f9fa;">
+            <div class="section-container">
+                <h2 class="section-title">Why Choose Us?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📸</div>
+                        <h3>Upload Photos</h3>
+                        <p>Upload clear images of lost or found items for easy identification</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔔</div>
+                        <h3>Instant Alerts</h3>
+                        <p>Get notified when someone reports finding your lost item</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💬</div>
+                        <h3>Direct Contact</h3>
+                        <p>Connect directly with the person who found your item</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Real-time Updates</h3>
+                        <p>Track the status of your reported items in real-time</p>
+                    </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Campus News Section -->
+        <section id="news" class="section">
+            <div class="section-container">
+                <h2 class="section-title">Campus News 📢</h2>
+                <div class="news-grid" id="newsGrid">
+                    <!-- News will be loaded here dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section" style="background: #f8f9fa;">
+            <div class="section-container">
+                <h2 class="section-title">Get In Touch</h2>
+                <div class="contact-container">
+                    <div class="contact-info">
+                        <h3>Contact Information</h3>
+                        <p style="margin: 1rem 0;">📧 support@campuslostfound.com</p>
+                        <p style="margin: 1rem 0;">📞 +1 234 567 8900</p>
+                        <p style="margin: 1rem 0;">📍 College Campus, Student Affairs Office</p>
+                        <p style="margin-top: 2rem;">Working Hours: Mon-Fri, 9 AM - 5 PM</p>
+                    </div>
+                    <div class="contact-form">
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <input type="text" id="contactName" placeholder="Your Name" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="contactEmail" placeholder="Your Email" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="contactSubject" placeholder="Subject" required>
+                            </div>
+                            <div class="form-group">
+                                <textarea id="contactMessage" rows="5" placeholder="Your Message" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div>
+                <h3 style="margin-bottom: 1rem;">CampusLost&Found</h3>
+                <p>Making our campus a better place, one found item at a time.</p>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 1rem;">Quick Links</h3>
+                <p><a onclick="scrollToSection('home')" style="color: white; cursor: pointer;">Home</a></p>
+                <p><a onclick="scrollToSection('about')" style="color: white; cursor: pointer;">About</a></p>
+                <p><a onclick="scrollToSection('features')" style="color: white; cursor: pointer;">Features</a></p>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 1rem;">Follow Us</h3>
+                <p>📘 Facebook</p>
+                <p>📸 Instagram</p>
+                <p>🐦 Twitter</p>
             </div>
         </div>
-    </div>
+        <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p>&copy; 2024 CampusLost&Found. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script>
-        // Show message function
-        function showMessage(type, message) {
-            const container = document.getElementById('messageContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            messageDiv.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
-            container.innerHTML = '';
-            container.appendChild(messageDiv);
-            messageDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                messageDiv.style.opacity = '0';
-                setTimeout(() => {
-                    container.innerHTML = '';
-                }, 300);
-            }, 5000);
-        }
-        
-        // Tab switching
-        function switchTab(tab) {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const loginBtn = document.querySelector('.tab-btn:first-child');
-            const registerBtn = document.querySelector('.tab-btn:last-child');
-            
-            if (tab === 'login') {
-                loginForm.classList.add('active');
-                registerForm.classList.remove('active');
-                loginBtn.classList.add('active');
-                registerBtn.classList.remove('active');
-            } else {
-                loginForm.classList.remove('active');
-                registerForm.classList.add('active');
-                loginBtn.classList.remove('active');
-                registerBtn.classList.add('active');
+        // Global variables
+        let isFlipped = false;
+
+        // Scroll to section
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
             }
-            
-            document.getElementById('messageContainer').innerHTML = '';
         }
-        
-        // Handle Login
-        async function handleLogin(event) {
-            event.preventDefault();
-            
+
+        // Flip animations
+        function flipToRegister() {
+            document.getElementById('flipCard').style.transform = 'rotateY(180deg)';
+        }
+
+        function flipToLogin() {
+            document.getElementById('flipCard').style.transform = 'rotateY(0deg)';
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <strong>${type === 'success' ? '✓' : '✗'}</strong>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Load campus news
+        async function loadCampusNews() {
+            try {
+                const response = await fetch('/api/campus-news');
+                const data = await response.json();
+                if (data.success && data.news) {
+                    const newsGrid = document.getElementById('newsGrid');
+                    newsGrid.innerHTML = data.news.map(news => `
+                        <div class="news-card">
+                            <div class="news-content">
+                                <h3 class="news-title">${news.title}</h3>
+                                <div class="news-date">${new Date(news.created_at).toLocaleDateString()}</div>
+                                <p>${news.content}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading news:', error);
+            }
+        }
+
+        // Handle login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showMessage('error', 'Please fill in all fields');
-                return;
-            }
-            
-            // TODO: Replace with your actual API endpoint
-            // Example API call:
-            /*
+
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
@@ -763,130 +670,109 @@
                     body: JSON.stringify({ email, password })
                 });
                 const data = await response.json();
-                if (response.ok) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    showMessage('success', 'Login successful! Redirecting...');
-                    setTimeout(() => window.location.href = '/dashboard.html', 1500);
+                
+                if (data.success) {
+                    showToast('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
                 } else {
-                    showMessage('error', data.message || 'Login failed');
+                    showToast(data.message, 'error');
                 }
             } catch (error) {
-                showMessage('error', 'Network error. Please try again.');
+                showToast('Login failed! Please try again.', 'error');
             }
-            */
+        });
+
+        // Handle registration
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('full_name', document.getElementById('regFullName').value);
+            formData.append('email', document.getElementById('regEmail').value);
+            formData.append('password', document.getElementById('regPassword').value);
+            formData.append('phone', document.getElementById('regPhone').value);
+            formData.append('roll_number', document.getElementById('regRollNumber').value);
+            formData.append('department', document.getElementById('regDepartment').value);
             
-            // Demo mode - remove in production
-            if (email.includes('@') && password.length >= 1) {
-                showMessage('success', '✓ Login successful! (Demo mode - Connect backend)');
-                setTimeout(() => {
-                    console.log('Redirect to dashboard');
-                }, 1500);
-            } else {
-                showMessage('error', 'Invalid email or password');
+            const profilePic = document.getElementById('regProfilePic').files[0];
+            if (profilePic) {
+                formData.append('profile_pic', profilePic);
             }
-        }
-        
-        // Handle Registration
-        async function handleRegister(event) {
-            event.preventDefault();
-            
-            const firstName = document.getElementById('regFirstName').value;
-            const lastName = document.getElementById('regLastName').value;
-            const email = document.getElementById('regEmail').value;
-            const phone = document.getElementById('regPhone').value;
-            const rollNo = document.getElementById('regRollNo').value;
-            const department = document.getElementById('regDepartment').value;
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            const terms = document.getElementById('termsCheckbox').checked;
-            
-            if (!firstName || !lastName || !email || !phone || !rollNo || !department || !password) {
-                showMessage('error', 'Please fill in all fields');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showMessage('error', 'Passwords do not match');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showMessage('error', 'Password must be at least 6 characters');
-                return;
-            }
-            
-            if (!terms) {
-                showMessage('error', 'Please agree to the Terms of Service');
-                return;
-            }
-            
-            if (!email.includes('@') || !email.includes('.')) {
-                showMessage('error', 'Please enter a valid email address');
-                return;
-            }
-            
-            // TODO: Replace with your actual API endpoint
-            // Example API call:
-            /*
+
             try {
                 const response = await fetch('/api/register', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        firstName, lastName, email, phone, rollNo, department, password
-                    })
+                    body: formData
                 });
                 const data = await response.json();
-                if (response.ok) {
-                    showMessage('success', 'Registration successful! Please login.');
-                    setTimeout(() => {
-                        switchTab('login');
-                        document.getElementById('loginEmail').value = email;
-                    }, 1500);
+                
+                if (data.success) {
+                    showToast('Registration successful! Please login.', 'success');
+                    setTimeout(() => flipToLogin(), 2000);
                 } else {
-                    showMessage('error', data.message || 'Registration failed');
+                    showToast(data.message, 'error');
                 }
             } catch (error) {
-                showMessage('error', 'Network error. Please try again.');
+                showToast('Registration failed! Please try again.', 'error');
             }
-            */
-            
-            // Demo mode - remove in production
-            showMessage('success', '✓ Account created successfully! (Demo mode - Connect backend)');
-            setTimeout(() => {
-                switchTab('login');
-                document.getElementById('loginEmail').value = email;
-            }, 1500);
-        }
-        
-        // Animate stats counter
-        function animateCounter(element, target) {
-            let current = 0;
-            const increment = target / 50;
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    element.textContent = target.toLocaleString() + '+';
-                    clearInterval(timer);
-                } else {
-                    element.textContent = Math.floor(current).toLocaleString() + '+';
-                }
-            }, 40);
-        }
-        
-        // Start counter animation when visible
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counter = document.getElementById('itemsReturned');
-                    animateCounter(counter, 1247);
-                    observer.disconnect();
-                }
-            });
         });
-        
-        observer.observe(document.getElementById('itemsReturned'));
+
+        // Handle contact form
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('contactName').value,
+                email: document.getElementById('contactEmail').value,
+                subject: document.getElementById('contactSubject').value,
+                message: document.getElementById('contactMessage').value
+            };
+
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Message sent successfully!', 'success');
+                    document.getElementById('contactForm').reset();
+                } else {
+                    showToast('Failed to send message!', 'error');
+                }
+            } catch (error) {
+                showToast('Error sending message!', 'error');
+            }
+        });
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const [lostRes, foundRes] = await Promise.all([
+                    fetch('/api/lost-items'),
+                    fetch('/api/found-items')
+                ]);
+                const lostData = await lostRes.json();
+                const foundData = await foundRes.json();
+                
+                if (lostData.success) {
+                    document.getElementById('lostCount').innerText = lostData.items.length + '+';
+                }
+                if (foundData.success) {
+                    document.getElementById('foundCount').innerText = foundData.items.length + '+';
+                    const recovered = Math.floor(foundData.items.length * 0.75);
+                    document.getElementById('recoveredCount').innerText = recovered + '+';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Initialize page
+        loadCampusNews();
+        loadStats();
     </script>
 </body>
 </html>
