@@ -31,7 +31,7 @@
 
         /* Header Premium */
         .header {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(18px);
             position: fixed;
             width: 100%;
@@ -391,7 +391,7 @@
             font-weight: 700;
         }
 
-        /* Features Grid */
+        /* Features Grid - With Red Highlight */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -405,14 +405,31 @@
             transition: all 0.35s ease;
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
         }
 
         .feature-card:hover {
             transform: translateY(-10px);
-            background: rgba(55, 65, 81, 0.6);
-            border-color: #8b5cf6;
-            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.4);
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            box-shadow: 0 20px 30px -15px rgba(239, 68, 68, 0.4);
         }
 
         .feature-icon {
@@ -420,6 +437,7 @@
             margin-bottom: 1.2rem;
             display: inline-block;
             animation: subtleBounce 4s infinite;
+            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.5));
         }
 
         @keyframes subtleBounce {
@@ -428,13 +446,35 @@
         }
 
         .feature-card h3 {
-            color: #e0e7ff;
+            color: #ef4444;
             margin-bottom: 0.8rem;
             font-size: 1.3rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
+
         .feature-card p {
-            color: #9ca3af;
+            color: #e2e8f0;
             line-height: 1.5;
+        }
+
+        /* Red Highlight Badge */
+        .red-highlight {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
         }
 
         /* Contact */
@@ -695,16 +735,19 @@
                 <h2 class="section-title">💡 Core Features</h2>
                 <div class="features-grid">
                     <div class="feature-card">
+                        <div class="red-highlight">🔥 HOT</div>
                         <div class="feature-icon">🔐</div>
                         <h3>User Registration & Authentication</h3>
                         <p>Secure signup with email verification, roll number validation, and encrypted password storage. Only verified campus members can access the platform.</p>
                     </div>
                     <div class="feature-card">
+                        <div class="red-highlight">⭐ POPULAR</div>
                         <div class="feature-icon">🛡️</div>
                         <h3>Secure Claiming Mechanism</h3>
                         <p>Multi-step verification process for claiming found items. Proof submission, OTP confirmation, and tamper-proof claim logs ensure safe returns.</p>
                     </div>
                     <div class="feature-card">
+                        <div class="red-highlight">🚀 FEATURED</div>
                         <div class="feature-icon">📊</div>
                         <h3>Admin Dashboard</h3>
                         <p>Powerful analytics, user management, item moderation, and real-time campus recovery insights for administrators and moderators.</p>
