@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusLost&Found - Recover Your Lost Items</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 6rem 2rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 3rem;
+        }
+
+        .hero-left {
+            flex: 1;
+            animation: slideInLeft 1s ease;
+        }
+
+        .hero-left h1 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .hero-left p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .stat-label {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .hero-right {
+            flex: 1;
+            animation: slideInRight 1s ease;
+        }
+
+        /* Flip Card Container */
+        .flip-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .flip-card {
+            background: transparent;
+            width: 100%;
+            height: 500px;
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .flip-card-front {
+            background: white;
+            transform: rotateY(0deg);
+        }
+
+        .flip-card-back {
+            background: white;
+            transform: rotateY(180deg);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .toggle-btn {
+            margin-top: 1rem;
+            background: none;
+            color: #667eea;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Sections */
+        .section {
+            background: white;
+            padding: 5rem 2rem;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: #f8f9fa;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Campus News */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .news-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .news-content {
+            padding: 1.5rem;
+        }
+
+        .news-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .news-date {
+            color: #999;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Contact Form */
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .contact-info {
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .contact-form {
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Animations */
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+                padding-top: 8rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid #4caf50;
+        }
+
+        .toast.error {
+            border-left: 4px solid #f44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <span>CampusLost&Found</span>
+            </div>
+            <ul class="nav-links">
+                <li><a onclick="scrollToSection('home')">Home</a></li>
+                <li><a onclick="scrollToSection('about')">About</a></li>
+                <li><a onclick="scrollToSection('features')">Features</a></li>
+                <li><a onclick="scrollToSection('news')">Campus News</a></li>
+                <li><a onclick="scrollToSection('contact')">Contact</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-left">
+                <h1>Lost Something?<br>We'll Help You Find It! 🔍</h1>
+                <p>Your campus-wide solution for lost and found items. Connect with fellow students and recover your belongings quickly and easily.</p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="lostCount">150+</div>
+                        <div class="stat-label">Items Lost</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="foundCount">89+</div>
+                        <div class="stat-label">Items Found</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="recoveredCount">67+</div>
+                        <div class="stat-label">Recovered</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-right">
+                <div class="flip-container">
+                    <div class="flip-card">
+                        <div class="flip-card-inner" id="flipCard">
+                            <!-- Login Form -->
+                            <div class="flip-card-front">
+                                <h2 style="margin-bottom: 2rem;">Welcome Back! 👋</h2>
+                                <form id="loginForm">
+                                    <div class="form-group">
+                                        <input type="email" id="loginEmail" placeholder="Email Address" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" id="loginPassword" placeholder="Password" required>
+                                    </div>
+                                    <button type="submit" class="btn">Login</button>
+                                </form>
+                                <button class="toggle-btn" onclick="flipToRegister()">Don't have an account? Register</button>
+                            </div>
+                            <!-- Register Form -->
+                            <div class="flip-card-back">
+                                <h2 style="margin-bottom: 2rem;">Create Account 🚀</h2>
+                                <form id="registerForm" enctype="multipart/form-data">
+                                    <div class="form-group">
+                                        <input type="text" id="regFullName" placeholder="Full Name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="email" id="regEmail" placeholder="Email Address" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" id="regPassword" placeholder="Password" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="tel" id="regPhone" placeholder="Phone Number" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" id="regRollNumber" placeholder="Roll Number" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <select id="regDepartment">
+                                            <option value="">Select Department</option>
+                                            <option>Computer Science</option>
+                                            <option>Engineering</option>
+                                            <option>Business</option>
+                                            <option>Arts & Sciences</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="file" id="regProfilePic" accept="image/*">
+                                    </div>
+                                    <button type="submit" class="btn">Register</button>
+                                </form>
+                                <button class="toggle-btn" onclick="flipToLogin()">Already have an account? Login</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section">
+            <div class="section-container">
+                <h2 class="section-title">About Us</h2>
+                <div style="max-width: 800px; margin: 0 auto; text-align: center; font-size: 1.1rem; line-height: 1.8;">
+                    <p>Welcome to CampusLost&Found - your trusted platform for reuniting lost items with their owners across our college campus.</p>
+                    <p style="margin-top: 1rem;">We understand how frustrating it can be to lose valuable items. Our mission is to create a seamless bridge between those who have lost something and those who have found something, making our campus a more connected and helpful community.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="section" style="background: #f8f9fa;">
+            <div class="section-container">
+                <h2 class="section-title">Why Choose Us?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📸</div>
+                        <h3>Upload Photos</h3>
+                        <p>Upload clear images of lost or found items for easy identification</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔔</div>
+                        <h3>Instant Alerts</h3>
+                        <p>Get notified when someone reports finding your lost item</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💬</div>
+                        <h3>Direct Contact</h3>
+                        <p>Connect directly with the person who found your item</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Real-time Updates</h3>
+                        <p>Track the status of your reported items in real-time</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Campus News Section -->
+        <section id="news" class="section">
+            <div class="section-container">
+                <h2 class="section-title">Campus News 📢</h2>
+                <div class="news-grid" id="newsGrid">
+                    <!-- News will be loaded here dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section" style="background: #f8f9fa;">
+            <div class="section-container">
+                <h2 class="section-title">Get In Touch</h2>
+                <div class="contact-container">
+                    <div class="contact-info">
+                        <h3>Contact Information</h3>
+                        <p style="margin: 1rem 0;">📧 support@campuslostfound.com</p>
+                        <p style="margin: 1rem 0;">📞 +1 234 567 8900</p>
+                        <p style="margin: 1rem 0;">📍 College Campus, Student Affairs Office</p>
+                        <p style="margin-top: 2rem;">Working Hours: Mon-Fri, 9 AM - 5 PM</p>
+                    </div>
+                    <div class="contact-form">
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <input type="text" id="contactName" placeholder="Your Name" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="contactEmail" placeholder="Your Email" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="contactSubject" placeholder="Subject" required>
+                            </div>
+                            <div class="form-group">
+                                <textarea id="contactMessage" rows="5" placeholder="Your Message" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div>
+                <h3 style="margin-bottom: 1rem;">CampusLost&Found</h3>
+                <p>Making our campus a better place, one found item at a time.</p>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 1rem;">Quick Links</h3>
+                <p><a onclick="scrollToSection('home')" style="color: white; cursor: pointer;">Home</a></p>
+                <p><a onclick="scrollToSection('about')" style="color: white; cursor: pointer;">About</a></p>
+                <p><a onclick="scrollToSection('features')" style="color: white; cursor: pointer;">Features</a></p>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 1rem;">Follow Us</h3>
+                <p>📘 Facebook</p>
+                <p>📸 Instagram</p>
+                <p>🐦 Twitter</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p>&copy; 2024 CampusLost&Found. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let isFlipped = false;
+
+        // Scroll to section
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Flip animations
+        function flipToRegister() {
+            document.getElementById('flipCard').style.transform = 'rotateY(180deg)';
+        }
+
+        function flipToLogin() {
+            document.getElementById('flipCard').style.transform = 'rotateY(0deg)';
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <strong>${type === 'success' ? '✓' : '✗'}</strong>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Load campus news
+        async function loadCampusNews() {
+            try {
+                const response = await fetch('/api/campus-news');
+                const data = await response.json();
+                if (data.success && data.news) {
+                    const newsGrid = document.getElementById('newsGrid');
+                    newsGrid.innerHTML = data.news.map(news => `
+                        <div class="news-card">
+                            <div class="news-content">
+                                <h3 class="news-title">${news.title}</h3>
+                                <div class="news-date">${new Date(news.created_at).toLocaleDateString()}</div>
+                                <p>${news.content}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading news:', error);
+            }
+        }
+
+        // Handle login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Login failed! Please try again.', 'error');
+            }
+        });
+
+        // Handle registration
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('full_name', document.getElementById('regFullName').value);
+            formData.append('email', document.getElementById('regEmail').value);
+            formData.append('password', document.getElementById('regPassword').value);
+            formData.append('phone', document.getElementById('regPhone').value);
+            formData.append('roll_number', document.getElementById('regRollNumber').value);
+            formData.append('department', document.getElementById('regDepartment').value);
+            
+            const profilePic = document.getElementById('regProfilePic').files[0];
+            if (profilePic) {
+                formData.append('profile_pic', profilePic);
+            }
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Registration successful! Please login.', 'success');
+                    setTimeout(() => flipToLogin(), 2000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Registration failed! Please try again.', 'error');
+            }
+        });
+
+        // Handle contact form
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('contactName').value,
+                email: document.getElementById('contactEmail').value,
+                subject: document.getElementById('contactSubject').value,
+                message: document.getElementById('contactMessage').value
+            };
+
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Message sent successfully!', 'success');
+                    document.getElementById('contactForm').reset();
+                } else {
+                    showToast('Failed to send message!', 'error');
+                }
+            } catch (error) {
+                showToast('Error sending message!', 'error');
+            }
+        });
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const [lostRes, foundRes] = await Promise.all([
+                    fetch('/api/lost-items'),
+                    fetch('/api/found-items')
+                ]);
+                const lostData = await lostRes.json();
+                const foundData = await foundRes.json();
+                
+                if (lostData.success) {
+                    document.getElementById('lostCount').innerText = lostData.items.length + '+';
+                }
+                if (foundData.success) {
+                    document.getElementById('foundCount').innerText = foundData.items.length + '+';
+                    const recovered = Math.floor(foundData.items.length * 0.75);
+                    document.getElementById('recoveredCount').innerText = recovered + '+';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Initialize page
+        loadCampusNews();
+        loadStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CampusLost&Found | Clean Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #818cf8, #c084fc); border-radius: 12px; }
+
+        .dashboard-header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(18px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-icon { font-size: 1.8rem; animation: gentleFloat 3s infinite ease-in-out; }
+        @keyframes gentleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
+
+        .header-right { display: flex; align-items: center; gap: 1.5rem; }
+
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .notification-bell:hover { transform: scale(1.1) rotate(15deg); }
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 20px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .profile-avatar:hover { transform: scale(1.05) rotate(5deg); box-shadow: 0 0 15px rgba(139,92,246,0.5); }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background: #1e293b;
+            min-width: 200px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 1001;
+            animation: fadeInDown 0.3s ease;
+        }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .dropdown-content a {
+            color: #e2e8f0;
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .dropdown-content a:hover { background: #334155; padding-left: 25px; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        .dashboard-main {
+            padding-top: 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 90px 2rem 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .stat-card:hover { transform: translateY(-8px) scale(1.02); background: rgba(55, 65, 81, 0.8); box-shadow: 0 20px 30px -15px rgba(0,0,0,0.4); }
+        .stat-value { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .stat-label { color: #94a3b8; margin-top: 0.5rem; }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: linear-gradient(105deg, #8b5cf6, #6d28d9);
+            padding: 0.9rem 2rem;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 25px rgba(139,92,246,0.4); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+        .search-bar {
+            margin-bottom: 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.8rem 1.2rem;
+            background: #0f172a;
+            border: 1.5px solid #334155;
+            border-radius: 50px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .search-bar input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.2); transform: scale(1.02); }
+
+        .dashboard-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 900px) { .dashboard-columns { grid-template-columns: 1fr; } }
+
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s;
+        }
+        .card:hover { border-color: rgba(139,92,246,0.3); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .card h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .item-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .item-card {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-left: 3px solid #8b5cf6;
+            transition: all 0.3s ease;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .item-card:hover { transform: translateX(5px); background: #1a2340; }
+        .item-title { font-weight: 600; color: white; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .item-photo { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: #334155; }
+        .item-meta { font-size: 0.8rem; color: #94a3b8; margin: 0.3rem 0; }
+        
+        /* Date and Time highlighted in WHITE */
+        .highlight-datetime {
+            color: #ffffff !important;
+            font-weight: 500;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            letter-spacing: 0.3px;
+        }
+        
+        .item-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .small-btn {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .small-btn.edit { background: #3b82f6; color: white; }
+        .small-btn.delete { background: #ef4444; color: white; }
+        .small-btn.found { background: #22c55e; color: white; }
+        .small-btn.returned { background: #f59e0b; color: white; }
+        .small-btn.approve { background: #22c55e; color: white; }
+        .small-btn.reject { background: #ef4444; color: white; }
+        .small-btn:hover { transform: scale(1.05) translateY(-2px); }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .status-pending { background: #f59e0b; color: black; animation: blink 1s infinite; }
+        .status-approved { background: #22c55e; color: white; }
+        .status-rejected { background: #ef4444; color: white; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        /* RECENT ACTIVITIES - RED HIGHLIGHT */
+        .activity-item {
+            padding: 12px;
+            border-bottom: 1px solid #ff44444d;
+            border-radius: 12px;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            background: rgba(220, 38, 38, 0.15);
+            border-left: 4px solid #ef4444;
+            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.2);
+            animation: redGlowPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes redGlowPulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-left-color: #ef4444; }
+            50% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3); border-left-color: #ff7b7b; }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-left-color: #ef4444; }
+        }
+        .activity-item:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateX(6px);
+            border-left-width: 6px;
+        }
+        .activity-time {
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(0,0,0,0.6);
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            letter-spacing: 0.3px;
+            color: #ffffff !important;
+        }
+        .activity-icon { font-size: 1.1rem; margin-right: 8px; filter: drop-shadow(0 0 2px red); }
+        .activity-text {
+            color: #fff0f0;
+            font-weight: 500;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+
+        .notif-item {
+            padding: 12px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            border-left: 3px solid;
+            transition: 0.2s;
+        }
+        .notif-claim { background: rgba(59,130,246,0.15); border-left-color: #3b82f6; }
+        .notif-approve { background: rgba(34,197,94,0.15); border-left-color: #22c55e; }
+        .notif-system { background: rgba(168,85,247,0.15); border-left-color: #a855f7; }
+        .notif-alert { background: rgba(239,68,68,0.15); border-left-color: #ef4444; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            background: #1e293b;
+            border-radius: 28px;
+            padding: 2rem;
+            max-width: 550px;
+            width: 90%;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.9) translateY(-30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-content h2 { color: white; margin-bottom: 1rem; }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            background: #0f172a;
+            border: 1.5px solid #334155;
+            border-radius: 16px;
+            color: white;
+            transition: all 0.3s;
+        }
+        .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139,92,246,0.2);
+        }
+        .modal-buttons { display: flex; gap: 1rem; justify-content: flex-end; }
+
+        .flip-container {
+            perspective: 1000px;
+        }
+        .flipper {
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            position: relative;
+            min-height: 420px;
+        }
+        .front, .back {
+            backface-visibility: hidden;
+            position: absolute;
+            width: 100%;
+            top: 0;
+        }
+        .front { transform: rotateY(0deg); z-index: 2; }
+        .back { transform: rotateY(180deg); }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            z-index: 3000;
+            animation: slideUp 0.3s ease;
+            border-left: 4px solid #22c55e;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .empty-state {
+            color: #94a3b8;
+            text-align: center;
+            padding: 2rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <header class="dashboard-header">
+        <div class="nav-container">
+            <div class="logo"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
+            <div class="header-right">
+                <div class="notification-bell" id="notificationBell">🔔<span class="badge" id="notifBadge">0</span></div>
+                <div class="dropdown">
+                    <div class="profile-avatar" id="profileAvatar">👤</div>
+                    <div class="dropdown-content">
+                        <a id="profileBtn">👤 My Profile</a>
+                        <a id="logoutBtn">🚪 Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="statLost">0</div><div class="stat-label">Items Lost</div></div>
+            <div class="stat-card"><div class="stat-value" id="statFound">0</div><div class="stat-label">Items Found</div></div>
+            <div class="stat-card"><div class="stat-value" id="statClaims">0</div><div class="stat-label">Pending Claims</div></div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-primary" id="reportLostBtn">➕ Report Lost Item</button>
+            <button class="btn-primary" id="reportFoundBtn">🔍 Report Found Item</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Search your lost/found items...">
+        </div>
+
+        <div class="dashboard-columns">
+            <div>
+                <div class="card"><h3>📦 My Lost Items</h3><div class="item-list" id="lostItemsList"><div class="empty-state">No lost items reported yet</div></div></div>
+                <div class="card"><h3>✅ My Found Items</h3><div class="item-list" id="foundItemsList"><div class="empty-state">No found items reported yet</div></div></div>
+            </div>
+            <div>
+                <div class="card">
+                    <h3>🔴 Recent Activity (Red Highlighted)</h3>
+                    <div id="recentActivity"><div class="empty-state">No recent activities</div></div>
+                </div>
+                <div class="card"><h3>📋 Pending Claims (Incoming)</h3><div id="pendingClaimsList"><div class="empty-state">No pending claims</div></div></div>
+                <div class="card"><h3>📝 My Claims</h3><div id="myClaimsList"><div class="empty-state">No claims made yet</div></div></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="reportModal" class="modal"><div class="modal-content"><h2 id="modalTitle">Report Item</h2><input type="text" id="itemTitle" placeholder="Item Name *"><textarea id="itemDesc" rows="2" placeholder="Description *"></textarea><input type="text" id="itemLocation" placeholder="Location *"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;"><input type="date" id="itemDate"><input type="time" id="itemTime"></div><input type="file" id="itemPhoto" accept="image/*"><small style="color:#94a3b8;">Upload photo (optional)</small><div class="modal-buttons"><button class="btn-secondary" id="closeModal">Cancel</button><button class="btn-primary" id="submitReport">Submit</button></div></div></div>
+
+    <div id="profileModal" class="modal"><div class="modal-content" style="max-width: 450px;"><div class="flip-container"><div class="flipper" id="profileFlipper"><div class="front"><h2>👤 My Profile</h2><div style="text-align:center; margin-bottom:1rem;"><div style="width:80px; height:80px; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:2rem; color:white;" id="profileAvatarLarge">👤</div></div><p><strong>📛 Name:</strong> <span id="profileName">--</span></p><p><strong>📧 Email:</strong> <span id="profileEmail">--</span></p><p><strong>📞 Phone:</strong> <span id="profilePhone">--</span></p><p><strong>🎓 Roll Number:</strong> <span id="profileRoll">--</span></p><p><strong>🏛️ Department:</strong> <span id="profileDept">--</span></p><button class="btn-primary" id="editProfileBtn" style="margin-top:1rem; width:100%;">✏️ Edit Profile</button><button class="btn-secondary" id="closeProfileModal" style="margin-top:0.5rem; width:100%;">Close</button></div><div class="back"><h2>✏️ Edit Profile</h2><input type="text" id="editName" placeholder="Full Name"><input type="email" id="editEmail" placeholder="Email"><input type="tel" id="editPhone" placeholder="Phone"><input type="text" id="editRoll" placeholder="Roll Number"><select id="editDept"><option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option></select><div class="modal-buttons"><button class="btn-secondary" id="cancelEditBtn">Cancel</button><button class="btn-primary" id="saveProfileBtn">Save Changes</button></div></div></div></div></div></div>
+
+    <div id="notificationsPanel" class="modal" style="align-items: flex-start; justify-content: flex-end; padding-top: 80px;"><div class="modal-content" style="max-width: 380px; margin-right: 20px;"><h3>🔔 Notifications</h3><div id="notificationsList"><div class="empty-state">No notifications</div></div><button class="btn-secondary" id="closeNotifPanel" style="margin-top: 1rem;">Close</button></div></div>
+
+    <script>
+        // EMPTY INITIAL STATE - NO DEFAULT DATA
+        let currentUser = {
+            name: "",
+            email: "",
+            phone: "",
+            rollNumber: "",
+            department: "IT"
+        };
+
+        let lostItems = [];
+        let foundItems = [];
+        let pendingClaims = [];
+        let myClaims = [];
+        let activities = [];
+        let notifications = [];
+        let nextId = 1;
+        let currentEditItem = null;
+
+        function formatTimeAMPM(date) {
+            if (!date) return "";
+            let hours = date.getHours();
+            let mins = date.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            return `${hours}:${mins.toString().padStart(2,'0')} ${ampm}`;
+        }
+        
+        function formatFullDateTime(date) {
+            if (!date) return "";
+            return `${date.toLocaleDateString()} at ${formatTimeAMPM(date)}`;
+        }
+        
+        function formatDateOnly(date) {
+            if (!date) return "";
+            return date.toLocaleDateString();
+        }
+
+        function updateUI() {
+            document.getElementById('statLost').innerText = lostItems.length;
+            document.getElementById('statFound').innerText = foundItems.length;
+            document.getElementById('statClaims').innerText = pendingClaims.length;
+            document.getElementById('notifBadge').innerText = notifications.length;
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+
+            const filteredLost = lostItems.filter(i => i.title.toLowerCase().includes(searchTerm));
+            document.getElementById('lostItemsList').innerHTML = filteredLost.length ? filteredLost.map(item => {
+                const dateTimeStr = item.date ? `${item.date} ${item.time ? 'at ' + item.time : ''}` : '';
+                return `<div class="item-card"><div class="item-title">${item.photo ? `<img src="${item.photo}" class="item-photo" onerror="this.style.display='none'">` : '📦'} <span>${escapeHtml(item.title)}</span></div>
+                <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
+                <div class="item-meta">📍 ${escapeHtml(item.location)} | <span class="highlight-datetime">📅 ${dateTimeStr || 'Date not set'}</span></div>
+                <div class="item-actions"><button class="small-btn edit" onclick="editItem('lost',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('lost',${item.id})">Delete</button><button class="small-btn found" onclick="markAsFound(${item.id})">Mark as Found</button></div></div>`;
+            }).join('') : '<div class="empty-state">No lost items reported yet</div>';
+
+            const filteredFound = foundItems.filter(i => i.title.toLowerCase().includes(searchTerm));
+            document.getElementById('foundItemsList').innerHTML = filteredFound.length ? filteredFound.map(item => {
+                const dateTimeStr = item.date ? `${item.date} ${item.time ? 'at ' + item.time : ''}` : '';
+                return `<div class="item-card"><div class="item-title">${item.photo ? `<img src="${item.photo}" class="item-photo">` : '🔍'} ${escapeHtml(item.title)}</div>
+                <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
+                <div class="item-meta">📍 ${escapeHtml(item.location)} | <span class="highlight-datetime">📅 ${dateTimeStr || 'Date not set'}</span></div>
+                <div class="item-actions"><button class="small-btn edit" onclick="editItem('found',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('found',${item.id})">Delete</button><button class="small-btn returned" onclick="markAsReturned(${item.id})">Mark Returned</button></div></div>`;
+            }).join('') : '<div class="empty-state">No found items reported yet</div>';
+
+            const sortedActs = [...activities].sort((a,b)=>b.timestamp - a.timestamp);
+            document.getElementById('recentActivity').innerHTML = sortedActs.length ? sortedActs.map(act => {
+                let icon = '🔴';
+                if (act.type === 'lost') icon = '⚠️';
+                else if (act.type === 'found') icon = '✅';
+                else if (act.type === 'claim') icon = '💬';
+                const timeStr = act.timestamp ? formatFullDateTime(act.timestamp) : '';
+                return `<div class="activity-item">
+                            <span class="activity-icon">${icon}</span>
+                            <span class="activity-text">${escapeHtml(act.text)}</span>
+                            <span class="activity-time">🕒 ${timeStr}</span>
+                        </div>`;
+            }).join('') : '<div class="empty-state">No recent activities</div>';
+
+            document.getElementById('pendingClaimsList').innerHTML = pendingClaims.length ? pendingClaims.map(c => `
+                <div class="item-card"><div class="item-title">📋 ${escapeHtml(c.itemTitle)}</div><div class="item-meta">Claimant: ${escapeHtml(c.claimant)} (${escapeHtml(c.claimantEmail)})</div>
+                <div class="item-actions"><button class="small-btn approve" onclick="approveClaim(${c.id})">Approve</button><button class="small-btn reject" onclick="rejectClaim(${c.id})">Reject</button></div></div>
+            `).join('') : '<div class="empty-state">No pending claims</div>';
+
+            document.getElementById('myClaimsList').innerHTML = myClaims.length ? myClaims.map(c => `
+                <div class="item-card"><div class="item-title">📝 ${escapeHtml(c.itemTitle)}</div><div class="item-meta">Owner: ${escapeHtml(c.owner)} | <span class="status-badge status-${c.status}">${c.status.toUpperCase()}</span> 📅 ${c.date}</div></div>
+            `).join('') : '<div class="empty-state">No claims made yet</div>';
+        }
+
+        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+        function addActivity(msg, type, customDate = null) {
+            activities.unshift({ text: msg, type: type, timestamp: customDate || new Date() });
+            if (activities.length > 20) activities.pop();
+            updateUI();
+        }
+        
+        function addNotification(msg, notifType = 'system') {
+            notifications.unshift({ text: msg, type: notifType, timestamp: new Date() });
+            updateUI();
+        }
+        
+        function showToast(msg) { const toast = document.createElement('div'); toast.className='toast'; toast.innerText=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(),3000); }
+
+        window.editItem = (type, id) => {
+            const item = type==='lost' ? lostItems.find(i=>i.id===id) : foundItems.find(i=>i.id===id);
+            if(item){
+                document.getElementById('itemTitle').value=item.title; document.getElementById('itemDesc').value=item.description;
+                document.getElementById('itemLocation').value=item.location; document.getElementById('itemDate').value=item.date;
+                document.getElementById('itemTime').value=item.time || ''; currentEditItem={type,id};
+                document.getElementById('modalTitle').innerText=type==='lost'?'Edit Lost Item':'Edit Found Item';
+                document.getElementById('reportModal').style.display='flex';
+            }
+        };
+        
+        window.deleteItem = (type,id) => { if(confirm('Delete this item?')){ if(type==='lost'){ lostItems=lostItems.filter(i=>i.id!==id); addActivity(`Deleted lost item`, 'other'); } else { foundItems=foundItems.filter(i=>i.id!==id); addActivity(`Deleted found item`, 'other'); } showToast('Deleted'); updateUI(); } };
+        
+        window.markAsFound = (id) => { const item=lostItems.find(i=>i.id===id); if(item){ lostItems=lostItems.filter(i=>i.id!==id); foundItems.push({...item, id:nextId++, status:'found'}); addActivity(`Marked "${item.title}" as found`, 'found'); showToast('Moved to found'); updateUI(); } };
+        
+        window.markAsReturned = (id) => { foundItems=foundItems.filter(i=>i.id!==id); addActivity(`Returned an item to owner`, 'found'); showToast('Returned'); updateUI(); };
+        
+        window.approveClaim = (claimId) => { const claim=pendingClaims.find(c=>c.id===claimId); if(claim){ pendingClaims=pendingClaims.filter(c=>c.id!==claimId); myClaims.push({id:Date.now(), itemTitle:claim.itemTitle, owner:claim.claimant, status:'approved', date:new Date().toLocaleDateString()}); addActivity(`Approved claim for "${claim.itemTitle}"`, 'claim'); addNotification(`Claim for "${claim.itemTitle}" was approved`, 'approve'); showToast('Approved'); updateUI(); } };
+        
+        window.rejectClaim = (claimId) => { pendingClaims=pendingClaims.filter(c=>c.id!==claimId); addActivity(`Rejected a claim`, 'claim'); showToast('Rejected'); updateUI(); };
+
+        document.getElementById('reportLostBtn').onclick = () => { currentEditItem=null; document.getElementById('modalTitle').innerText='Report Lost Item'; ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value=''); document.getElementById('reportModal').style.display='flex'; };
+        
+        document.getElementById('reportFoundBtn').onclick = () => { currentEditItem=null; document.getElementById('modalTitle').innerText='Report Found Item'; ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value=''); document.getElementById('reportModal').style.display='flex'; };
+        
+        document.getElementById('closeModal').onclick = () => document.getElementById('reportModal').style.display='none';
+        
+        document.getElementById('submitReport').onclick = () => {
+            const title=document.getElementById('itemTitle').value.trim();
+            const desc=document.getElementById('itemDesc').value.trim();
+            const loc=document.getElementById('itemLocation').value.trim();
+            const date=document.getElementById('itemDate').value;
+            const time=document.getElementById('itemTime').value;
+            const photoFile=document.getElementById('itemPhoto').files[0];
+            if(!title || !desc || !loc || !date) { showToast('Please fill all required fields (*)'); return; }
+            let photoUrl=photoFile?URL.createObjectURL(photoFile):null;
+            const isLost=document.getElementById('modalTitle').innerText.includes('Lost');
+            if(currentEditItem){
+                if(currentEditItem.type==='lost'){ const item=lostItems.find(i=>i.id===currentEditItem.id); if(item){ item.title=title; item.description=desc; item.location=loc; item.date=date; item.time=time; if(photoUrl) item.photo=photoUrl; } }
+                else { const item=foundItems.find(i=>i.id===currentEditItem.id); if(item){ item.title=title; item.description=desc; item.location=loc; item.date=date; item.time=time; if(photoUrl) item.photo=photoUrl; } }
+                addActivity(`Edited item: ${title}`, 'other'); showToast('Updated');
+            } else {
+                const newItem={ id:nextId++, title, description:desc, location:loc, date, time, photo:photoUrl, status:isLost?'lost':'found' };
+                if(isLost) lostItems.push(newItem); else foundItems.push(newItem);
+                addActivity(`${isLost ? 'Reported lost' : 'Reported found'}: ${title}`, isLost?'lost':'found', new Date());
+                showToast('Reported successfully');
+            }
+            document.getElementById('reportModal').style.display='none'; updateUI();
+        };
+        
+        document.getElementById('searchInput').addEventListener('input',()=>updateUI());
+
+        document.getElementById('profileBtn').onclick = () => {
+            document.getElementById('profileName').innerText=currentUser.name || 'Not set';
+            document.getElementById('profileEmail').innerText=currentUser.email || 'Not set';
+            document.getElementById('profilePhone').innerText=currentUser.phone || 'Not set';
+            document.getElementById('profileRoll').innerText=currentUser.rollNumber || 'Not set';
+            document.getElementById('profileDept').innerText=currentUser.department || 'IT';
+            const initials = currentUser.name ? currentUser.name.split(' ').map(n=>n[0]).join('').toUpperCase() : '👤';
+            document.getElementById('profileAvatarLarge').innerText=initials;
+            document.getElementById('editName').value=currentUser.name || '';
+            document.getElementById('editEmail').value=currentUser.email || '';
+            document.getElementById('editPhone').value=currentUser.phone || '';
+            document.getElementById('editRoll').value=currentUser.rollNumber || '';
+            document.getElementById('editDept').value=currentUser.department || 'IT';
+            document.getElementById('profileFlipper').style.transform='rotateY(0deg)';
+            document.getElementById('profileModal').style.display='flex';
+        };
+        
+        document.getElementById('editProfileBtn').onclick = () => { document.getElementById('profileFlipper').style.transform='rotateY(180deg)'; };
+        document.getElementById('cancelEditBtn').onclick = () => { document.getElementById('profileFlipper').style.transform='rotateY(0deg)'; };
+        document.getElementById('saveProfileBtn').onclick = () => {
+            currentUser.name=document.getElementById('editName').value;
+            currentUser.email=document.getElementById('editEmail').value;
+            currentUser.phone=document.getElementById('editPhone').value;
+            currentUser.rollNumber=document.getElementById('editRoll').value;
+            currentUser.department=document.getElementById('editDept').value;
+            const newInitials = currentUser.name ? currentUser.name.split(' ').map(n=>n[0]).join('').toUpperCase() : '👤';
+            document.getElementById('profileAvatar').innerText=newInitials;
+            document.getElementById('profileAvatarLarge').innerText=newInitials;
+            showToast('Profile updated');
+            document.getElementById('profileFlipper').style.transform='rotateY(0deg)';
+            updateUI();
+        };
+        document.getElementById('closeProfileModal').onclick = () => document.getElementById('profileModal').style.display='none';
+        
+        document.getElementById('notificationBell').onclick = () => {
+            const container=document.getElementById('notificationsList');
+            container.innerHTML = notifications.length ? notifications.map(notif => {
+                let colorClass = 'notif-system';
+                if(notif.type === 'claim') colorClass = 'notif-claim';
+                else if(notif.type === 'approve') colorClass = 'notif-approve';
+                else if(notif.type === 'alert') colorClass = 'notif-alert';
+                const timeAgo = notif.timestamp ? formatFullDateTime(notif.timestamp) : '';
+                return `<div class="notif-item ${colorClass}"><span style="font-weight:500;">${escapeHtml(notif.text)}</span><div style="font-size:0.7rem; color:#ffffff; margin-top:4px;">🕘 ${timeAgo}</div></div>`;
+            }).join('') : '<div class="empty-state">No notifications</div>';
+            document.getElementById('notificationsPanel').style.display='flex';
+        };
+        document.getElementById('closeNotifPanel').onclick = () => document.getElementById('notificationsPanel').style.display='none';
+        
+        document.getElementById('logoutBtn').onclick = () => { showToast('Logged out successfully'); setTimeout(()=> location.reload(), 1000); };
+        window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display='none'; };
+        
+        document.getElementById('profileAvatar').innerText = '👤';
+        updateUI();
+    </script>
+</body>
+</html>
