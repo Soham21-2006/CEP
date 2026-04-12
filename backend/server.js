@@ -1,30 +1,29 @@
-import cors from 'cors';
 import express from 'express';
+import cors from 'cors';
 import pool from './config.js';
 
 const app = express();
-app.use(express.json());
 
+// ✅ CORS FIX
 app.use(cors({
     origin: "https://cep-eight-tau.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
 
-app.options('*', cors());
+app.use(express.json());
 
-// ✅ ROOT ROUTE (check server + DB)
+// ✅ ROOT ROUTE
 app.get('/', async (req, res) => {
     try {
         const result = await pool.query('SELECT NOW()');
-        res.send("Database Connected ✅ " + result.rows[0].now);
+        res.json({ success: true, time: result.rows[0].now });
     } catch (err) {
-        console.error(err);
-        res.send("Database Connection Failed ❌");
+        res.status(500).json({ success: false, message: "DB Error" });
     }
 });
 
-// ✅ REGISTER API
+// ✅ REGISTER
 app.post('/api/register', async (req, res) => {
     try {
         const { full_name, email, password, phone, roll_number, department } = req.body;
@@ -35,15 +34,21 @@ app.post('/api/register', async (req, res) => {
             [full_name, email, password, phone, roll_number, department]
         );
 
-        res.json({ message: "User Registered Successfully ✅" });
+        res.json({
+            success: true,
+            message: "User Registered Successfully"
+        });
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Registration Failed ❌" });
+        res.status(500).json({
+            success: false,
+            message: "Registration Failed"
+        });
     }
 });
 
-// ✅ LOGIN API (basic)
+// ✅ LOGIN
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -54,35 +59,46 @@ app.post('/api/login', async (req, res) => {
         );
 
         if (result.rows.length > 0) {
-            res.json({ message: "Login Successful ✅" });
+            res.json({
+                success: true,
+                message: "Login Successful"
+            });
         } else {
-            res.status(401).json({ message: "Invalid Credentials ❌" });
+            res.status(401).json({
+                success: false,
+                message: "Invalid Credentials"
+            });
         }
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Login Failed ❌" });
+        res.status(500).json({
+            success: false,
+            message: "Login Failed"
+        });
     }
 });
 
-// ✅ STATS API
+// ✅ STATS
 app.get('/api/stats', async (req, res) => {
     try {
         const users = await pool.query('SELECT COUNT(*) FROM users');
 
         res.json({
-            users: users.rows[0].count,
-            items: 0,
-            recovered: 0
+            success: true,
+            lostCount: users.rows[0].count,
+            foundCount: 0,
+            recoveredCount: 0
         });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Error fetching stats ❌" });
+        res.status(500).json({
+            success: false,
+            message: "Error fetching stats"
+        });
     }
 });
 
-// ✅ PORT FIX (IMPORTANT FOR RENDER)
+// ✅ PORT (Render compatible)
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
