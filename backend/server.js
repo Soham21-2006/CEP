@@ -1,8 +1,17 @@
+import cors from 'cors';
 import express from 'express';
 import pool from './config.js';
 
 const app = express();
 app.use(express.json());
+
+app.use(cors({
+    origin: "https://cep-eight-tau.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
+
+app.options('*', cors());
 
 // ✅ ROOT ROUTE (check server + DB)
 app.get('/', async (req, res) => {
