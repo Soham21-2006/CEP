@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>CampusLost&Found | Clean Dashboard</title>
+    <title>CampusLost&Found | User Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -50,6 +50,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            cursor: pointer;
         }
 
         .logo-icon { font-size: 1.8rem; animation: gentleFloat 3s infinite ease-in-out; }
@@ -144,7 +145,7 @@
             text-align: center;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .stat-card:hover { transform: translateY(-8px) scale(1.02); background: rgba(55, 65, 81, 0.8); box-shadow: 0 20px 30px -15px rgba(0,0,0,0.4); }
+        .stat-card:hover { transform: translateY(-8px) scale(1.02); background: rgba(55, 65, 81, 0.8); }
         .stat-value { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .stat-label { color: #94a3b8; margin-top: 0.5rem; }
 
@@ -178,9 +179,7 @@
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
 
-        .search-bar {
-            margin-bottom: 2rem;
-        }
+        .search-bar { margin-bottom: 2rem; }
         .search-bar input {
             width: 100%;
             max-width: 400px;
@@ -192,7 +191,7 @@
             font-size: 1rem;
             transition: all 0.3s;
         }
-        .search-bar input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.2); transform: scale(1.02); }
+        .search-bar input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.2); }
 
         .dashboard-columns {
             display: grid;
@@ -210,7 +209,7 @@
             border: 1px solid rgba(255,255,255,0.08);
             transition: all 0.3s;
         }
-        .card:hover { border-color: rgba(139,92,246,0.3); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .card:hover { border-color: rgba(139,92,246,0.3); }
         .card h3 {
             color: white;
             margin-bottom: 1rem;
@@ -236,10 +235,7 @@
         @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .item-card:hover { transform: translateX(5px); background: #1a2340; }
         .item-title { font-weight: 600; color: white; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .item-photo { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: #334155; }
         .item-meta { font-size: 0.8rem; color: #94a3b8; margin: 0.3rem 0; }
-        
-        /* Date and Time highlighted in WHITE */
         .highlight-datetime {
             color: #ffffff !important;
             font-weight: 500;
@@ -247,9 +243,7 @@
             padding: 2px 8px;
             border-radius: 12px;
             display: inline-block;
-            letter-spacing: 0.3px;
         }
-        
         .item-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
         .small-btn {
             padding: 0.3rem 0.8rem;
@@ -280,7 +274,6 @@
         .status-rejected { background: #ef4444; color: white; }
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-        /* RECENT ACTIVITIES - RED HIGHLIGHT */
         .activity-item {
             padding: 12px;
             border-bottom: 1px solid #ff44444d;
@@ -289,19 +282,8 @@
             margin-bottom: 8px;
             background: rgba(220, 38, 38, 0.15);
             border-left: 4px solid #ef4444;
-            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.2);
-            animation: redGlowPulse 1.5s ease-in-out infinite;
         }
-        @keyframes redGlowPulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-left-color: #ef4444; }
-            50% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3); border-left-color: #ff7b7b; }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-left-color: #ef4444; }
-        }
-        .activity-item:hover {
-            background: rgba(239, 68, 68, 0.3);
-            transform: translateX(6px);
-            border-left-width: 6px;
-        }
+        .activity-item:hover { background: rgba(239, 68, 68, 0.3); transform: translateX(6px); }
         .activity-time {
             font-size: 0.7rem;
             font-weight: 600;
@@ -310,15 +292,9 @@
             padding: 2px 8px;
             border-radius: 20px;
             margin-left: 8px;
-            letter-spacing: 0.3px;
-            color: #ffffff !important;
+            color: #ffffff;
         }
-        .activity-icon { font-size: 1.1rem; margin-right: 8px; filter: drop-shadow(0 0 2px red); }
-        .activity-text {
-            color: #fff0f0;
-            font-weight: 500;
-            text-shadow: 0 0 2px rgba(0,0,0,0.5);
-        }
+        .activity-text { color: #fff0f0; font-weight: 500; }
 
         .notif-item {
             padding: 12px;
@@ -330,7 +306,6 @@
         .notif-claim { background: rgba(59,130,246,0.15); border-left-color: #3b82f6; }
         .notif-approve { background: rgba(34,197,94,0.15); border-left-color: #22c55e; }
         .notif-system { background: rgba(168,85,247,0.15); border-left-color: #a855f7; }
-        .notif-alert { background: rgba(239,68,68,0.15); border-left-color: #ef4444; }
 
         .modal {
             display: none;
@@ -366,18 +341,14 @@
             border: 1.5px solid #334155;
             border-radius: 16px;
             color: white;
-            transition: all 0.3s;
         }
         .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
             outline: none;
             border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139,92,246,0.2);
         }
         .modal-buttons { display: flex; gap: 1rem; justify-content: flex-end; }
 
-        .flip-container {
-            perspective: 1000px;
-        }
+        .flip-container { perspective: 1000px; }
         .flipper {
             transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             transform-style: preserve-3d;
@@ -418,7 +389,7 @@
 <body>
     <header class="dashboard-header">
         <div class="nav-container">
-            <div class="logo"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
+            <div class="logo" onclick="location.reload()"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
             <div class="header-right">
                 <div class="notification-bell" id="notificationBell">🔔<span class="badge" id="notifBadge">0</span></div>
                 <div class="dropdown">
@@ -454,11 +425,8 @@
                 <div class="card"><h3>✅ My Found Items</h3><div class="item-list" id="foundItemsList"><div class="empty-state">No found items reported yet</div></div></div>
             </div>
             <div>
-                <div class="card">
-                    <h3>🔴 Recent Activity (Red Highlighted)</h3>
-                    <div id="recentActivity"><div class="empty-state">No recent activities</div></div>
-                </div>
-                <div class="card"><h3>📋 Pending Claims (Incoming)</h3><div id="pendingClaimsList"><div class="empty-state">No pending claims</div></div></div>
+                <div class="card"><h3>🔴 Recent Activity</h3><div id="recentActivity"><div class="empty-state">No recent activities</div></div></div>
+                <div class="card"><h3>📋 Pending Claims</h3><div id="pendingClaimsList"><div class="empty-state">No pending claims</div></div></div>
                 <div class="card"><h3>📝 My Claims</h3><div id="myClaimsList"><div class="empty-state">No claims made yet</div></div></div>
             </div>
         </div>
@@ -471,15 +439,18 @@
     <div id="notificationsPanel" class="modal" style="align-items: flex-start; justify-content: flex-end; padding-top: 80px;"><div class="modal-content" style="max-width: 380px; margin-right: 20px;"><h3>🔔 Notifications</h3><div id="notificationsList"><div class="empty-state">No notifications</div></div><button class="btn-secondary" id="closeNotifPanel" style="margin-top: 1rem;">Close</button></div></div>
 
     <script>
-        // EMPTY INITIAL STATE - NO DEFAULT DATA
-        let currentUser = {
-            name: "",
-            email: "",
-            phone: "",
-            rollNumber: "",
-            department: "IT"
-        };
-
+        // API Configuration
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:5000/api' 
+            : 'https://https://cep-nxqq.onrender.com/api';
+        
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+        
+        let currentUser = null;
         let lostItems = [];
         let foundItems = [];
         let pendingClaims = [];
@@ -488,9 +459,10 @@
         let notifications = [];
         let nextId = 1;
         let currentEditItem = null;
-
-        function formatTimeAMPM(date) {
-            if (!date) return "";
+        
+        function formatTimeAMPM(dateStr) {
+            if (!dateStr) return "";
+            const date = new Date(dateStr);
             let hours = date.getHours();
             let mins = date.getMinutes();
             let ampm = hours >= 12 ? 'PM' : 'AM';
@@ -498,185 +470,349 @@
             return `${hours}:${mins.toString().padStart(2,'0')} ${ampm}`;
         }
         
-        function formatFullDateTime(date) {
-            if (!date) return "";
-            return `${date.toLocaleDateString()} at ${formatTimeAMPM(date)}`;
+        function formatFullDateTime(dateStr) {
+            if (!dateStr) return "";
+            const date = new Date(dateStr);
+            return `${date.toLocaleDateString()} at ${formatTimeAMPM(dateStr)}`;
         }
         
-        function formatDateOnly(date) {
-            if (!date) return "";
-            return date.toLocaleDateString();
+        function showToast(msg, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = type === 'success' ? '#22c55e' : '#ef4444';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
-
+        
+        async function fetchUserData() {
+            try {
+                const response = await fetch(`${API_URL}/user`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    document.getElementById('profileAvatar').innerText = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '👤';
+                    document.getElementById('profileAvatarLarge').innerText = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '👤';
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        }
+        
+        async function fetchLostItems() {
+            try {
+                const response = await fetch(`${API_URL}/lost-items`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    lostItems = data.items;
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error fetching lost items:', error);
+            }
+        }
+        
+        async function fetchFoundItems() {
+            try {
+                const response = await fetch(`${API_URL}/found-items`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    foundItems = data.items;
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error fetching found items:', error);
+            }
+        }
+        
+        async function fetchActivities() {
+            try {
+                const response = await fetch(`${API_URL}/activities`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    activities = data.activities;
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error fetching activities:', error);
+            }
+        }
+        
+        async function fetchNotifications() {
+            try {
+                const response = await fetch(`${API_URL}/notifications`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    notifications = data.notifications;
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        }
+        
+        async function fetchClaims() {
+            try {
+                const response = await fetch(`${API_URL}/claims`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    pendingClaims = data.incoming;
+                    myClaims = data.myClaims;
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error fetching claims:', error);
+            }
+        }
+        
         function updateUI() {
             document.getElementById('statLost').innerText = lostItems.length;
             document.getElementById('statFound').innerText = foundItems.length;
             document.getElementById('statClaims').innerText = pendingClaims.length;
             document.getElementById('notifBadge').innerText = notifications.length;
+            
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-
+            
             const filteredLost = lostItems.filter(i => i.title.toLowerCase().includes(searchTerm));
-            document.getElementById('lostItemsList').innerHTML = filteredLost.length ? filteredLost.map(item => {
-                const dateTimeStr = item.date ? `${item.date} ${item.time ? 'at ' + item.time : ''}` : '';
-                return `<div class="item-card"><div class="item-title">${item.photo ? `<img src="${item.photo}" class="item-photo" onerror="this.style.display='none'">` : '📦'} <span>${escapeHtml(item.title)}</span></div>
-                <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
-                <div class="item-meta">📍 ${escapeHtml(item.location)} | <span class="highlight-datetime">📅 ${dateTimeStr || 'Date not set'}</span></div>
-                <div class="item-actions"><button class="small-btn edit" onclick="editItem('lost',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('lost',${item.id})">Delete</button><button class="small-btn found" onclick="markAsFound(${item.id})">Mark as Found</button></div></div>`;
-            }).join('') : '<div class="empty-state">No lost items reported yet</div>';
-
+            document.getElementById('lostItemsList').innerHTML = filteredLost.length ? filteredLost.map(item => `
+                <div class="item-card"><div class="item-title">📦 ${escapeHtml(item.title)}</div>
+                <div class="item-meta">📝 ${escapeHtml(item.description || '')}</div>
+                <div class="item-meta">📍 ${escapeHtml(item.location || '')} | <span class="highlight-datetime">📅 ${item.item_date || 'Date not set'} ${item.item_time ? 'at ' + item.item_time : ''}</span></div>
+                <div class="item-actions"><button class="small-btn edit" onclick="editItem('lost',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('lost',${item.id})">Delete</button><button class="small-btn found" onclick="markAsFound(${item.id})">Mark as Found</button></div></div>
+            `).join('') : '<div class="empty-state">No lost items reported yet</div>';
+            
             const filteredFound = foundItems.filter(i => i.title.toLowerCase().includes(searchTerm));
-            document.getElementById('foundItemsList').innerHTML = filteredFound.length ? filteredFound.map(item => {
-                const dateTimeStr = item.date ? `${item.date} ${item.time ? 'at ' + item.time : ''}` : '';
-                return `<div class="item-card"><div class="item-title">${item.photo ? `<img src="${item.photo}" class="item-photo">` : '🔍'} ${escapeHtml(item.title)}</div>
-                <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
-                <div class="item-meta">📍 ${escapeHtml(item.location)} | <span class="highlight-datetime">📅 ${dateTimeStr || 'Date not set'}</span></div>
-                <div class="item-actions"><button class="small-btn edit" onclick="editItem('found',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('found',${item.id})">Delete</button><button class="small-btn returned" onclick="markAsReturned(${item.id})">Mark Returned</button></div></div>`;
-            }).join('') : '<div class="empty-state">No found items reported yet</div>';
-
-            const sortedActs = [...activities].sort((a,b)=>b.timestamp - a.timestamp);
+            document.getElementById('foundItemsList').innerHTML = filteredFound.length ? filteredFound.map(item => `
+                <div class="item-card"><div class="item-title">🔍 ${escapeHtml(item.title)}</div>
+                <div class="item-meta">📝 ${escapeHtml(item.description || '')}</div>
+                <div class="item-meta">📍 ${escapeHtml(item.location || '')} | <span class="highlight-datetime">📅 ${item.item_date || 'Date not set'} ${item.item_time ? 'at ' + item.item_time : ''}</span></div>
+                <div class="item-actions"><button class="small-btn edit" onclick="editItem('found',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('found',${item.id})">Delete</button><button class="small-btn returned" onclick="markAsReturned(${item.id})">Mark Returned</button></div></div>
+            `).join('') : '<div class="empty-state">No found items reported yet</div>';
+            
+            const sortedActs = [...activities].sort((a,b)=>new Date(b.created_at) - new Date(a.created_at));
             document.getElementById('recentActivity').innerHTML = sortedActs.length ? sortedActs.map(act => {
                 let icon = '🔴';
                 if (act.type === 'lost') icon = '⚠️';
                 else if (act.type === 'found') icon = '✅';
                 else if (act.type === 'claim') icon = '💬';
-                const timeStr = act.timestamp ? formatFullDateTime(act.timestamp) : '';
-                return `<div class="activity-item">
-                            <span class="activity-icon">${icon}</span>
-                            <span class="activity-text">${escapeHtml(act.text)}</span>
-                            <span class="activity-time">🕒 ${timeStr}</span>
-                        </div>`;
+                return `<div class="activity-item"><span class="activity-text">${icon} ${escapeHtml(act.action)}</span><span class="activity-time">🕒 ${formatFullDateTime(act.created_at)}</span></div>`;
             }).join('') : '<div class="empty-state">No recent activities</div>';
-
+            
             document.getElementById('pendingClaimsList').innerHTML = pendingClaims.length ? pendingClaims.map(c => `
-                <div class="item-card"><div class="item-title">📋 ${escapeHtml(c.itemTitle)}</div><div class="item-meta">Claimant: ${escapeHtml(c.claimant)} (${escapeHtml(c.claimantEmail)})</div>
+                <div class="item-card"><div class="item-title">📋 ${escapeHtml(c.item_title)}</div><div class="item-meta">Claimant: ${escapeHtml(c.claimant_name)}</div>
                 <div class="item-actions"><button class="small-btn approve" onclick="approveClaim(${c.id})">Approve</button><button class="small-btn reject" onclick="rejectClaim(${c.id})">Reject</button></div></div>
             `).join('') : '<div class="empty-state">No pending claims</div>';
-
+            
             document.getElementById('myClaimsList').innerHTML = myClaims.length ? myClaims.map(c => `
-                <div class="item-card"><div class="item-title">📝 ${escapeHtml(c.itemTitle)}</div><div class="item-meta">Owner: ${escapeHtml(c.owner)} | <span class="status-badge status-${c.status}">${c.status.toUpperCase()}</span> 📅 ${c.date}</div></div>
+                <div class="item-card"><div class="item-title">📝 ${escapeHtml(c.item_title)}</div><div class="item-meta">Owner: ${escapeHtml(c.owner_name)} | <span class="status-badge status-${c.status}">${c.status.toUpperCase()}</span></div></div>
             `).join('') : '<div class="empty-state">No claims made yet</div>';
+            
+            document.getElementById('notificationsList').innerHTML = notifications.length ? notifications.map(notif => {
+                let colorClass = 'notif-system';
+                if(notif.type === 'claim') colorClass = 'notif-claim';
+                else if(notif.type === 'approve') colorClass = 'notif-approve';
+                return `<div class="notif-item ${colorClass}"><span>${escapeHtml(notif.message)}</span><div style="font-size:0.7rem; color:#ffffff; margin-top:4px;">🕘 ${formatFullDateTime(notif.created_at)}</div></div>`;
+            }).join('') : '<div class="empty-state">No notifications</div>';
         }
-
+        
         function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-
-        function addActivity(msg, type, customDate = null) {
-            activities.unshift({ text: msg, type: type, timestamp: customDate || new Date() });
-            if (activities.length > 20) activities.pop();
-            updateUI();
-        }
         
-        function addNotification(msg, notifType = 'system') {
-            notifications.unshift({ text: msg, type: notifType, timestamp: new Date() });
-            updateUI();
-        }
-        
-        function showToast(msg) { const toast = document.createElement('div'); toast.className='toast'; toast.innerText=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(),3000); }
-
         window.editItem = (type, id) => {
-            const item = type==='lost' ? lostItems.find(i=>i.id===id) : foundItems.find(i=>i.id===id);
-            if(item){
-                document.getElementById('itemTitle').value=item.title; document.getElementById('itemDesc').value=item.description;
-                document.getElementById('itemLocation').value=item.location; document.getElementById('itemDate').value=item.date;
-                document.getElementById('itemTime').value=item.time || ''; currentEditItem={type,id};
-                document.getElementById('modalTitle').innerText=type==='lost'?'Edit Lost Item':'Edit Found Item';
-                document.getElementById('reportModal').style.display='flex';
+            showToast('Edit feature - Coming soon', 'info');
+        };
+        
+        window.deleteItem = async (type, id) => {
+            if(confirm('Delete this item?')){
+                try {
+                    const endpoint = type === 'lost' ? `lost-items/${id}` : `found-items/${id}`;
+                    await fetch(`${API_URL}/${endpoint}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    showToast('Item deleted');
+                    if(type === 'lost') await fetchLostItems();
+                    else await fetchFoundItems();
+                    await fetchActivities();
+                } catch (error) {
+                    showToast('Error deleting item', 'error');
+                }
             }
         };
         
-        window.deleteItem = (type,id) => { if(confirm('Delete this item?')){ if(type==='lost'){ lostItems=lostItems.filter(i=>i.id!==id); addActivity(`Deleted lost item`, 'other'); } else { foundItems=foundItems.filter(i=>i.id!==id); addActivity(`Deleted found item`, 'other'); } showToast('Deleted'); updateUI(); } };
+        window.markAsFound = async (id) => {
+            showToast('Mark as found - Coming soon', 'info');
+        };
         
-        window.markAsFound = (id) => { const item=lostItems.find(i=>i.id===id); if(item){ lostItems=lostItems.filter(i=>i.id!==id); foundItems.push({...item, id:nextId++, status:'found'}); addActivity(`Marked "${item.title}" as found`, 'found'); showToast('Moved to found'); updateUI(); } };
+        window.markAsReturned = async (id) => {
+            showToast('Mark as returned - Coming soon', 'info');
+        };
         
-        window.markAsReturned = (id) => { foundItems=foundItems.filter(i=>i.id!==id); addActivity(`Returned an item to owner`, 'found'); showToast('Returned'); updateUI(); };
+        window.approveClaim = async (claimId) => {
+            try {
+                await fetch(`${API_URL}/claims/${claimId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                showToast('Claim approved');
+                await fetchClaims();
+                await fetchNotifications();
+            } catch (error) {
+                showToast('Error approving claim', 'error');
+            }
+        };
         
-        window.approveClaim = (claimId) => { const claim=pendingClaims.find(c=>c.id===claimId); if(claim){ pendingClaims=pendingClaims.filter(c=>c.id!==claimId); myClaims.push({id:Date.now(), itemTitle:claim.itemTitle, owner:claim.claimant, status:'approved', date:new Date().toLocaleDateString()}); addActivity(`Approved claim for "${claim.itemTitle}"`, 'claim'); addNotification(`Claim for "${claim.itemTitle}" was approved`, 'approve'); showToast('Approved'); updateUI(); } };
+        window.rejectClaim = async (claimId) => {
+            try {
+                await fetch(`${API_URL}/claims/${claimId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+                showToast('Claim rejected');
+                await fetchClaims();
+                await fetchNotifications();
+            } catch (error) {
+                showToast('Error rejecting claim', 'error');
+            }
+        };
         
-        window.rejectClaim = (claimId) => { pendingClaims=pendingClaims.filter(c=>c.id!==claimId); addActivity(`Rejected a claim`, 'claim'); showToast('Rejected'); updateUI(); };
-
-        document.getElementById('reportLostBtn').onclick = () => { currentEditItem=null; document.getElementById('modalTitle').innerText='Report Lost Item'; ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value=''); document.getElementById('reportModal').style.display='flex'; };
+        document.getElementById('reportLostBtn').onclick = () => {
+            currentEditItem=null;
+            document.getElementById('modalTitle').innerText='Report Lost Item';
+            ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value='');
+            document.getElementById('reportModal').style.display='flex';
+        };
         
-        document.getElementById('reportFoundBtn').onclick = () => { currentEditItem=null; document.getElementById('modalTitle').innerText='Report Found Item'; ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value=''); document.getElementById('reportModal').style.display='flex'; };
+        document.getElementById('reportFoundBtn').onclick = () => {
+            currentEditItem=null;
+            document.getElementById('modalTitle').innerText='Report Found Item';
+            ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value='');
+            document.getElementById('reportModal').style.display='flex';
+        };
         
         document.getElementById('closeModal').onclick = () => document.getElementById('reportModal').style.display='none';
         
-        document.getElementById('submitReport').onclick = () => {
+        document.getElementById('submitReport').onclick = async () => {
             const title=document.getElementById('itemTitle').value.trim();
             const desc=document.getElementById('itemDesc').value.trim();
             const loc=document.getElementById('itemLocation').value.trim();
             const date=document.getElementById('itemDate').value;
             const time=document.getElementById('itemTime').value;
-            const photoFile=document.getElementById('itemPhoto').files[0];
-            if(!title || !desc || !loc || !date) { showToast('Please fill all required fields (*)'); return; }
-            let photoUrl=photoFile?URL.createObjectURL(photoFile):null;
+            if(!title || !desc || !loc || !date) { showToast('Please fill all required fields (*)', 'error'); return; }
+            
             const isLost=document.getElementById('modalTitle').innerText.includes('Lost');
-            if(currentEditItem){
-                if(currentEditItem.type==='lost'){ const item=lostItems.find(i=>i.id===currentEditItem.id); if(item){ item.title=title; item.description=desc; item.location=loc; item.date=date; item.time=time; if(photoUrl) item.photo=photoUrl; } }
-                else { const item=foundItems.find(i=>i.id===currentEditItem.id); if(item){ item.title=title; item.description=desc; item.location=loc; item.date=date; item.time=time; if(photoUrl) item.photo=photoUrl; } }
-                addActivity(`Edited item: ${title}`, 'other'); showToast('Updated');
-            } else {
-                const newItem={ id:nextId++, title, description:desc, location:loc, date, time, photo:photoUrl, status:isLost?'lost':'found' };
-                if(isLost) lostItems.push(newItem); else foundItems.push(newItem);
-                addActivity(`${isLost ? 'Reported lost' : 'Reported found'}: ${title}`, isLost?'lost':'found', new Date());
-                showToast('Reported successfully');
+            const endpoint = isLost ? 'lost-items' : 'found-items';
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', desc);
+            formData.append('location', loc);
+            formData.append('item_date', date);
+            formData.append('item_time', time);
+            const photoFile = document.getElementById('itemPhoto').files[0];
+            if(photoFile) formData.append('photo', photoFile);
+            
+            try {
+                await fetch(`${API_URL}/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                showToast(`${isLost ? 'Lost' : 'Found'} item reported successfully`);
+                document.getElementById('reportModal').style.display='none';
+                if(isLost) await fetchLostItems();
+                else await fetchFoundItems();
+                await fetchActivities();
+            } catch (error) {
+                showToast('Error reporting item', 'error');
             }
-            document.getElementById('reportModal').style.display='none'; updateUI();
         };
         
         document.getElementById('searchInput').addEventListener('input',()=>updateUI());
-
-        document.getElementById('profileBtn').onclick = () => {
-            document.getElementById('profileName').innerText=currentUser.name || 'Not set';
-            document.getElementById('profileEmail').innerText=currentUser.email || 'Not set';
-            document.getElementById('profilePhone').innerText=currentUser.phone || 'Not set';
-            document.getElementById('profileRoll').innerText=currentUser.rollNumber || 'Not set';
-            document.getElementById('profileDept').innerText=currentUser.department || 'IT';
-            const initials = currentUser.name ? currentUser.name.split(' ').map(n=>n[0]).join('').toUpperCase() : '👤';
-            document.getElementById('profileAvatarLarge').innerText=initials;
-            document.getElementById('editName').value=currentUser.name || '';
-            document.getElementById('editEmail').value=currentUser.email || '';
-            document.getElementById('editPhone').value=currentUser.phone || '';
-            document.getElementById('editRoll').value=currentUser.rollNumber || '';
-            document.getElementById('editDept').value=currentUser.department || 'IT';
+        
+        document.getElementById('profileBtn').onclick = async () => {
+            const userRes = await fetch(`${API_URL}/user`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const userData = await userRes.json();
+            if(userData.success) currentUser = userData.user;
+            document.getElementById('profileName').innerText = currentUser?.name || 'Not set';
+            document.getElementById('profileEmail').innerText = currentUser?.email || 'Not set';
+            document.getElementById('profilePhone').innerText = currentUser?.phone || 'Not set';
+            document.getElementById('profileRoll').innerText = currentUser?.rollNumber || 'Not set';
+            document.getElementById('profileDept').innerText = currentUser?.department || 'IT';
+            const initials = currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : '👤';
+            document.getElementById('profileAvatarLarge').innerText = initials;
+            document.getElementById('editName').value = currentUser?.name || '';
+            document.getElementById('editEmail').value = currentUser?.email || '';
+            document.getElementById('editPhone').value = currentUser?.phone || '';
+            document.getElementById('editRoll').value = currentUser?.rollNumber || '';
+            document.getElementById('editDept').value = currentUser?.department || 'IT';
             document.getElementById('profileFlipper').style.transform='rotateY(0deg)';
             document.getElementById('profileModal').style.display='flex';
         };
         
         document.getElementById('editProfileBtn').onclick = () => { document.getElementById('profileFlipper').style.transform='rotateY(180deg)'; };
         document.getElementById('cancelEditBtn').onclick = () => { document.getElementById('profileFlipper').style.transform='rotateY(0deg)'; };
-        document.getElementById('saveProfileBtn').onclick = () => {
-            currentUser.name=document.getElementById('editName').value;
-            currentUser.email=document.getElementById('editEmail').value;
-            currentUser.phone=document.getElementById('editPhone').value;
-            currentUser.rollNumber=document.getElementById('editRoll').value;
-            currentUser.department=document.getElementById('editDept').value;
-            const newInitials = currentUser.name ? currentUser.name.split(' ').map(n=>n[0]).join('').toUpperCase() : '👤';
-            document.getElementById('profileAvatar').innerText=newInitials;
-            document.getElementById('profileAvatarLarge').innerText=newInitials;
-            showToast('Profile updated');
-            document.getElementById('profileFlipper').style.transform='rotateY(0deg)';
-            updateUI();
+        document.getElementById('saveProfileBtn').onclick = async () => {
+            const updatedUser = {
+                name: document.getElementById('editName').value,
+                email: document.getElementById('editEmail').value,
+                phone: document.getElementById('editPhone').value,
+                rollNumber: document.getElementById('editRoll').value,
+                department: document.getElementById('editDept').value
+            };
+            try {
+                await fetch(`${API_URL}/user`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(updatedUser)
+                });
+                currentUser = updatedUser;
+                document.getElementById('profileAvatar').innerText = updatedUser.name ? updatedUser.name.charAt(0).toUpperCase() : '👤';
+                showToast('Profile updated successfully');
+                document.getElementById('profileFlipper').style.transform='rotateY(0deg)';
+                document.getElementById('profileModal').style.display='none';
+            } catch (error) {
+                showToast('Error updating profile', 'error');
+            }
         };
         document.getElementById('closeProfileModal').onclick = () => document.getElementById('profileModal').style.display='none';
         
         document.getElementById('notificationBell').onclick = () => {
-            const container=document.getElementById('notificationsList');
-            container.innerHTML = notifications.length ? notifications.map(notif => {
-                let colorClass = 'notif-system';
-                if(notif.type === 'claim') colorClass = 'notif-claim';
-                else if(notif.type === 'approve') colorClass = 'notif-approve';
-                else if(notif.type === 'alert') colorClass = 'notif-alert';
-                const timeAgo = notif.timestamp ? formatFullDateTime(notif.timestamp) : '';
-                return `<div class="notif-item ${colorClass}"><span style="font-weight:500;">${escapeHtml(notif.text)}</span><div style="font-size:0.7rem; color:#ffffff; margin-top:4px;">🕘 ${timeAgo}</div></div>`;
-            }).join('') : '<div class="empty-state">No notifications</div>';
             document.getElementById('notificationsPanel').style.display='flex';
         };
         document.getElementById('closeNotifPanel').onclick = () => document.getElementById('notificationsPanel').style.display='none';
         
-        document.getElementById('logoutBtn').onclick = () => { showToast('Logged out successfully'); setTimeout(()=> location.reload(), 1000); };
+        document.getElementById('logoutBtn').onclick = () => {
+            localStorage.removeItem('token');
+            showToast('Logged out successfully');
+            setTimeout(()=> window.location.href='index.html', 1000);
+        };
+        
         window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display='none'; };
         
-        document.getElementById('profileAvatar').innerText = '👤';
-        updateUI();
+        // Initialize Dashboard
+        async function initDashboard() {
+            await fetchUserData();
+            await fetchLostItems();
+            await fetchFoundItems();
+            await fetchActivities();
+            await fetchNotifications();
+            await fetchClaims();
+        }
+        
+        initDashboard();
     </script>
 </body>
 </html>
