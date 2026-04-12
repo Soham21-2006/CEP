@@ -430,11 +430,7 @@
     <script>
         // API Configuration - Update this with your Render backend URL
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:5000/api' 
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 7d524ec93a8cb0b8bc7f8a40408af98efd62f285
+            ? 'http://localhost:5000/api'
             : 'https://cep-nxqq.onrender.com/api';
         
         const flipCardInner = document.getElementById('flipCard');
@@ -560,7 +556,15 @@
         async function fetchStats() {
             try {
                 const response = await fetch(`${API_URL}/stats`);
-                const data = await response.json();
+               const text = await response.text();
+let data;
+
+try {
+    data = JSON.parse(text);
+} catch (e) {
+    console.error("Not JSON:", text);
+    throw new Error("Invalid response from server");
+}
                 if (data.success) {
                     document.getElementById('lostCount').innerText = data.lostCount + '+';
                     document.getElementById('foundCount').innerText = data.foundCount + '+';
@@ -608,10 +612,24 @@
                 const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password, phone, roll_number: rollNumber, department })
+                    body: JSON.stringify({ 
+    full_name: name,
+    email,
+    password,
+    phone,
+    roll_number: rollNumber,
+    department
+})
                 });
-                const data = await response.json();
-                if (data.success) {
+const text = await response.text();
+let data;
+
+try {
+    data = JSON.parse(text);
+} catch (e) {
+    console.error("Not JSON:", text);
+    throw new Error("Invalid response from server");
+}                if (data.success) {
                     showToast("Account created successfully! Please login 🎉", "success");
                     setTimeout(() => flipToLogin(), 1600);
                     e.target.reset();
@@ -643,8 +661,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                const data = await response.json();
-                if (data.success) {
+const text = await response.text();
+let data;
+
+try {
+    data = JSON.parse(text);
+} catch (e) {
+    console.error("Not JSON:", text);
+    throw new Error("Invalid response from server");
+}                if (data.success) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     showToast("Login successful! Redirecting...", "success");
@@ -678,7 +703,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, subject, message })
                 });
-                const data = await response.json();
+                const text = await response.text();
+let data;
+
+try {
+    data = JSON.parse(text);
+} catch (e) {
+    console.error("Not JSON:", text);
+    throw new Error("Invalid response from server");
+}
                 if (data.success) {
                     showToast("Message sent successfully!", "success");
                     document.getElementById('contactForm').reset();
