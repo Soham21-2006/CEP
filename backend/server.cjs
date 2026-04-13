@@ -148,6 +148,7 @@ app.post('/api/update-profile', upload.single('profile_pic'), async (req, res) =
 });
 
 // ============== REGISTER ==============
+// ============== REGISTER (No Email Verification) ==============
 app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
     try {
         const { full_name, email, password, phone, roll_number, department } = req.body;
@@ -175,27 +176,23 @@ app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
             return res.json({ success: false, message: 'User already exists!' });
         }
         
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const verificationExpires = new Date();
-        verificationExpires.setHours(verificationExpires.getHours() + 24);
-        
         const passwordHash = await bcrypt.hash(password, 10);
         let profile_pic = 'default-avatar.png';
         
         if (req.file) profile_pic = req.file.filename;
         
+        // Set is_verified = true immediately (no email verification needed)
         await pool.query(
             `INSERT INTO users (full_name, email, password_hash, phone, roll_number, department, 
-             profile_pic, college_name, campus_id, verification_code, verification_expires, is_verified) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+             profile_pic, college_name, campus_id, is_verified) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
             [full_name, email, passwordHash, phone, roll_number, department, profile_pic, 
-             campusCheck.rows[0].campus_name, campusCheck.rows[0].campus_id, 
-             verificationCode, verificationExpires, false]
+             campusCheck.rows[0].campus_name, campusCheck.rows[0].campus_id, true]
         );
         
         res.json({ 
             success: true, 
-            message: 'Registration successful! Please check your email for verification code.' 
+            message: 'Registration successful! You can now login.' 
         });
     } catch (error) {
         console.error('Registration error:', error);
@@ -261,6 +258,7 @@ app.get('/api/debug-user/:email', async (req, res) => {
 });
 
 // ============== LOGIN ==============
+// ============== LOGIN (No Verification Required) ==============
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -279,6 +277,7 @@ app.post('/api/login', async (req, res) => {
         
         const user = result.rows[0];
         
+        // REMOVE or COMMENT OUT this verification check:
         // if (!user.is_verified) {
         //     return res.json({ success: false, message: 'Please verify your email first! Check your inbox.' });
         // }

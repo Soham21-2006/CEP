@@ -463,17 +463,7 @@
         </section>
     </main>
 
-    <div id="verificationModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <h2 style="color: white; margin-bottom: 1rem;">Verify Your Campus Email</h2>
-            <p style="color: #94a3b8; margin-bottom: 1rem;">We've sent a verification code to your college email.</p>
-            <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" style="width: 100%; padding: 12px; margin-bottom: 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: white;">
-            <div style="display: flex; gap: 1rem;">
-                <button class="btn-primary" onclick="verifyEmail()" style="flex: 1;">Verify</button>
-                <button class="btn-secondary" onclick="resendCode()" style="flex: 1;">Resend Code</button>
-            </div>
-        </div>
-    </div>
+
 
     <footer class="footer">
         <div class="footer-container">
@@ -645,7 +635,7 @@ try {
         
         // Register User
         // Update your existing register form submit handler
-// Register User
+// Register User - Updated (no verification)
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -671,9 +661,10 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         const data = await response.json();
         
         if (data.success) {
-            localStorage.setItem('pendingEmail', document.getElementById('regEmail').value);
-            document.getElementById('verificationModal').style.display = 'flex';
-            showToast('Verification code sent to your email!', 'success');
+            showToast('Registration successful! You can now login.', 'success');
+            // Clear form
+            document.getElementById('registerForm').reset();
+            // Flip to login form
             flipToLogin();
         } else {
             showToast(data.message, 'error');
@@ -758,56 +749,56 @@ try {
         });
 
         // Add these verification functions INSIDE your existing script tag
-        async function verifyEmail() {
-            const code = document.getElementById('verificationCode').value;
-            const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
+        // async function verifyEmail() {
+        //     const code = document.getElementById('verificationCode').value;
+        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
             
-            if (!code || code.length !== 6) {
-                showToast('Please enter valid 6-digit code', 'error');
-                return;
-            }
+        //     if (!code || code.length !== 6) {
+        //         showToast('Please enter valid 6-digit code', 'error');
+        //         return;
+        //     }
             
-            try {
-                const response = await fetch('/api/verify-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, verification_code: code })
-                });
-                const data = await response.json();
+        //     try {
+        //         const response = await fetch('/api/verify-email', {
+        //             method: 'POST',
+        //             headers: { 'Content-Type': 'application/json' },
+        //             body: JSON.stringify({ email, verification_code: code })
+        //         });
+        //         const data = await response.json();
                 
-                if (data.success) {
-                    showToast('Email verified! You can now login.');
-                    document.getElementById('verificationModal').style.display = 'none';
-                    // Clear form and show login
-                    flipToLogin();
-                } else {
-                    showToast(data.message, 'error');
-                }
-            } catch (error) {
-                showToast('Verification failed!', 'error');
-            }
-        }
+        //         if (data.success) {
+        //             showToast('Email verified! You can now login.');
+        //             document.getElementById('verificationModal').style.display = 'none';
+        //             // Clear form and show login
+        //             flipToLogin();
+        //         } else {
+        //             showToast(data.message, 'error');
+        //         }
+        //     } catch (error) {
+        //         showToast('Verification failed!', 'error');
+        //     }
+        // }
         
-        async function resendCode() {
-            const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
+        // async function resendCode() {
+        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
             
-            try {
-                const response = await fetch('/api/resend-verification', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await response.json();
+        //     try {
+        //         const response = await fetch('/api/resend-verification', {
+        //             method: 'POST',
+        //             headers: { 'Content-Type': 'application/json' },
+        //             body: JSON.stringify({ email })
+        //         });
+        //         const data = await response.json();
                 
-                if (data.success) {
-                    showToast('New verification code sent to your email!');
-                } else {
-                    showToast(data.message, 'error');
-                }
-            } catch (error) {
-                showToast('Failed to resend code!', 'error');
-            }
-        }
+        //         if (data.success) {
+        //             showToast('New verification code sent to your email!');
+        //         } else {
+        //             showToast(data.message, 'error');
+        //         }
+        //     } catch (error) {
+        //         showToast('Failed to resend code!', 'error');
+        //     }
+        // }
         
         // Initialize
         fetchStats();
