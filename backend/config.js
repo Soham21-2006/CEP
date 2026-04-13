@@ -1,6 +1,6 @@
-import pkg from 'pg';
-const { Pool } = pkg;
-import dotenv from 'dotenv';
+// config.js - CommonJS version
+const { Pool } = require('pg');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
@@ -19,4 +19,4 @@ const pool = new Pool(
       }
 );
 
-export default pool;
+module.exports = pool;
