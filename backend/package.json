@@ -2,7 +2,8 @@
   "name": "lost-found-platform",
   "version": "1.0.0",
   "description": "Campus Lost and Found Platform",
-  "main": "server.js",  
+  "main": "server.js",
+  "type": "commonjs",
 
   "scripts": {
     "start": "node server.js",
