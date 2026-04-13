@@ -254,9 +254,9 @@ app.post('/api/login', async (req, res) => {
         
         const user = result.rows[0];
         
-        if (!user.is_verified) {
-            return res.json({ success: false, message: 'Please verify your email first! Check your inbox.' });
-        }
+        // if (!user.is_verified) {
+        //     return res.json({ success: false, message: 'Please verify your email first! Check your inbox.' });
+        // }
         
         const valid = await bcrypt.compare(password, user.password_hash);
         
