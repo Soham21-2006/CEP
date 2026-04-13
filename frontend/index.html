@@ -418,6 +418,18 @@
         </section>
     </main>
 
+    <div id="verificationModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="color: white; margin-bottom: 1rem;">Verify Your Campus Email</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">We've sent a verification code to your college email.</p>
+            <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" style="width: 100%; padding: 12px; margin-bottom: 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: white;">
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-primary" onclick="verifyEmail()" style="flex: 1;">Verify</button>
+                <button class="btn-secondary" onclick="resendCode()" style="flex: 1;">Resend Code</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="footer-container">
             <div><h3 style="margin-bottom:1rem; color:white;">CampusLost&Found</h3><p>Reuniting community, one item at a time.</p></div>
@@ -577,6 +589,8 @@ try {
                 setDefaultStats();
             }
         }
+
+        
         
         function setDefaultStats() {
             document.getElementById('lostCount').innerText = "150+";
@@ -585,64 +599,41 @@ try {
         }
         
         // Register User
-        document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('regFullName').value;
-            const email = document.getElementById('regEmail').value;
-            const password = passwordInput.value;
-            const confirm = confirmInput.value;
-            const phone = document.getElementById('regPhone').value;
-            const rollNumber = document.getElementById('regRollNumber').value;
-            const department = document.getElementById('regDepartment').value;
-            
-            if (!name || !email || !password || !phone || !rollNumber || !department) {
-                showToast("Please fill all fields", "error");
-                return;
-            }
-            if (password !== confirm) {
-                showToast("Passwords do not match!", "error");
-                return;
-            }
-            if (!checkPasswordStrength(password)) {
-                showToast("Please use a stronger password!", "error");
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-    full_name: name,
-    email,
-    password,
-    phone,
-    roll_number: rollNumber,
-    department
-})
-                });
-const text = await response.text();
-let data;
+        // Update your existing register form submit handler
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('full_name', document.getElementById('regFullName').value);
+    formData.append('email', document.getElementById('regEmail').value);
+    formData.append('password', document.getElementById('regPassword').value);
+    formData.append('phone', document.getElementById('regPhone').value);
+    formData.append('roll_number', document.getElementById('regRollNumber').value);
+    formData.append('department', document.getElementById('regDepartment').value);
+    formData.append('college_name', document.getElementById('regCollege')?.value || 'Your College');
+    
+    const profilePic = document.getElementById('regProfilePic').files[0];
+    if (profilePic) formData.append('profile_pic', profilePic);
 
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}                if (data.success) {
-                    showToast("Account created successfully! Please login 🎉", "success");
-                    setTimeout(() => flipToLogin(), 1600);
-                    e.target.reset();
-                    if (matchStatus) matchStatus.innerHTML = '';
-                    if (strengthBar) strengthBar.style.width = '0%';
-                    if (strengthText) strengthText.textContent = 'Enter password';
-                } else {
-                    showToast(data.message || "Registration failed", "error");
-                }
-            } catch (error) {
-                showToast("Registration failed! Please try again.", "error");
-            }
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            body: formData
         });
+        const data = await response.json();
+        
+        if (data.success) {
+            // Store email for verification
+            localStorage.setItem('pendingEmail', document.getElementById('regEmail').value);
+            // Show verification modal
+            document.getElementById('verificationModal').style.display = 'flex';
+            showToast('Verification code sent to your email!', 'success');
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (error) {
+        showToast('Registration failed! Please try again.', 'error');
+    }
+});
         
         // Login User
         document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
@@ -722,6 +713,58 @@ try {
                 showToast("Error sending message", "error");
             }
         });
+
+        // Add these verification functions INSIDE your existing script tag
+        async function verifyEmail() {
+            const code = document.getElementById('verificationCode').value;
+            const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
+            
+            if (!code || code.length !== 6) {
+                showToast('Please enter valid 6-digit code', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/verify-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, verification_code: code })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Email verified! You can now login.');
+                    document.getElementById('verificationModal').style.display = 'none';
+                    // Clear form and show login
+                    flipToLogin();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Verification failed!', 'error');
+            }
+        }
+        
+        async function resendCode() {
+            const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
+            
+            try {
+                const response = await fetch('/api/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('New verification code sent to your email!');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to resend code!', 'error');
+            }
+        }
         
         // Initialize
         fetchStats();
