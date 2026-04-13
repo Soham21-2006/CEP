@@ -52,15 +52,15 @@
         }
 
         .profile-pic {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-            border: 2px solid #8b5cf6;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-        }
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: default;
+    border: 2px solid #8b5cf6;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
 
         .profile-pic:hover {
             transform: scale(1.05);
@@ -777,8 +777,7 @@
     <header class="dashboard-header">
         <div class="nav-container">
             <div class="header-left">
-                <img id="profilePic" class="profile-pic" src="/images/default-avatar.png" alt="Profile" onclick="openProfileModal()">
-                <span id="userNameDisplay" class="user-name-header">Loading...</span>
+            <img id="profilePic" class="profile-pic" src="/images/default-avatar.png" alt="Profile">                <span id="userNameDisplay" class="user-name-header">Loading...</span>
             </div>
             <div class="logo">
                 <span class="logo-icon">🔍</span>
@@ -900,10 +899,9 @@
         <div class="modal-content" style="max-width: 450px;">
             <h2>👤 My Profile</h2>
             <div style="text-align: center; margin-bottom: 1.5rem;">
-                <img id="profileModalPic" src="/images/default-avatar.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 3px solid #8b5cf6;" onclick="document.getElementById('profilePicInput').click()">
-                <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
-                <p style="margin-top: 8px; font-size: 0.8rem; color: #94a3b8;">📸 Tap photo to change</p>
-            </div>
+    <img id="profileModalPic" src="/images/default-avatar.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #8b5cf6;">
+    <p style="margin-top: 8px; font-size: 0.8rem; color: #94a3b8;">Profile Picture</p>
+</div>
             <div style="background: #0f172a; border-radius: 16px; padding: 1rem;">
                 <p style="margin-bottom: 10px;"><strong>📛 Name:</strong> <span id="profileName">--</span></p>
                 <p style="margin-bottom: 10px;"><strong>📧 Email:</strong> <span id="profileEmail">--</span></p>
@@ -918,26 +916,31 @@
     </div>
 
     <!-- Edit Profile Modal -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <h2>✏️ Edit Profile</h2>
-            <input type="text" id="editName" placeholder="Full Name">
-            <input type="tel" id="editPhone" placeholder="Phone Number">
-            <select id="editDept">
-                <option>Computer Science</option>
-                <option>Information Technology</option>
-                <option>Electronics Engineering</option>
-                <option>Mechanical Engineering</option>
-                <option>Civil Engineering</option>
-                <option>Business Administration</option>
-                <option>Arts & Sciences</option>
-            </select>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeEditProfile()">Cancel</button>
-                <button class="btn-primary" onclick="saveProfileChanges()">Save Changes</button>
-            </div>
+    <!-- Edit Profile Modal -->
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <h2>✏️ Edit Profile</h2>
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <img id="editProfilePic" src="/images/default-avatar.png" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #8b5cf6; margin-bottom: 8px;" onclick="uploadProfilePicture()">
+            <p style="font-size: 0.75rem; color: #94a3b8;">Click photo to change</p>
+        </div>
+        <input type="text" id="editName" placeholder="Full Name">
+        <input type="tel" id="editPhone" placeholder="Phone Number">
+        <select id="editDept">
+            <option>Computer Science</option>
+            <option>Information Technology</option>
+            <option>Electronics Engineering</option>
+            <option>Mechanical Engineering</option>
+            <option>Civil Engineering</option>
+            <option>Business Administration</option>
+            <option>Arts & Sciences</option>
+        </select>
+        <div class="modal-buttons">
+            <button class="btn-secondary" onclick="closeEditProfile()">Cancel</button>
+            <button class="btn-primary" onclick="saveProfileChanges()">Save Changes</button>
         </div>
     </div>
+</div>
 
     <!-- Report Modal -->
     <div id="reportModal" class="modal">
