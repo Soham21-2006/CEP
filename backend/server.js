@@ -1,6 +1,12 @@
-import express from 'express';
-import cors from 'cors';
-import pool from './config.js';
+const express = require('express');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+const http = require('http');
+const socketIo = require('socket.io');
+require('dotenv').config();
 
 const multer = require('multer');
 const path = require('path');
