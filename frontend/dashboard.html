@@ -2,400 +2,206 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>CampusLost&Found | User Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusLost&Found - Complete Dashboard</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Copy all your existing styles and add these */
+        
+        .profile-pic {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid #8b5cf6;
+            transition: all 0.3s;
         }
-
-        body {
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Poppins', sans-serif;
-            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
-            overflow-x: hidden;
+        
+        .profile-pic:hover {
+            transform: scale(1.05);
+            border-color: #c084fc;
         }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #818cf8, #c084fc); border-radius: 12px; }
-
-        .dashboard-header {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(18px);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
+        
+        .user-name-header {
+            color: white;
+            font-weight: 500;
+        }
+        
+        .match-card {
+            background: linear-gradient(135deg, #22c55e20, #3b82f620);
+            border: 1px solid #22c55e;
+            animation: matchGlow 2s infinite;
+        }
+        
+        @keyframes matchGlow {
+            0%,100% { box-shadow: 0 0 5px #22c55e; }
+            50% { box-shadow: 0 0 20px #22c55e; }
+        }
+        
+        .match-score {
+            background: #22c55e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .leaderboard-rank {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fbbf24;
+            width: 40px;
+        }
+        
+        .leaderboard-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .category-chip {
+            padding: 5px 15px;
+            background: #1e293b;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #94a3b8;
+        }
+        
+        .category-chip.active, .category-chip:hover {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .announcement-banner {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #c084fc, #60a5fa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
             cursor: pointer;
+            animation: slideDown 0.5s ease;
         }
-
-        .logo-icon { font-size: 1.8rem; animation: gentleFloat 3s infinite ease-in-out; }
-        @keyframes gentleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
-
-        .header-right { display: flex; align-items: center; gap: 1.5rem; }
-
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        .notification-bell:hover { transform: scale(1.1) rotate(15deg); }
-        .badge {
-            position: absolute;
-            top: -5px;
-            right: -8px;
-            background: #ef4444;
-            color: white;
-            font-size: 0.7rem;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 20px;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-
-        .profile-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: white;
-        }
-        .profile-avatar:hover { transform: scale(1.05) rotate(5deg); box-shadow: 0 0 15px rgba(139,92,246,0.5); }
-
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 50px;
-            background: #1e293b;
-            min-width: 200px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            z-index: 1001;
-            animation: fadeInDown 0.3s ease;
-        }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .dropdown-content a {
-            color: #e2e8f0;
-            padding: 12px 20px;
-            text-decoration: none;
-            display: block;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .dropdown-content a:hover { background: #334155; padding-left: 25px; }
-        .dropdown:hover .dropdown-content { display: block; }
-
-        .dashboard-main {
-            padding-top: 80px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 90px 2rem 2rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.08);
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .stat-card:hover { transform: translateY(-8px) scale(1.02); background: rgba(55, 65, 81, 0.8); }
-        .stat-value { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .stat-label { color: #94a3b8; margin-top: 0.5rem; }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        .btn-primary {
-            background: linear-gradient(105deg, #8b5cf6, #6d28d9);
-            padding: 0.9rem 2rem;
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-        }
-        .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 25px rgba(139,92,246,0.4); }
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 0.9rem 2rem;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-
-        .search-bar { margin-bottom: 2rem; }
-        .search-bar input {
-            width: 100%;
-            max-width: 400px;
-            padding: 0.8rem 1.2rem;
-            background: #0f172a;
-            border: 1.5px solid #334155;
-            border-radius: 50px;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        .search-bar input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.2); }
-
-        .dashboard-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-        @media (max-width: 900px) { .dashboard-columns { grid-template-columns: 1fr; } }
-
-        .card {
-            background: rgba(30, 41, 59, 0.5);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(255,255,255,0.08);
-            transition: all 0.3s;
-        }
-        .card:hover { border-color: rgba(139,92,246,0.3); }
-        .card h3 {
-            color: white;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .item-list {
-            max-height: 350px;
-            overflow-y: auto;
-        }
-        .item-card {
-            background: #0f172a;
-            border-radius: 16px;
-            padding: 1rem;
-            margin-bottom: 0.8rem;
-            border-left: 3px solid #8b5cf6;
-            transition: all 0.3s ease;
-            animation: slideIn 0.4s ease;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        .item-card:hover { transform: translateX(5px); background: #1a2340; }
-        .item-title { font-weight: 600; color: white; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .item-meta { font-size: 0.8rem; color: #94a3b8; margin: 0.3rem 0; }
-        .highlight-datetime {
-            color: #ffffff !important;
-            font-weight: 500;
-            background: rgba(255,255,255,0.1);
-            padding: 2px 8px;
-            border-radius: 12px;
-            display: inline-block;
-        }
-        .item-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
-        .small-btn {
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .small-btn.edit { background: #3b82f6; color: white; }
-        .small-btn.delete { background: #ef4444; color: white; }
-        .small-btn.found { background: #22c55e; color: white; }
-        .small-btn.returned { background: #f59e0b; color: white; }
-        .small-btn.approve { background: #22c55e; color: white; }
-        .small-btn.reject { background: #ef4444; color: white; }
-        .small-btn:hover { transform: scale(1.05) translateY(-2px); }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 500;
-        }
-        .status-pending { background: #f59e0b; color: black; animation: blink 1s infinite; }
-        .status-approved { background: #22c55e; color: white; }
-        .status-rejected { background: #ef4444; color: white; }
-        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
-
-        .activity-item {
-            padding: 12px;
-            border-bottom: 1px solid #ff44444d;
-            border-radius: 12px;
-            transition: all 0.2s;
-            margin-bottom: 8px;
-            background: rgba(220, 38, 38, 0.15);
-            border-left: 4px solid #ef4444;
-        }
-        .activity-item:hover { background: rgba(239, 68, 68, 0.3); transform: translateX(6px); }
-        .activity-time {
-            font-size: 0.7rem;
-            font-weight: 600;
-            background: rgba(0,0,0,0.6);
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-left: 8px;
-            color: #ffffff;
-        }
-        .activity-text { color: #fff0f0; font-weight: 500; }
-
-        .notif-item {
-            padding: 12px;
-            border-radius: 14px;
-            margin-bottom: 8px;
-            border-left: 3px solid;
-            transition: 0.2s;
-        }
-        .notif-claim { background: rgba(59,130,246,0.15); border-left-color: #3b82f6; }
-        .notif-approve { background: rgba(34,197,94,0.15); border-left-color: #22c55e; }
-        .notif-system { background: rgba(168,85,247,0.15); border-left-color: #a855f7; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-content {
-            background: #1e293b;
-            border-radius: 28px;
-            padding: 2rem;
-            max-width: 550px;
-            width: 90%;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.9) translateY(-30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .modal-content h2 { color: white; margin-bottom: 1rem; }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width: 100%;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-            background: #0f172a;
-            border: 1.5px solid #334155;
-            border-radius: 16px;
-            color: white;
-        }
-        .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
-            outline: none;
-            border-color: #8b5cf6;
-        }
-        .modal-buttons { display: flex; gap: 1rem; justify-content: flex-end; }
-
-        .flip-container { perspective: 1000px; }
-        .flipper {
-            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-style: preserve-3d;
-            position: relative;
-            min-height: 420px;
-        }
-        .front, .back {
-            backface-visibility: hidden;
-            position: absolute;
-            width: 100%;
-            top: 0;
-        }
-        .front { transform: rotateY(0deg); z-index: 2; }
-        .back { transform: rotateY(180deg); }
-
-        .toast {
+        
+        .chat-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
+            width: 350px;
+            height: 500px;
             background: #1e293b;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            color: white;
-            z-index: 3000;
-            animation: slideUp 0.3s ease;
-            border-left: 4px solid #22c55e;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 2000;
+            border: 1px solid #334155;
         }
-        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .empty-state {
-            color: #94a3b8;
-            text-align: center;
-            padding: 2rem;
-            font-style: italic;
+        .chat-header {
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .chat-input-area {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #334155;
+        }
+        
+        .message-bubble {
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+        
+        .message-sent {
+            background: #8b5cf6;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px 12px 4px 12px;
+            margin-left: auto;
+        }
+        
+        .message-received {
+            background: #334155;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px 12px 12px 4px;
+        }
+        
+        .location-picker {
+            margin-top: 10px;
+            padding: 10px;
+            background: #0f172a;
+            border-radius: 12px;
+        }
+        
+        #map {
+            height: 200px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-container { width: 100%; right: 0; bottom: 0; height: 80%; border-radius: 16px 16px 0 0; }
         }
     </style>
 </head>
 <body>
+    <!-- Header with Profile Picture and Name -->
     <header class="dashboard-header">
         <div class="nav-container">
-            <div class="logo" onclick="location.reload()"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
+            <div class="header-left">
+                <img id="profilePic" class="profile-pic" src="/images/default-avatar.png" alt="Profile" onclick="openProfileModal()">
+                <span id="userNameDisplay" class="user-name-header">Loading...</span>
+            </div>
+            <div class="logo"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
             <div class="header-right">
                 <div class="notification-bell" id="notificationBell">🔔<span class="badge" id="notifBadge">0</span></div>
                 <div class="dropdown">
                     <div class="profile-avatar" id="profileAvatar">👤</div>
                     <div class="dropdown-content">
-                        <a id="profileBtn">👤 My Profile</a>
+                        <a onclick="openProfileModal()">👤 My Profile</a>
+                        <a onclick="openLeaderboard()">🏆 Leaderboard</a>
                         <a id="logoutBtn">🚪 Logout</a>
                     </div>
                 </div>
@@ -403,416 +209,518 @@
         </div>
     </header>
 
-    <main class="dashboard-main">
+    <!-- Announcement Banner -->
+    <div class="dashboard-main">
+        <div id="announcementBanner" class="announcement-banner" style="display: none;">
+            <span id="announcementText">📢 Welcome to Campus Lost & Found!</span>
+            <span onclick="closeAnnouncement()" style="cursor: pointer;">✕</span>
+        </div>
+
+        <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card"><div class="stat-value" id="statLost">0</div><div class="stat-label">Items Lost</div></div>
             <div class="stat-card"><div class="stat-value" id="statFound">0</div><div class="stat-label">Items Found</div></div>
-            <div class="stat-card"><div class="stat-value" id="statClaims">0</div><div class="stat-label">Pending Claims</div></div>
+            <div class="stat-card"><div class="stat-value" id="statReputation">0</div><div class="stat-label">Reputation Points</div></div>
+            <div class="stat-card"><div class="stat-value" id="statMatches">0</div><div class="stat-label">Potential Matches</div></div>
         </div>
 
+        <!-- Category Filters -->
+        <div class="category-filters">
+            <div class="category-chip active" data-category="all">All</div>
+            <div class="category-chip" data-category="electronics">📱 Electronics</div>
+            <div class="category-chip" data-category="accessories">⌚ Accessories</div>
+            <div class="category-chip" data-category="documents">📄 Documents</div>
+            <div class="category-chip" data-category="books">📚 Books</div>
+            <div class="category-chip" data-category="keys">🔑 Keys</div>
+            <div class="category-chip" data-category="bottles">💧 Water Bottles</div>
+            <div class="category-chip" data-category="other">🔧 Other</div>
+        </div>
+
+        <!-- Action Buttons -->
         <div class="action-buttons">
             <button class="btn-primary" id="reportLostBtn">➕ Report Lost Item</button>
             <button class="btn-primary" id="reportFoundBtn">🔍 Report Found Item</button>
+            <button class="btn-secondary" onclick="showMatches()">🎯 View Matches</button>
         </div>
 
+        <!-- Search Bar -->
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="🔍 Search your lost/found items...">
+            <input type="text" id="searchInput" placeholder="🔍 Search items by name or description...">
         </div>
 
+        <!-- Two Column Layout -->
         <div class="dashboard-columns">
             <div>
-                <div class="card"><h3>📦 My Lost Items</h3><div class="item-list" id="lostItemsList"><div class="empty-state">No lost items reported yet</div></div></div>
-                <div class="card"><h3>✅ My Found Items</h3><div class="item-list" id="foundItemsList"><div class="empty-state">No found items reported yet</div></div></div>
+                <div class="card"><h3>📦 My Lost Items</h3><div class="item-list" id="lostItemsList"></div></div>
+                <div class="card"><h3>✅ My Found Items</h3><div class="item-list" id="foundItemsList"></div></div>
             </div>
             <div>
-                <div class="card"><h3>🔴 Recent Activity</h3><div id="recentActivity"><div class="empty-state">No recent activities</div></div></div>
-                <div class="card"><h3>📋 Pending Claims</h3><div id="pendingClaimsList"><div class="empty-state">No pending claims</div></div></div>
-                <div class="card"><h3>📝 My Claims</h3><div id="myClaimsList"><div class="empty-state">No claims made yet</div></div></div>
+                <div class="card"><h3>🏆 Leaderboard - Top Helpers</h3><div id="leaderboardList"></div></div>
+                <div class="card"><h3>🔴 Recent Activity</h3><div id="recentActivity"></div></div>
+                <div class="card"><h3>📋 Pending Claims</h3><div id="pendingClaimsList"></div></div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <div id="reportModal" class="modal"><div class="modal-content"><h2 id="modalTitle">Report Item</h2><input type="text" id="itemTitle" placeholder="Item Name *"><textarea id="itemDesc" rows="2" placeholder="Description *"></textarea><input type="text" id="itemLocation" placeholder="Location *"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;"><input type="date" id="itemDate"><input type="time" id="itemTime"></div><input type="file" id="itemPhoto" accept="image/*"><small style="color:#94a3b8;">Upload photo (optional)</small><div class="modal-buttons"><button class="btn-secondary" id="closeModal">Cancel</button><button class="btn-primary" id="submitReport">Submit</button></div></div></div>
+    <!-- Modals (Profile, Report, Chat, Map, Matches, Leaderboard) -->
+    <!-- Profile Modal with Picture Change -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <h2>👤 My Profile</h2>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <img id="profileModalPic" src="/images/default-avatar.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; cursor: pointer;" onclick="document.getElementById('profilePicInput').click()">
+                <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
+                <p style="margin-top: 5px; font-size: 0.8rem; color: #94a3b8;">Tap photo to change</p>
+            </div>
+            <p><strong>📛 Name:</strong> <span id="profileName"></span></p>
+            <p><strong>📧 Email:</strong> <span id="profileEmail"></span></p>
+            <p><strong>📞 Phone:</strong> <span id="profilePhone"></span></p>
+            <p><strong>🎓 Roll Number:</strong> <span id="profileRoll"></span></p>
+            <p><strong>🏛️ Department:</strong> <span id="profileDept"></span></p>
+            <p><strong>⭐ Reputation:</strong> <span id="profileReputation"></span> points</p>
+            <button class="btn-primary" onclick="editProfile()" style="margin-top: 1rem; width: 100%;">✏️ Edit Profile</button>
+            <button class="btn-secondary" onclick="closeProfileModal()" style="margin-top: 0.5rem; width: 100%;">Close</button>
+        </div>
+    </div>
 
-    <div id="profileModal" class="modal"><div class="modal-content" style="max-width: 450px;"><div class="flip-container"><div class="flipper" id="profileFlipper"><div class="front"><h2>👤 My Profile</h2><div style="text-align:center; margin-bottom:1rem;"><div style="width:80px; height:80px; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:2rem; color:white;" id="profileAvatarLarge">👤</div></div><p><strong>📛 Name:</strong> <span id="profileName">--</span></p><p><strong>📧 Email:</strong> <span id="profileEmail">--</span></p><p><strong>📞 Phone:</strong> <span id="profilePhone">--</span></p><p><strong>🎓 Roll Number:</strong> <span id="profileRoll">--</span></p><p><strong>🏛️ Department:</strong> <span id="profileDept">--</span></p><button class="btn-primary" id="editProfileBtn" style="margin-top:1rem; width:100%;">✏️ Edit Profile</button><button class="btn-secondary" id="closeProfileModal" style="margin-top:0.5rem; width:100%;">Close</button></div><div class="back"><h2>✏️ Edit Profile</h2><input type="text" id="editName" placeholder="Full Name"><input type="email" id="editEmail" placeholder="Email"><input type="tel" id="editPhone" placeholder="Phone"><input type="text" id="editRoll" placeholder="Roll Number"><select id="editDept"><option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option></select><div class="modal-buttons"><button class="btn-secondary" id="cancelEditBtn">Cancel</button><button class="btn-primary" id="saveProfileBtn">Save Changes</button></div></div></div></div></div></div>
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <h2>✏️ Edit Profile</h2>
+            <input type="text" id="editName" placeholder="Full Name">
+            <input type="tel" id="editPhone" placeholder="Phone">
+            <select id="editDept">
+                <option>Computer Science</option><option>Engineering</option><option>Business</option><option>Arts & Sciences</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeEditProfile()">Cancel</button>
+                <button class="btn-primary" onclick="saveProfileChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="notificationsPanel" class="modal" style="align-items: flex-start; justify-content: flex-end; padding-top: 80px;"><div class="modal-content" style="max-width: 380px; margin-right: 20px;"><h3>🔔 Notifications</h3><div id="notificationsList"><div class="empty-state">No notifications</div></div><button class="btn-secondary" id="closeNotifPanel" style="margin-top: 1rem;">Close</button></div></div>
+    <!-- Report Modal with Location -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <h2 id="modalTitle">Report Item</h2>
+            <input type="text" id="itemTitle" placeholder="Item Name *">
+            <textarea id="itemDesc" rows="2" placeholder="Description *"></textarea>
+            <input type="text" id="itemLocation" placeholder="Location *">
+            
+            <!-- Location Picker -->
+            <div class="location-picker">
+                <button type="button" class="btn-secondary" onclick="getCurrentLocation()" style="width: 100%; margin-bottom: 10px;">📍 Use My Current Location</button>
+                <input type="text" id="locationSearch" placeholder="Search location...">
+                <div id="map" style="height: 200px; display: none;"></div>
+                <input type="hidden" id="latitude" value="">
+                <input type="hidden" id="longitude" value="">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                <input type="date" id="itemDate">
+                <input type="time" id="itemTime">
+            </div>
+            <select id="itemCategory">
+                <option value="electronics">📱 Electronics</option>
+                <option value="accessories">⌚ Accessories</option>
+                <option value="documents">📄 Documents</option>
+                <option value="books">📚 Books</option>
+                <option value="keys">🔑 Keys</option>
+                <option value="bottles">💧 Water Bottles</option>
+                <option value="other">🔧 Other</option>
+            </select>
+            <input type="tel" id="contactPhone" placeholder="Contact Phone *">
+            <input type="file" id="itemPhoto" accept="image/*">
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="closeModal">Cancel</button>
+                <button class="btn-primary" id="submitReport">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div id="chatWindow" class="chat-container">
+        <div class="chat-header">
+            <span id="chatUserName">Chat</span>
+            <span onclick="closeChat()" style="cursor: pointer;">✕</span>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Type a message..." style="flex: 1;">
+            <button class="btn-primary" onclick="sendChatMessage()" style="padding: 0.5rem 1rem;">Send</button>
+        </div>
+    </div>
+
+    <!-- Matches Modal -->
+    <div id="matchesModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2>🎯 Potential Matches</h2>
+            <div id="matchesList"></div>
+            <button class="btn-secondary" onclick="closeMatchesModal()" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2>🏆 Campus Helpers Leaderboard</h2>
+            <div id="leaderboardFullList"></div>
+            <button class="btn-secondary" onclick="closeLeaderboard()" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
 
     <script>
-        // API Configuration
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:5000/api' 
-            : 'https://https://cep-nxqq.onrender.com/api';
-        
-        // Check authentication
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'index.html';
-        }
-        
+        let socket = io();
         let currentUser = null;
-        let lostItems = [];
-        let foundItems = [];
-        let pendingClaims = [];
-        let myClaims = [];
-        let activities = [];
-        let notifications = [];
-        let nextId = 1;
-        let currentEditItem = null;
+        let currentChatUser = null;
+        let currentCategory = 'all';
+        let map = null;
+        let marker = null;
         
-        function formatTimeAMPM(dateStr) {
-            if (!dateStr) return "";
-            const date = new Date(dateStr);
-            let hours = date.getHours();
-            let mins = date.getMinutes();
-            let ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-            return `${hours}:${mins.toString().padStart(2,'0')} ${ampm}`;
-        }
+        // Socket events
+        socket.on('connect', () => {
+            if (currentUser) socket.emit('user-online', currentUser.user_id);
+        });
         
-        function formatFullDateTime(dateStr) {
-            if (!dateStr) return "";
-            const date = new Date(dateStr);
-            return `${date.toLocaleDateString()} at ${formatTimeAMPM(dateStr)}`;
-        }
+        socket.on('new-message', (data) => {
+            if (currentChatUser && data.senderId === currentChatUser.user_id) {
+                displayMessage(data);
+            }
+            loadNotifications();
+        });
         
-        function showToast(msg, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.style.borderLeftColor = type === 'success' ? '#22c55e' : '#ef4444';
-            toast.innerText = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-        
-        async function fetchUserData() {
-            try {
-                const response = await fetch(`${API_URL}/user`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    currentUser = data.user;
-                    document.getElementById('profileAvatar').innerText = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '👤';
-                    document.getElementById('profileAvatarLarge').innerText = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '👤';
+        // Load user data
+        async function loadUserData() {
+            const response = await fetch('/api/current-user');
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data.user;
+                document.getElementById('userNameDisplay').innerText = currentUser.full_name;
+                document.getElementById('profileReputation').innerText = currentUser.reputation_points;
+                document.getElementById('statReputation').innerText = currentUser.reputation_points;
+                
+                if (currentUser.profile_pic && currentUser.profile_pic !== 'default-avatar.png') {
+                    const picUrl = '/uploads/' + currentUser.profile_pic;
+                    document.getElementById('profilePic').src = picUrl;
+                    document.getElementById('profileModalPic').src = picUrl;
                 }
-            } catch (error) {
-                console.error('Error fetching user:', error);
+                
+                loadMyItems();
+                loadStats();
+                loadNotifications();
+                loadLeaderboard();
+                loadAnnouncements();
             }
         }
         
-        async function fetchLostItems() {
-            try {
-                const response = await fetch(`${API_URL}/lost-items`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    lostItems = data.items;
-                    updateUI();
-                }
-            } catch (error) {
-                console.error('Error fetching lost items:', error);
+        // Load my items
+        async function loadMyItems() {
+            const response = await fetch('/api/my-items');
+            const data = await response.json();
+            if (data.success) {
+                displayLostItems(data.lostItems);
+                displayFoundItems(data.foundItems);
             }
         }
         
-        async function fetchFoundItems() {
-            try {
-                const response = await fetch(`${API_URL}/found-items`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    foundItems = data.items;
-                    updateUI();
-                }
-            } catch (error) {
-                console.error('Error fetching found items:', error);
+        function displayLostItems(items) {
+            const container = document.getElementById('lostItemsList');
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state">No lost items reported</div>';
+                return;
             }
+            
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-title">
+                        ${item.image_url ? `<img src="${item.image_url}" class="item-photo">` : '📦'}
+                        <span>${escapeHtml(item.item_name)}</span>
+                        <span class="status-badge status-${item.status}">${item.status.toUpperCase()}</span>
+                    </div>
+                    <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
+                    <div class="item-meta">📍 ${escapeHtml(item.location_lost)} | <span class="highlight-datetime">📅 ${item.date_lost} ${item.time_lost ? 'at ' + item.time_lost : ''}</span></div>
+                    <div class="item-actions">
+                        <button class="small-btn edit" onclick="editItem('lost', ${item.item_id})">Edit</button>
+                        <button class="small-btn delete" onclick="deleteItem('lost', ${item.item_id})">Delete</button>
+                        ${item.status === 'lost' ? `<button class="small-btn found" onclick="markAsFound(${item.item_id})">Mark Found</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
         
-        async function fetchActivities() {
-            try {
-                const response = await fetch(`${API_URL}/activities`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    activities = data.activities;
-                    updateUI();
-                }
-            } catch (error) {
-                console.error('Error fetching activities:', error);
+        function displayFoundItems(items) {
+            const container = document.getElementById('foundItemsList');
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state">No found items reported</div>';
+                return;
             }
+            
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-title">
+                        ${item.image_url ? `<img src="${item.image_url}" class="item-photo">` : '🔍'}
+                        <span>${escapeHtml(item.item_name)}</span>
+                        <span class="status-badge status-${item.status}">${item.status.toUpperCase()}</span>
+                    </div>
+                    <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
+                    <div class="item-meta">📍 ${escapeHtml(item.location_found)} | <span class="highlight-datetime">📅 ${item.date_found} ${item.time_found ? 'at ' + item.time_found : ''}</span></div>
+                    <div class="item-actions">
+                        <button class="small-btn edit" onclick="editItem('found', ${item.found_id})">Edit</button>
+                        <button class="small-btn delete" onclick="deleteItem('found', ${item.found_id})">Delete</button>
+                        <button class="small-btn chat" onclick="openChatWithUser(${item.user_id}, '${escapeHtml(item.full_name)}')">💬 Chat</button>
+                    </div>
+                </div>
+            `).join('');
         }
         
-        async function fetchNotifications() {
-            try {
-                const response = await fetch(`${API_URL}/notifications`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    notifications = data.notifications;
-                    updateUI();
-                }
-            } catch (error) {
-                console.error('Error fetching notifications:', error);
-            }
-        }
-        
-        async function fetchClaims() {
-            try {
-                const response = await fetch(`${API_URL}/claims`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    pendingClaims = data.incoming;
-                    myClaims = data.myClaims;
-                    updateUI();
-                }
-            } catch (error) {
-                console.error('Error fetching claims:', error);
-            }
-        }
-        
-        function updateUI() {
-            document.getElementById('statLost').innerText = lostItems.length;
-            document.getElementById('statFound').innerText = foundItems.length;
-            document.getElementById('statClaims').innerText = pendingClaims.length;
-            document.getElementById('notifBadge').innerText = notifications.length;
-            
-            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-            
-            const filteredLost = lostItems.filter(i => i.title.toLowerCase().includes(searchTerm));
-            document.getElementById('lostItemsList').innerHTML = filteredLost.length ? filteredLost.map(item => `
-                <div class="item-card"><div class="item-title">📦 ${escapeHtml(item.title)}</div>
-                <div class="item-meta">📝 ${escapeHtml(item.description || '')}</div>
-                <div class="item-meta">📍 ${escapeHtml(item.location || '')} | <span class="highlight-datetime">📅 ${item.item_date || 'Date not set'} ${item.item_time ? 'at ' + item.item_time : ''}</span></div>
-                <div class="item-actions"><button class="small-btn edit" onclick="editItem('lost',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('lost',${item.id})">Delete</button><button class="small-btn found" onclick="markAsFound(${item.id})">Mark as Found</button></div></div>
-            `).join('') : '<div class="empty-state">No lost items reported yet</div>';
-            
-            const filteredFound = foundItems.filter(i => i.title.toLowerCase().includes(searchTerm));
-            document.getElementById('foundItemsList').innerHTML = filteredFound.length ? filteredFound.map(item => `
-                <div class="item-card"><div class="item-title">🔍 ${escapeHtml(item.title)}</div>
-                <div class="item-meta">📝 ${escapeHtml(item.description || '')}</div>
-                <div class="item-meta">📍 ${escapeHtml(item.location || '')} | <span class="highlight-datetime">📅 ${item.item_date || 'Date not set'} ${item.item_time ? 'at ' + item.item_time : ''}</span></div>
-                <div class="item-actions"><button class="small-btn edit" onclick="editItem('found',${item.id})">Edit</button><button class="small-btn delete" onclick="deleteItem('found',${item.id})">Delete</button><button class="small-btn returned" onclick="markAsReturned(${item.id})">Mark Returned</button></div></div>
-            `).join('') : '<div class="empty-state">No found items reported yet</div>';
-            
-            const sortedActs = [...activities].sort((a,b)=>new Date(b.created_at) - new Date(a.created_at));
-            document.getElementById('recentActivity').innerHTML = sortedActs.length ? sortedActs.map(act => {
-                let icon = '🔴';
-                if (act.type === 'lost') icon = '⚠️';
-                else if (act.type === 'found') icon = '✅';
-                else if (act.type === 'claim') icon = '💬';
-                return `<div class="activity-item"><span class="activity-text">${icon} ${escapeHtml(act.action)}</span><span class="activity-time">🕒 ${formatFullDateTime(act.created_at)}</span></div>`;
-            }).join('') : '<div class="empty-state">No recent activities</div>';
-            
-            document.getElementById('pendingClaimsList').innerHTML = pendingClaims.length ? pendingClaims.map(c => `
-                <div class="item-card"><div class="item-title">📋 ${escapeHtml(c.item_title)}</div><div class="item-meta">Claimant: ${escapeHtml(c.claimant_name)}</div>
-                <div class="item-actions"><button class="small-btn approve" onclick="approveClaim(${c.id})">Approve</button><button class="small-btn reject" onclick="rejectClaim(${c.id})">Reject</button></div></div>
-            `).join('') : '<div class="empty-state">No pending claims</div>';
-            
-            document.getElementById('myClaimsList').innerHTML = myClaims.length ? myClaims.map(c => `
-                <div class="item-card"><div class="item-title">📝 ${escapeHtml(c.item_title)}</div><div class="item-meta">Owner: ${escapeHtml(c.owner_name)} | <span class="status-badge status-${c.status}">${c.status.toUpperCase()}</span></div></div>
-            `).join('') : '<div class="empty-state">No claims made yet</div>';
-            
-            document.getElementById('notificationsList').innerHTML = notifications.length ? notifications.map(notif => {
-                let colorClass = 'notif-system';
-                if(notif.type === 'claim') colorClass = 'notif-claim';
-                else if(notif.type === 'approve') colorClass = 'notif-approve';
-                return `<div class="notif-item ${colorClass}"><span>${escapeHtml(notif.message)}</span><div style="font-size:0.7rem; color:#ffffff; margin-top:4px;">🕘 ${formatFullDateTime(notif.created_at)}</div></div>`;
-            }).join('') : '<div class="empty-state">No notifications</div>';
-        }
-        
-        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-        
-        window.editItem = (type, id) => {
-            showToast('Edit feature - Coming soon', 'info');
-        };
-        
-        window.deleteItem = async (type, id) => {
-            if(confirm('Delete this item?')){
-                try {
-                    const endpoint = type === 'lost' ? `lost-items/${id}` : `found-items/${id}`;
-                    await fetch(`${API_URL}/${endpoint}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    showToast('Item deleted');
-                    if(type === 'lost') await fetchLostItems();
-                    else await fetchFoundItems();
-                    await fetchActivities();
-                } catch (error) {
-                    showToast('Error deleting item', 'error');
-                }
-            }
-        };
-        
-        window.markAsFound = async (id) => {
-            showToast('Mark as found - Coming soon', 'info');
-        };
-        
-        window.markAsReturned = async (id) => {
-            showToast('Mark as returned - Coming soon', 'info');
-        };
-        
-        window.approveClaim = async (claimId) => {
-            try {
-                await fetch(`${API_URL}/claims/${claimId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ status: 'approved' })
-                });
-                showToast('Claim approved');
-                await fetchClaims();
-                await fetchNotifications();
-            } catch (error) {
-                showToast('Error approving claim', 'error');
-            }
-        };
-        
-        window.rejectClaim = async (claimId) => {
-            try {
-                await fetch(`${API_URL}/claims/${claimId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ status: 'rejected' })
-                });
-                showToast('Claim rejected');
-                await fetchClaims();
-                await fetchNotifications();
-            } catch (error) {
-                showToast('Error rejecting claim', 'error');
-            }
-        };
-        
-        document.getElementById('reportLostBtn').onclick = () => {
-            currentEditItem=null;
-            document.getElementById('modalTitle').innerText='Report Lost Item';
-            ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value='');
-            document.getElementById('reportModal').style.display='flex';
-        };
-        
-        document.getElementById('reportFoundBtn').onclick = () => {
-            currentEditItem=null;
-            document.getElementById('modalTitle').innerText='Report Found Item';
-            ['itemTitle','itemDesc','itemLocation','itemDate','itemTime','itemPhoto'].forEach(id=>document.getElementById(id).value='');
-            document.getElementById('reportModal').style.display='flex';
-        };
-        
-        document.getElementById('closeModal').onclick = () => document.getElementById('reportModal').style.display='none';
-        
+        // Report item with location
         document.getElementById('submitReport').onclick = async () => {
-            const title=document.getElementById('itemTitle').value.trim();
-            const desc=document.getElementById('itemDesc').value.trim();
-            const loc=document.getElementById('itemLocation').value.trim();
-            const date=document.getElementById('itemDate').value;
-            const time=document.getElementById('itemTime').value;
-            if(!title || !desc || !loc || !date) { showToast('Please fill all required fields (*)', 'error'); return; }
-            
-            const isLost=document.getElementById('modalTitle').innerText.includes('Lost');
-            const endpoint = isLost ? 'lost-items' : 'found-items';
             const formData = new FormData();
-            formData.append('title', title);
-            formData.append('description', desc);
-            formData.append('location', loc);
-            formData.append('item_date', date);
-            formData.append('item_time', time);
-            const photoFile = document.getElementById('itemPhoto').files[0];
-            if(photoFile) formData.append('photo', photoFile);
+            formData.append('item_name', document.getElementById('itemTitle').value);
+            formData.append('description', document.getElementById('itemDesc').value);
+            formData.append('location_lost', document.getElementById('itemLocation').value);
+            formData.append('date_lost', document.getElementById('itemDate').value);
+            formData.append('time_lost', document.getElementById('itemTime').value);
+            formData.append('category', document.getElementById('itemCategory').value);
+            formData.append('contact_phone', document.getElementById('contactPhone').value);
+            formData.append('latitude', document.getElementById('latitude').value);
+            formData.append('longitude', document.getElementById('longitude').value);
             
-            try {
-                await fetch(`${API_URL}/${endpoint}`, {
+            const photo = document.getElementById('itemPhoto').files[0];
+            if (photo) formData.append('image', photo);
+            
+            const isLost = document.getElementById('modalTitle').innerText.includes('Lost');
+            const url = isLost ? '/api/lost-item' : '/api/found-item';
+            
+            const response = await fetch(url, { method: 'POST', body: formData });
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('Item reported successfully!');
+                document.getElementById('reportModal').style.display = 'none';
+                loadMyItems();
+                loadStats();
+            } else {
+                showToast('Error: ' + data.message, 'error');
+            }
+        };
+        
+        // Get current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                    showMap(position.coords.latitude, position.coords.longitude);
+                });
+            }
+        }
+        
+        function showMap(lat, lng) {
+            const mapDiv = document.getElementById('map');
+            mapDiv.style.display = 'block';
+            
+            if (!map) {
+                map = new google.maps.Map(mapDiv, {
+                    center: { lat: parseFloat(lat), lng: parseFloat(lng) },
+                    zoom: 15
+                });
+                marker = new google.maps.Marker({
+                    position: { lat: parseFloat(lat), lng: parseFloat(lng) },
+                    map: map,
+                    draggable: true
+                });
+                
+                marker.addListener('dragend', (event) => {
+                    document.getElementById('latitude').value = event.latLng.lat();
+                    document.getElementById('longitude').value = event.latLng.lng();
+                });
+            } else {
+                map.setCenter({ lat: parseFloat(lat), lng: parseFloat(lng) });
+                marker.setPosition({ lat: parseFloat(lat), lng: parseFloat(lng) });
+            }
+        }
+        
+        // Load stats
+        async function loadStats() {
+            const [lostRes, foundRes] = await Promise.all([
+                fetch('/api/lost-items'),
+                fetch('/api/found-items')
+            ]);
+            const lostData = await lostRes.json();
+            const foundData = await foundRes.json();
+            
+            document.getElementById('statLost').innerText = lostData.items?.length || 0;
+            document.getElementById('statFound').innerText = foundData.items?.length || 0;
+        }
+        
+        // Load notifications
+        async function loadNotifications() {
+            const response = await fetch('/api/notifications');
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('notifBadge').innerText = data.notifications.filter(n => !n.is_read).length;
+            }
+        }
+        
+        // Load leaderboard
+        async function loadLeaderboard() {
+            const response = await fetch('/api/leaderboard');
+            const data = await response.json();
+            if (data.success) {
+                const container = document.getElementById('leaderboardList');
+                container.innerHTML = data.leaderboard.slice(0, 5).map((user, idx) => `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">${idx + 1}</div>
+                        <img src="${user.profile_pic !== 'default-avatar.png' ? '/uploads/' + user.profile_pic : '/images/default-avatar.png'}" class="leaderboard-avatar">
+                        <div style="flex: 1;"><strong>${escapeHtml(user.full_name)}</strong><br><small>⭐ ${user.reputation_points} pts</small></div>
+                        <div>📦 ${user.items_found} found</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Load announcements
+        async function loadAnnouncements() {
+            const response = await fetch('/api/announcements');
+            const data = await response.json();
+            if (data.success && data.announcements.length > 0) {
+                const banner = document.getElementById('announcementBanner');
+                banner.style.display = 'flex';
+                document.getElementById('announcementText').innerHTML = `📢 ${data.announcements[0].title}: ${data.announcements[0].content}`;
+            }
+        }
+        
+        // Show matches
+        async function showMatches() {
+            const response = await fetch('/api/matches');
+            const data = await response.json();
+            if (data.success && data.matches.length > 0) {
+                const container = document.getElementById('matchesList');
+                container.innerHTML = data.matches.map(match => `
+                    <div class="item-card match-card">
+                        <div class="item-title">
+                            🎯 Match Found! <span class="match-score">${match.match_percentage}% Match</span>
+                        </div>
+                        <div class="item-meta"><strong>Lost:</strong> ${escapeHtml(match.lost_item.item_name)} at ${match.lost_item.location_lost}</div>
+                        <div class="item-meta"><strong>Found:</strong> ${escapeHtml(match.found_item.item_name)} at ${match.found_item.location_found}</div>
+                        <div class="item-actions">
+                            <button class="small-btn chat" onclick="openChatWithUser(${match.found_item.user_id}, 'Finder')">💬 Contact Finder</button>
+                            <button class="small-btn approve" onclick="submitClaim(${match.lost_item.item_id}, null, '${escapeHtml(match.found_item.item_name)}')">📝 Claim Item</button>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('matchesModal').style.display = 'flex';
+            } else {
+                showToast('No matches found yet!', 'error');
+            }
+        }
+        
+        // Submit claim
+        async function submitClaim(lostId, foundId, itemName) {
+            const response = await fetch('/api/submit-claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lost_item_id: lostId, found_item_id: foundId, message: `I believe this ${itemName} belongs to me.` })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Claim submitted!');
+                loadMyItems();
+            }
+        }
+        
+        // Chat functions
+        function openChatWithUser(userId, userName) {
+            currentChatUser = { user_id: userId, full_name: userName };
+            document.getElementById('chatUserName').innerText = `Chat with ${userName}`;
+            document.getElementById('chatWindow').style.display = 'flex';
+            loadChatMessages(userId);
+        }
+        
+        async function loadChatMessages(userId) {
+            const response = await fetch(`/api/messages/${userId}`);
+            const data = await response.json();
+            if (data.success) {
+                const container = document.getElementById('chatMessages');
+                container.innerHTML = data.messages.map(msg => `
+                    <div class="message-bubble" style="${msg.sender_id === currentUser.user_id ? 'text-align: right;' : ''}">
+                        <div class="${msg.sender_id === currentUser.user_id ? 'message-sent' : 'message-received'}">
+                            ${escapeHtml(msg.message)}
+                        </div>
+                        <small style="color: #94a3b8;">${new Date(msg.created_at).toLocaleTimeString()}</small>
+                    </div>
+                `).join('');
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+        
+        function sendChatMessage() {
+            const message = document.getElementById('chatInput').value;
+            if (message.trim() && currentChatUser) {
+                socket.emit('send-message', {
+                    senderId: currentUser.user_id,
+                    receiverId: currentChatUser.user_id,
+                    message: message
+                });
+                
+                // Add to UI
+                const container = document.getElementById('chatMessages');
+                container.innerHTML += `
+                    <div class="message-bubble" style="text-align: right;">
+                        <div class="message-sent">${escapeHtml(message)}</div>
+                        <small style="color: #94a3b8;">Just now</small>
+                    </div>
+                `;
+                document.getElementById('chatInput').value = '';
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+        
+        // Profile picture upload
+        document.getElementById('profilePicInput').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('profile_pic', file);
+                formData.append('full_name', currentUser.full_name);
+                formData.append('phone', currentUser.phone);
+                formData.append('department', currentUser.department);
+                formData.append('existing_pic', currentUser.profile_pic);
+                
+                const response = await fetch('/api/update-profile', {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
                 });
-                showToast(`${isLost ? 'Lost' : 'Found'} item reported successfully`);
-                document.getElementById('reportModal').style.display='none';
-                if(isLost) await fetchLostItems();
-                else await fetchFoundItems();
-                await fetchActivities();
-            } catch (error) {
-                showToast('Error reporting item', 'error');
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Profile picture updated!');
+                    loadUserData();
+                }
             }
         };
         
-        document.getElementById('searchInput').addEventListener('input',()=>updateUI());
+        // Helper functions
+        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+        function showToast(msg, type = 'success') { /* Add toast logic */ }
+        function closeChat() { document.getElementById('chatWindow').style.display = 'none'; }
+        function closeMatchesModal() { document.getElementById('matchesModal').style.display = 'none'; }
+        function closeLeaderboard() { document.getElementById('leaderboardModal').style.display = 'none'; }
+        function openLeaderboard() { document.getElementById('leaderboardModal').style.display = 'flex'; loadLeaderboard(); }
+        function closeAnnouncement() { document.getElementById('announcementBanner').style.display = 'none'; }
         
-        document.getElementById('profileBtn').onclick = async () => {
-            const userRes = await fetch(`${API_URL}/user`, { headers: { 'Authorization': `Bearer ${token}` } });
-            const userData = await userRes.json();
-            if(userData.success) currentUser = userData.user;
-            document.getElementById('profileName').innerText = currentUser?.name || 'Not set';
-            document.getElementById('profileEmail').innerText = currentUser?.email || 'Not set';
-            document.getElementById('profilePhone').innerText = currentUser?.phone || 'Not set';
-            document.getElementById('profileRoll').innerText = currentUser?.rollNumber || 'Not set';
-            document.getElementById('profileDept').innerText = currentUser?.department || 'IT';
-            const initials = currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : '👤';
-            document.getElementById('profileAvatarLarge').innerText = initials;
-            document.getElementById('editName').value = currentUser?.name || '';
-            document.getElementById('editEmail').value = currentUser?.email || '';
-            document.getElementById('editPhone').value = currentUser?.phone || '';
-            document.getElementById('editRoll').value = currentUser?.rollNumber || '';
-            document.getElementById('editDept').value = currentUser?.department || 'IT';
-            document.getElementById('profileFlipper').style.transform='rotateY(0deg)';
-            document.getElementById('profileModal').style.display='flex';
-        };
+        // Initialize
+        loadUserData();
         
-        document.getElementById('editProfileBtn').onclick = () => { document.getElementById('profileFlipper').style.transform='rotateY(180deg)'; };
-        document.getElementById('cancelEditBtn').onclick = () => { document.getElementById('profileFlipper').style.transform='rotateY(0deg)'; };
-        document.getElementById('saveProfileBtn').onclick = async () => {
-            const updatedUser = {
-                name: document.getElementById('editName').value,
-                email: document.getElementById('editEmail').value,
-                phone: document.getElementById('editPhone').value,
-                rollNumber: document.getElementById('editRoll').value,
-                department: document.getElementById('editDept').value
+        // Category filter
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            chip.onclick = () => {
+                document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                currentCategory = chip.dataset.category;
+                loadMyItems();
             };
-            try {
-                await fetch(`${API_URL}/user`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(updatedUser)
-                });
-                currentUser = updatedUser;
-                document.getElementById('profileAvatar').innerText = updatedUser.name ? updatedUser.name.charAt(0).toUpperCase() : '👤';
-                showToast('Profile updated successfully');
-                document.getElementById('profileFlipper').style.transform='rotateY(0deg)';
-                document.getElementById('profileModal').style.display='none';
-            } catch (error) {
-                showToast('Error updating profile', 'error');
-            }
-        };
-        document.getElementById('closeProfileModal').onclick = () => document.getElementById('profileModal').style.display='none';
-        
-        document.getElementById('notificationBell').onclick = () => {
-            document.getElementById('notificationsPanel').style.display='flex';
-        };
-        document.getElementById('closeNotifPanel').onclick = () => document.getElementById('notificationsPanel').style.display='none';
-        
-        document.getElementById('logoutBtn').onclick = () => {
-            localStorage.removeItem('token');
-            showToast('Logged out successfully');
-            setTimeout(()=> window.location.href='index.html', 1000);
-        };
-        
-        window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display='none'; };
-        
-        // Initialize Dashboard
-        async function initDashboard() {
-            await fetchUserData();
-            await fetchLostItems();
-            await fetchFoundItems();
-            await fetchActivities();
-            await fetchNotifications();
-            await fetchClaims();
-        }
-        
-        initDashboard();
+        });
     </script>
 </body>
 </html>
