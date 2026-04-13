@@ -15,6 +15,24 @@ const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false  // Required for Render PostgreSQL
+    }
+});
+
+
+// Test database connection
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('❌ Database connection error:', err.message);
+    } else {
+        console.log('✅ Database connected successfully');
+        release();
+    }
+});
+
 // ✅ CORS FIX
 app.use(cors({
     origin: "https://cep-eight-tau.vercel.app",
