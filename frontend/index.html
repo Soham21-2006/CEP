@@ -295,6 +295,46 @@
             .contact-container { grid-template-columns: 1fr; }
             .hero-left h1 { font-size: 2.6rem; }
         }
+        .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #1e293b;
+    border-radius: 28px;
+    padding: 2rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -345,24 +385,29 @@
                                 <h2>Join Campus Community 🚀</h2>
                                 <form id="registerForm">
                                     <div class="two-columns">
-                                        <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name" required></div>
-                                        <div class="form-group"><input type="email" id="regEmail" placeholder="Email Address" required></div>
-                                        <div class="form-group"><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
-                                        <div class="form-group"><input type="text" id="regRollNumber" placeholder="Roll Number" required></div>
-                                        <div class="form-group">
-                                            <select id="regDepartment" required>
-                                                <option value="">Select Department</option>
-                                                <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
-                                        <div class="form-group full-width">
-                                            <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-                                            <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
-                                            <span class="strength-text" id="strengthText">Enter password</span>
-                                            <div class="match-status" id="matchStatus"></div>
-                                        </div>
-                                    </div>
+    <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name" required></div>
+    <div class="form-group"><input type="email" id="regEmail" placeholder="Email Address" required></div>
+    <div class="form-group"><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
+    <div class="form-group"><input type="text" id="regRollNumber" placeholder="Roll Number" required></div>
+    <div class="form-group">
+        <select id="regDepartment" required>
+            <option value="">Select Department</option>
+            <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
+        </select>
+    </div>
+    <div class="form-group"><input type="text" id="regCollege" placeholder="College Name" required></div>
+    <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
+    <div class="form-group full-width">
+        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+        <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
+        <span class="strength-text" id="strengthText">Enter password</span>
+        <div class="match-status" id="matchStatus"></div>
+    </div>
+    <div class="form-group full-width">
+        <label style="color: #94a3b8; font-size: 0.9rem;">Profile Picture (Optional)</label>
+        <input type="file" id="regProfilePic" accept="image/*" style="padding: 0.5rem;">
+    </div>
+</div>
                                     <button type="submit" class="btn" id="registerBtn">📝 Register Now</button>
                                 </form>
                             </div>
@@ -442,8 +487,8 @@
     <script>
         // API Configuration - Update this with your Render backend URL
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:5000/api'
-            : 'https://cep-nxqq.onrender.com/api';
+    ? 'http://localhost:5000/api'
+    : 'https://cep-nxqq.onrender.com/api';
         
         const flipCardInner = document.getElementById('flipCard');
         
@@ -600,8 +645,10 @@ try {
         
         // Register User
         // Update your existing register form submit handler
+// Register User
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     const formData = new FormData();
     formData.append('full_name', document.getElementById('regFullName').value);
     formData.append('email', document.getElementById('regEmail').value);
@@ -609,71 +656,67 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     formData.append('phone', document.getElementById('regPhone').value);
     formData.append('roll_number', document.getElementById('regRollNumber').value);
     formData.append('department', document.getElementById('regDepartment').value);
-    formData.append('college_name', document.getElementById('regCollege')?.value || 'Your College');
+    formData.append('college_name', document.getElementById('regCollege').value);
     
-    const profilePic = document.getElementById('regProfilePic').files[0];
-    if (profilePic) formData.append('profile_pic', profilePic);
+    const profilePic = document.getElementById('regProfilePic');
+    if (profilePic && profilePic.files && profilePic.files.length > 0) {
+        formData.append('profile_pic', profilePic.files[0]);
+    }
 
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch(`${API_URL}/register`, {
             method: 'POST',
             body: formData
         });
         const data = await response.json();
         
         if (data.success) {
-            // Store email for verification
             localStorage.setItem('pendingEmail', document.getElementById('regEmail').value);
-            // Show verification modal
             document.getElementById('verificationModal').style.display = 'flex';
             showToast('Verification code sent to your email!', 'success');
+            flipToLogin();
         } else {
             showToast(data.message, 'error');
         }
     } catch (error) {
+        console.error('Registration error:', error);
         showToast('Registration failed! Please try again.', 'error');
     }
 });
         
         // Login User
-        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showToast("Please fill all fields", "error");
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-const text = await response.text();
-let data;
-
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}                if (data.success) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    showToast("Login successful! Redirecting...", "success");
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
-                } else {
-                    showToast(data.message || "Invalid credentials", "error");
-                }
-            } catch (error) {
-                showToast("Login failed! Please try again.", "error");
-            }
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        showToast("Please fill all fields", "error");
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
         });
+        const data = await response.json();
+        
+        if (data.success) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            showToast("Login successful! Redirecting...", "success");
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+        } else {
+            showToast(data.message || "Invalid credentials", "error");
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showToast("Login failed! Please try again.", "error");
+    }
+});
         
         // Contact Form
         document.getElementById('contactForm')?.addEventListener('submit', async (e) => {

@@ -235,6 +235,36 @@ app.post('/api/verify-email', async (req, res) => {
     }
 });
 
+// DEBUG ROUTE - Remove after testing
+app.get('/api/debug-user/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+        
+        const result = await pool.query(
+            'SELECT id, email, full_name, is_verified, password_hash FROM users WHERE email = $1',
+            [email]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+        
+        const user = result.rows[0];
+        res.json({
+            success: true,
+            user: {
+                id: user.id,
+                email: user.email,
+                full_name: user.full_name,
+                is_verified: user.is_verified,
+                password_hash_length: user.password_hash?.length
+            }
+        });
+    } catch (error) {
+        res.json({ success: false, error: error.message });
+    }
+});
+
 // ============== LOGIN ==============
 app.post('/api/login', async (req, res) => {
     try {
