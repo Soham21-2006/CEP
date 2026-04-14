@@ -55,6 +55,32 @@ app.use(session({
 
 app.use(express.json());
 
+// ============== SERVE STATIC FILES ==============
+app.use(express.static(path.join(__dirname, '../frontend')));
+app.use('/uploads', express.static(path.join(__dirname, '../frontend/uploads')));
+
+// ============== HTML ROUTES ==============
+// Home page - Login/Register
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
+// Dashboard page - User dashboard
+app.get('/dashboard', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/');
+    }
+    res.sendFile(path.join(__dirname, '../frontend/dashboard.html'));
+});
+
+// Admin page - Admin panel
+app.get('/admin', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/');
+    }
+    res.sendFile(path.join(__dirname, '../frontend/admin.html'));
+});
+
 // File upload configuration
 const uploadDir = path.join(__dirname, '../frontend/uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -1052,6 +1078,28 @@ app.get('/api/user/is-admin', async (req, res) => {
         console.error('Error checking admin:', error);
         res.json({ success: false, message: error.message, isAdmin: false });
     }
+});
+
+// ============== SERVE DASHBOARD PAGE ==============
+app.get('/dashboard', (req, res) => {
+    // Check if user is logged in
+    if (!req.session.userId) {
+        return res.redirect('/');
+    }
+    
+    // Send the dashboard HTML file
+    res.sendFile(path.join(__dirname, '/dashboard.html'));
+});
+
+// ============== SERVE ADMIN PAGE ==============
+app.get('/admin', (req, res) => {
+    // Check if user is logged in
+    if (!req.session.userId) {
+        return res.redirect('/');
+    }
+    
+    // Send the admin HTML file
+    res.sendFile(path.join(__dirname, '/admin.html'));
 });
 
 // ============== START SERVER ==============
