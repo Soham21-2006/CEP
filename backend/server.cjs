@@ -929,6 +929,24 @@ app.get('/api/user/is-admin', async (req, res) => {
     }
 });
 
+// MARK NOTIFICATIONS AS READ
+app.post('/api/notifications/mark-read', async (req, res) => {
+    const { user_id } = req.query;
+    if (!user_id) {
+        return res.json({ success: false, message: 'User ID required!' });
+    }
+    
+    try {
+        await pool.query(
+            'UPDATE notifications SET is_read = TRUE WHERE user_id = $1 AND is_read = FALSE',
+            [parseInt(user_id)]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
 // ============== START SERVER ==============
 const PORT = process.env.PORT || 5000;
 

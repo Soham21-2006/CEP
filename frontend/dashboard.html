@@ -49,6 +49,7 @@
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #8b5cf6;
+            cursor: pointer;
         }
 
         .user-name-header {
@@ -75,11 +76,53 @@
             display: flex;
             align-items: center;
             gap: 1.5rem;
+            position: relative;
         }
 
+        /* Notification Bell Styles */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* Dropdown Menu - Click to open, not hover */
         .dropdown {
             position: relative;
             display: inline-block;
+        }
+        
+        .dropdown-btn {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .dropdown-btn:hover {
+            transform: scale(1.05);
         }
         
         .dropdown-content {
@@ -101,10 +144,83 @@
             text-decoration: none;
             display: block;
             cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .dropdown-content a:hover { background: #334155; }
-        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content a:hover {
+            background: #334155;
+            border-radius: 16px;
+        }
+        
+        .dropdown.show .dropdown-content {
+            display: block;
+        }
+
+        /* Notification Panel */
+        .notification-panel {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            width: 350px;
+            max-height: 400px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 1001;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .notification-panel.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #334155;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .notification-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .notification-item:hover {
+            background: #334155;
+        }
+        
+        .notification-item.unread {
+            background: rgba(139, 92, 246, 0.2);
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .notification-title {
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .notification-message {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        
+        .notification-time {
+            color: #64748b;
+            font-size: 0.7rem;
+            margin-top: 4px;
+        }
 
         .dashboard-main {
             padding-top: 80px;
@@ -127,6 +243,13 @@
             padding: 1.5rem;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(55, 65, 81, 0.8);
         }
 
         .stat-value {
@@ -159,6 +282,7 @@
             font-weight: 600;
             cursor: pointer;
             font-size: 1rem;
+            transition: all 0.3s;
         }
 
         .btn-primary:hover {
@@ -174,6 +298,12 @@
             color: white;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
         }
 
         .card {
@@ -303,12 +433,21 @@
         }
 
         .small-btn.delete { background: #ef4444; color: white; }
-        .small-btn.chat { background: #8b5cf6; color: white; }
+        .small-btn.edit { background: #3b82f6; color: white; }
 
         .dashboard-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #8b5cf6;
+            cursor: pointer;
         }
 
         @media (max-width: 900px) {
@@ -320,7 +459,7 @@
     <header class="dashboard-header">
         <div class="nav-container">
             <div class="header-left">
-                <img id="profilePic" class="profile-pic" src="/images/default-avatar.png" alt="Profile">
+                <img id="profilePic" class="profile-pic" src="/images/default-avatar.png" alt="Profile" onclick="openProfileModal()">
                 <span id="userNameDisplay" class="user-name-header">Loading...</span>
             </div>
             <div class="logo">
@@ -328,8 +467,12 @@
                 <span>CampusLost&Found</span>
             </div>
             <div class="header-right">
-                <div class="dropdown">
-                    <div style="color: white; cursor: pointer;">👤 ▼</div>
+                <div class="notification-bell" onclick="toggleNotifications()">
+                    🔔
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </div>
+                <div class="dropdown" id="userDropdown">
+                    <div class="dropdown-btn" onclick="toggleDropdown()">👤</div>
                     <div class="dropdown-content">
                         <a onclick="openProfileModal()">👤 My Profile</a>
                         <a onclick="logout()">🚪 Logout</a>
@@ -339,11 +482,28 @@
         </div>
     </header>
 
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notificationPanel">
+        <div class="notification-header">🔔 Notifications</div>
+        <div class="notification-list" id="notificationList">
+            <div class="empty-state">No notifications</div>
+        </div>
+    </div>
+
     <main class="dashboard-main">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-value" id="statLost">0</div><div class="stat-label">Items Lost</div></div>
-            <div class="stat-card"><div class="stat-value" id="statFound">0</div><div class="stat-label">Items Found</div></div>
-            <div class="stat-card"><div class="stat-value" id="statReputation">0</div><div class="stat-label">Reputation Points</div></div>
+            <div class="stat-card" onclick="openLostItemModal()">
+                <div class="stat-value" id="statLost">0</div>
+                <div class="stat-label">Items Lost</div>
+            </div>
+            <div class="stat-card" onclick="openFoundItemModal()">
+                <div class="stat-value" id="statFound">0</div>
+                <div class="stat-label">Items Found</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statReputation">0</div>
+                <div class="stat-label">Reputation Points</div>
+            </div>
         </div>
 
         <div class="action-buttons">
@@ -376,15 +536,25 @@
         <div class="modal-content">
             <h2>👤 My Profile</h2>
             <div style="text-align: center; margin-bottom: 1rem;">
-                <img id="profileModalPic" src="/images/default-avatar.png" style="width: 80px; height: 80px; border-radius: 50%;">
+                <img id="profileModalPic" class="profile-avatar-large" src="/images/default-avatar.png" alt="Profile" onclick="document.getElementById('profilePicUpload').click()">
+                <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 8px;">Click photo to change</p>
             </div>
-            <p><strong>Name:</strong> <span id="profileName">--</span></p>
-            <p><strong>Email:</strong> <span id="profileEmail">--</span></p>
-            <p><strong>Phone:</strong> <span id="profilePhone">--</span></p>
-            <p><strong>Roll Number:</strong> <span id="profileRoll">--</span></p>
-            <p><strong>Department:</strong> <span id="profileDept">--</span></p>
-            <p><strong>Reputation:</strong> <span id="profileReputation">0</span> points</p>
-            <button class="btn-primary" onclick="closeProfileModal()" style="margin-top: 1rem; width: 100%;">Close</button>
+            <div class="form-group"><label style="color: #94a3b8;">Full Name</label><input type="text" id="profileFullName" placeholder="Full Name"></div>
+            <div class="form-group"><label style="color: #94a3b8;">Email</label><input type="email" id="profileEmail" placeholder="Email" disabled></div>
+            <div class="form-group"><label style="color: #94a3b8;">Phone</label><input type="tel" id="profilePhone" placeholder="Phone"></div>
+            <div class="form-group"><label style="color: #94a3b8;">Roll Number</label><input type="text" id="profileRoll" placeholder="Roll Number" disabled></div>
+            <div class="form-group"><label style="color: #94a3b8;">Department</label><select id="profileDept">
+                <option>Computer Science</option><option>Information Technology</option>
+                <option>Electronics Engineering</option><option>Mechanical Engineering</option>
+                <option>Civil Engineering</option><option>Business Administration</option>
+                <option>Arts & Sciences</option>
+            </select></div>
+            <div class="form-group"><label style="color: #94a3b8;">Reputation Points</label><input type="text" id="profileReputation" disabled></div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button class="btn-primary" onclick="saveProfile()" style="flex: 1;">Save Changes</button>
+                <button class="btn-secondary" onclick="closeProfileModal()" style="flex: 1;">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -450,6 +620,8 @@
             : 'https://cep-nxqq.onrender.com/api';
 
         let currentUser = null;
+        let notificationCheckInterval = null;
+        let lastNotificationCount = 0;
 
         function getCurrentUser() {
             const user = JSON.parse(localStorage.getItem('user'));
@@ -465,15 +637,93 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
+        // ============== DROPDOWN FUNCTIONS ==============
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            panel.classList.toggle('show');
+            // Mark notifications as read when opened
+            if (panel.classList.contains('show')) {
+                markNotificationsRead();
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const notificationPanel = document.getElementById('notificationPanel');
+            const notificationBell = document.querySelector('.notification-bell');
+            
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+            
+            if (notificationPanel && !notificationPanel.contains(event.target) && !notificationBell?.contains(event.target)) {
+                notificationPanel.classList.remove('show');
+            }
+        });
+
+        // ============== NOTIFICATION FUNCTIONS ==============
+        async function loadNotifications() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/notifications?user_id=${user.id}`);
+                const data = await response.json();
+                if (data.success) {
+                    const unreadCount = data.notifications.filter(n => !n.is_read).length;
+                    document.getElementById('notificationBadge').innerText = unreadCount;
+                    
+                    const container = document.getElementById('notificationList');
+                    if (data.notifications.length === 0) {
+                        container.innerHTML = '<div class="empty-state">No notifications</div>';
+                    } else {
+                        container.innerHTML = data.notifications.map(notif => `
+                            <div class="notification-item ${!notif.is_read ? 'unread' : ''}">
+                                <div class="notification-title">${escapeHtml(notif.title)}</div>
+                                <div class="notification-message">${escapeHtml(notif.message)}</div>
+                                <div class="notification-time">${new Date(notif.created_at).toLocaleString()}</div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    if (unreadCount !== lastNotificationCount && unreadCount > lastNotificationCount) {
+                        showToast(`🔔 You have ${unreadCount} new notification(s)!`);
+                    }
+                    lastNotificationCount = unreadCount;
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        async function markNotificationsRead() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            try {
+                await fetch(`${API_URL}/notifications/mark-read?user_id=${user.id}`, { method: 'POST' });
+                loadNotifications();
+            } catch (error) {
+                console.error('Error marking notifications read:', error);
+            }
+        }
+
+        // ============== PROFILE FUNCTIONS ==============
         function openProfileModal() {
             const user = getCurrentUser();
             if (user) {
-                document.getElementById('profileName').innerText = user.full_name;
-                document.getElementById('profileEmail').innerText = user.email;
-                document.getElementById('profilePhone').innerText = user.phone || 'Not set';
-                document.getElementById('profileRoll').innerText = user.roll_number || 'Not set';
-                document.getElementById('profileDept').innerText = user.department || 'Not set';
-                document.getElementById('profileReputation').innerText = user.reputation_points || 0;
+                document.getElementById('profileFullName').value = user.full_name || '';
+                document.getElementById('profileEmail').value = user.email || '';
+                document.getElementById('profilePhone').value = user.phone || '';
+                document.getElementById('profileRoll').value = user.roll_number || '';
+                document.getElementById('profileDept').value = user.department || 'Computer Science';
+                document.getElementById('profileReputation').value = user.reputation_points || 0;
                 if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
                     document.getElementById('profileModalPic').src = '/uploads/' + user.profile_pic;
                 }
@@ -485,6 +735,82 @@
             document.getElementById('profileModal').style.display = 'none';
         }
 
+        async function saveProfile() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            const formData = new FormData();
+            formData.append('full_name', document.getElementById('profileFullName').value);
+            formData.append('phone', document.getElementById('profilePhone').value);
+            formData.append('department', document.getElementById('profileDept').value);
+            formData.append('user_id', user.id);
+            formData.append('existing_pic', user.profile_pic);
+            
+            const profilePic = document.getElementById('profilePicUpload').files[0];
+            if (profilePic) {
+                formData.append('profile_pic', profilePic);
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/update-profile`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Profile updated successfully!');
+                    user.full_name = document.getElementById('profileFullName').value;
+                    user.phone = document.getElementById('profilePhone').value;
+                    user.department = document.getElementById('profileDept').value;
+                    if (profilePic) {
+                        user.profile_pic = data.profile_pic || user.profile_pic;
+                    }
+                    localStorage.setItem('user', JSON.stringify(user));
+                    document.getElementById('userNameDisplay').innerText = user.full_name;
+                    if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
+                        document.getElementById('profilePic').src = '/uploads/' + user.profile_pic;
+                    }
+                    closeProfileModal();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error updating profile!', 'error');
+            }
+        }
+
+        // Profile picture upload handler
+        document.getElementById('profilePicUpload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const user = getCurrentUser();
+                const formData = new FormData();
+                formData.append('profile_pic', file);
+                formData.append('full_name', user.full_name);
+                formData.append('phone', user.phone);
+                formData.append('department', user.department);
+                formData.append('user_id', user.id);
+                formData.append('existing_pic', user.profile_pic);
+                
+                try {
+                    const response = await fetch(`${API_URL}/update-profile`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast('Profile picture updated!');
+                        loadUserData();
+                    } else {
+                        showToast('Error updating picture!', 'error');
+                    }
+                } catch (error) {
+                    showToast('Error updating picture!', 'error');
+                }
+            }
+        };
+
+        // ============== ITEM FUNCTIONS ==============
         function openLostItemModal() {
             document.getElementById('lostItemModal').style.display = 'flex';
         }
@@ -525,8 +851,6 @@
             const desc = document.getElementById('lostDescription').value.trim();
             const location = document.getElementById('lostLocation').value.trim();
             const contact = document.getElementById('lostContact').value.trim();
-            const date = document.getElementById('lostDate').value;
-            const category = document.getElementById('lostCategory').value;
 
             if (!name || !desc || !location || !contact) {
                 showToast('Please fill all required fields!', 'error');
@@ -538,24 +862,22 @@
             formData.append('description', desc);
             formData.append('location_lost', location);
             formData.append('contact_phone', contact);
-            formData.append('date_lost', date);
-            formData.append('category', category);
+            formData.append('date_lost', document.getElementById('lostDate').value);
+            formData.append('category', document.getElementById('lostCategory').value);
             formData.append('user_id', user.id);
 
             const image = document.getElementById('lostImage').files[0];
             if (image) formData.append('image', image);
 
             try {
-                const response = await fetch(`${API_URL}/lost-item`, {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(`${API_URL}/lost-item`, { method: 'POST', body: formData });
                 const data = await response.json();
                 if (data.success) {
                     showToast('Lost item reported successfully!');
                     closeLostItemModal();
                     loadMyItems();
                     loadStats();
+                    // Add notification for same campus users will be handled by backend
                 } else {
                     showToast(data.message, 'error');
                 }
@@ -576,8 +898,6 @@
             const desc = document.getElementById('foundDescription').value.trim();
             const location = document.getElementById('foundLocation').value.trim();
             const contact = document.getElementById('foundContact').value.trim();
-            const date = document.getElementById('foundDate').value;
-            const category = document.getElementById('foundCategory').value;
 
             if (!name || !desc || !location || !contact) {
                 showToast('Please fill all required fields!', 'error');
@@ -589,18 +909,15 @@
             formData.append('description', desc);
             formData.append('location_found', location);
             formData.append('contact_phone', contact);
-            formData.append('date_found', date);
-            formData.append('category', category);
+            formData.append('date_found', document.getElementById('foundDate').value);
+            formData.append('category', document.getElementById('foundCategory').value);
             formData.append('user_id', user.id);
 
             const image = document.getElementById('foundImage').files[0];
             if (image) formData.append('image', image);
 
             try {
-                const response = await fetch(`${API_URL}/found-item`, {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(`${API_URL}/found-item`, { method: 'POST', body: formData });
                 const data = await response.json();
                 if (data.success) {
                     showToast('Found item reported successfully!');
@@ -683,23 +1000,44 @@
         }
 
         async function loadStats() {
-            const user = getCurrentUser();
-            if (!user) return;
-
             try {
                 const [lostRes, foundRes] = await Promise.all([
-                    fetch(`${API_URL}/lost-items?user_id=${user.id}`),
-                    fetch(`${API_URL}/found-items?user_id=${user.id}`)
+                    fetch(`${API_URL}/lost-items`),
+                    fetch(`${API_URL}/found-items`)
                 ]);
                 const lostData = await lostRes.json();
                 const foundData = await foundRes.json();
                 
                 document.getElementById('statLost').innerText = lostData.items?.length || 0;
                 document.getElementById('statFound').innerText = foundData.items?.length || 0;
-                document.getElementById('statReputation').innerText = user.reputation_points || 0;
+                
+                const user = getCurrentUser();
+                if (user) {
+                    document.getElementById('statReputation').innerText = user.reputation_points || 0;
+                }
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
+        }
+
+        async function loadUserData() {
+            const user = getCurrentUser();
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            currentUser = user;
+            document.getElementById('userNameDisplay').innerText = user.full_name;
+            if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
+                document.getElementById('profilePic').src = '/uploads/' + user.profile_pic;
+            }
+            loadMyItems();
+            loadStats();
+            loadNotifications();
+            
+            // Set up periodic notification check (every 30 seconds)
+            if (notificationCheckInterval) clearInterval(notificationCheckInterval);
+            notificationCheckInterval = setInterval(loadNotifications, 30000);
         }
 
         function escapeHtml(str) {
@@ -717,21 +1055,8 @@
             window.location.href = '/';
         }
 
-        function init() {
-            const user = getCurrentUser();
-            if (!user) {
-                window.location.href = '/';
-                return;
-            }
-            document.getElementById('userNameDisplay').innerText = user.full_name;
-            if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
-                document.getElementById('profilePic').src = '/uploads/' + user.profile_pic;
-            }
-            loadMyItems();
-            loadStats();
-        }
-
-        init();
+        // Initialize
+        loadUserData();
     </script>
 </body>
 </html>
