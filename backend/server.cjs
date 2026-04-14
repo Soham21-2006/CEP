@@ -956,18 +956,18 @@ app.post('/api/admin/create-campus', async (req, res) => {
     }
 });
 
-// ============== GET ALL CAMPUSES (Admin) ==============
+// ============== GET ALL CAMPUSES (Admin) - Updated ==============
 app.get('/api/admin/campuses', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
     try {
-        const userId = parseInt(req.session.userId, 10);
+        const { user_id } = req.query;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
         
         const adminCheck = await pool.query(
             'SELECT is_admin FROM users WHERE id = $1',
-            [userId]
+            [parseInt(user_id)]
         );
         
         if (!adminCheck.rows[0]?.is_admin) {
@@ -1012,13 +1012,24 @@ app.post('/api/verify-campus-code', async (req, res) => {
     }
 });
 
-// ============== ADMIN: GET ALL USERS ==============
+// ============== GET ALL USERS (Admin) - Updated ==============
 app.get('/api/admin/users', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
     try {
+        const { user_id } = req.query;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
+        const adminCheck = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [parseInt(user_id)]
+        );
+        
+        if (!adminCheck.rows[0]?.is_admin) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
         const result = await pool.query(
             'SELECT id, full_name, email, phone, roll_number, department, college_name, reputation_points, is_verified, created_at FROM users ORDER BY created_at DESC'
         );

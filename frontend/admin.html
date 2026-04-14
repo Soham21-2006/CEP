@@ -17,7 +17,6 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             position: fixed;
             left: 0;
@@ -71,14 +70,12 @@
             font-size: 1.2rem;
         }
 
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 1.5rem;
             min-height: 100vh;
         }
 
-        /* Header */
         .admin-header {
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(10px);
@@ -127,7 +124,6 @@
             transform: translateY(-2px);
         }
 
-        /* Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -164,7 +160,6 @@
             margin-top: 0.5rem;
         }
 
-        /* Tables */
         .card {
             background: rgba(30, 41, 59, 0.5);
             backdrop-filter: blur(10px);
@@ -224,11 +219,6 @@
             cursor: pointer;
             font-size: 0.75rem;
             margin: 0 2px;
-        }
-
-        .btn-edit {
-            background: #3b82f6;
-            color: white;
         }
 
         .btn-delete {
@@ -318,7 +308,6 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>🏫 Campus Admin</h2>
@@ -348,7 +337,6 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="admin-header">
             <div>
@@ -361,7 +349,6 @@
             </div>
         </div>
 
-        <!-- Dashboard Section -->
         <div id="dashboardSection">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -381,7 +368,6 @@
                     <div class="stat-label">Found Items</div>
                 </div>
             </div>
-
             <div class="card">
                 <h3>📈 Recent Activity</h3>
                 <div id="recentActivity">
@@ -390,7 +376,6 @@
             </div>
         </div>
 
-        <!-- Manage Campuses Section -->
         <div id="campusesSection" style="display: none;">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -399,52 +384,37 @@
                 </div>
                 <div style="overflow-x: auto;">
                     <table id="campusesTable">
-                        <thead>
-                            <tr><th>ID</th><th>Campus Name</th><th>Campus Code</th><th>Location</th><th>Status</th><th>Created</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="7" style="text-align: center;">Loading...</td></tr>
-                        </tbody>
+                        <thead><tr><th>ID</th><th>Campus Name</th><th>Campus Code</th><th>Location</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                        <tbody><tr><td colspan="7" style="text-align: center;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Manage Users Section -->
         <div id="usersSection" style="display: none;">
             <div class="card">
                 <h3>👥 All Users</h3>
                 <div style="overflow-x: auto;">
                     <table id="usersTable">
-                        <thead>
-                            <tr><th>ID</th><th>Name</th><th>Email</th><th>Roll Number</th><th>Department</th><th>Campus</th><th>Reputation</th><th>Joined</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="8" style="text-align: center;">Loading...</td></tr>
-                        </tbody>
+                        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Roll Number</th><th>Department</th><th>Campus</th><th>Reputation</th><th>Joined</th></tr></thead>
+                        <tbody><tr><td colspan="8" style="text-align: center;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- All Items Section -->
         <div id="itemsSection" style="display: none;">
             <div class="card">
                 <h3>📦 All Lost & Found Items</h3>
                 <div style="overflow-x: auto;">
                     <table id="itemsTable">
-                        <thead>
-                            <tr><th>ID</th><th>Type</th><th>Item Name</th><th>User</th><th>Location</th><th>Date</th><th>Status</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="8" style="text-align: center;">Loading...</td></tr>
-                        </tbody>
+                        <thead><tr><th>ID</th><th>Type</th><th>Item Name</th><th>User</th><th>Location</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody><tr><td colspan="8" style="text-align: center;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Announcements Section -->
         <div id="announcementsSection" style="display: none;">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -460,15 +430,9 @@
     <div id="campusModal" class="modal">
         <div class="modal-content">
             <h3 style="color: white; margin-bottom: 1rem;">Create New Campus</h3>
-            <div class="form-group">
-                <input type="text" id="campusName" placeholder="Campus Name">
-            </div>
-            <div class="form-group">
-                <input type="text" id="campusCode" placeholder="Campus Code (e.g., CAMPUS123)">
-            </div>
-            <div class="form-group">
-                <input type="text" id="campusLocation" placeholder="Location">
-            </div>
+            <div class="form-group"><input type="text" id="campusName" placeholder="Campus Name"></div>
+            <div class="form-group"><input type="text" id="campusCode" placeholder="Campus Code (e.g., CAMPUS123)"></div>
+            <div class="form-group"><input type="text" id="campusLocation" placeholder="Location"></div>
             <div style="display: flex; gap: 1rem;">
                 <button class="btn-add" onclick="createCampus()" style="flex: 1;">Create</button>
                 <button class="btn-delete" onclick="closeCampusModal()" style="flex: 1;">Cancel</button>
@@ -480,12 +444,8 @@
     <div id="announcementModal" class="modal">
         <div class="modal-content">
             <h3 style="color: white; margin-bottom: 1rem;">Add Announcement</h3>
-            <div class="form-group">
-                <input type="text" id="announcementTitle" placeholder="Title">
-            </div>
-            <div class="form-group">
-                <textarea id="announcementContent" rows="4" placeholder="Content" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; padding: 10px;"></textarea>
-            </div>
+            <div class="form-group"><input type="text" id="announcementTitle" placeholder="Title"></div>
+            <div class="form-group"><textarea id="announcementContent" rows="4" placeholder="Content" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; padding: 10px;"></textarea></div>
             <div style="display: flex; gap: 1rem;">
                 <button class="btn-add" onclick="createAnnouncement()" style="flex: 1;">Post</button>
                 <button class="btn-delete" onclick="closeAnnouncementModal()" style="flex: 1;">Cancel</button>
@@ -499,6 +459,11 @@
             : 'https://cep-nxqq.onrender.com/api';
 
         let currentUser = null;
+
+        function getCurrentUser() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            return user;
+        }
 
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
@@ -523,10 +488,13 @@
         }
 
         async function loadDashboard() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
             try {
                 const [campuses, users, lost, found] = await Promise.all([
-                    fetch(`${API_URL}/admin/campuses`, { credentials: 'include' }).then(r => r.json()),
-                    fetch(`${API_URL}/admin/users`, { credentials: 'include' }).then(r => r.json()),
+                    fetch(`${API_URL}/admin/campuses?user_id=${user.id}`, { credentials: 'include' }).then(r => r.json()),
+                    fetch(`${API_URL}/admin/users?user_id=${user.id}`, { credentials: 'include' }).then(r => r.json()),
                     fetch(`${API_URL}/lost-items`, { credentials: 'include' }).then(r => r.json()),
                     fetch(`${API_URL}/found-items`, { credentials: 'include' }).then(r => r.json())
                 ]);
@@ -555,8 +523,11 @@
         }
 
         async function loadCampuses() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
             try {
-                const response = await fetch(`${API_URL}/admin/campuses`, { credentials: 'include' });
+                const response = await fetch(`${API_URL}/admin/campuses?user_id=${user.id}`, { credentials: 'include' });
                 const data = await response.json();
                 if (data.success) {
                     const tbody = document.querySelector('#campusesTable tbody');
@@ -568,9 +539,7 @@
                             <td>${escapeHtml(c.location || '-')}</td>
                             <td><span class="${c.is_active ? 'status-active' : 'status-inactive'}">${c.is_active ? 'Active' : 'Inactive'}</span></td>
                             <td>${new Date(c.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <button class="btn-sm btn-delete" onclick="deleteCampus(${c.campus_id})">Delete</button>
-                            </td>
+                            <td><button class="btn-sm btn-delete" onclick="deleteCampus(${c.campus_id})">Delete</button></td>
                         </tr>
                     `).join('');
                 }
@@ -580,8 +549,11 @@
         }
 
         async function loadUsers() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
             try {
-                const response = await fetch(`${API_URL}/admin/users`, { credentials: 'include' });
+                const response = await fetch(`${API_URL}/admin/users?user_id=${user.id}`, { credentials: 'include' });
                 const data = await response.json();
                 if (data.success) {
                     const tbody = document.querySelector('#usersTable tbody');
@@ -604,10 +576,13 @@
         }
 
         async function loadAllItems() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
             try {
                 const [lost, found] = await Promise.all([
-                    fetch(`${API_URL}/lost-items`, { credentials: 'include' }).then(r => r.json()),
-                    fetch(`${API_URL}/found-items`, { credentials: 'include' }).then(r => r.json())
+                    fetch(`${API_URL}/lost-items?user_id=${user.id}`, { credentials: 'include' }).then(r => r.json()),
+                    fetch(`${API_URL}/found-items?user_id=${user.id}`, { credentials: 'include' }).then(r => r.json())
                 ]);
                 
                 const allItems = [
@@ -625,9 +600,7 @@
                         <td>${escapeHtml(item.location_lost || item.location_found || '-')}</td>
                         <td>${item.date_lost || item.date_found || '-'}</td>
                         <td><span class="status-${item.status}">${item.status}</span></td>
-                        <td>
-                            <button class="btn-sm btn-delete" onclick="deleteItem('${item.type.toLowerCase()}', ${item.item_id || item.found_id})">Delete</button>
-                        </td>
+                        <td><button class="btn-sm btn-delete" onclick="deleteItem('${item.type.toLowerCase()}', ${item.item_id || item.found_id})">Delete</button></td>
                     </tr>
                 `).join('');
             } catch (error) {
@@ -657,6 +630,7 @@
             }
         }
 
+        // ============== FIXED CREATE CAMPUS (sends user_id) ==============
         async function createCampus() {
             const campus_name = document.getElementById('campusName').value;
             const campus_code = document.getElementById('campusCode').value;
@@ -667,12 +641,23 @@
                 return;
             }
             
+            const user = getCurrentUser();
+            if (!user) {
+                showToast('Please login again', 'error');
+                window.location.href = '/';
+                return;
+            }
+            
             try {
                 const response = await fetch(`${API_URL}/admin/create-campus`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ campus_name, campus_code, location })
+                    body: JSON.stringify({ 
+                        campus_name, 
+                        campus_code, 
+                        location,
+                        user_id: user.id 
+                    })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -688,12 +673,21 @@
             }
         }
 
+        // ============== FIXED DELETE CAMPUS (sends user_id) ==============
         async function deleteCampus(campusId) {
             if (confirm('Are you sure you want to delete this campus?')) {
+                const user = getCurrentUser();
+                if (!user) {
+                    showToast('Please login again', 'error');
+                    window.location.href = '/';
+                    return;
+                }
+                
                 try {
                     const response = await fetch(`${API_URL}/admin/delete-campus/${campusId}`, {
                         method: 'DELETE',
-                        credentials: 'include'
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: user.id })
                     });
                     const data = await response.json();
                     if (data.success) {
@@ -709,6 +703,7 @@
             }
         }
 
+        // ============== FIXED CREATE ANNOUNCEMENT (sends user_id) ==============
         async function createAnnouncement() {
             const title = document.getElementById('announcementTitle').value;
             const content = document.getElementById('announcementContent').value;
@@ -718,12 +713,22 @@
                 return;
             }
             
+            const user = getCurrentUser();
+            if (!user) {
+                showToast('Please login again', 'error');
+                window.location.href = '/';
+                return;
+            }
+            
             try {
                 const response = await fetch(`${API_URL}/admin/create-announcement`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ title, content })
+                    body: JSON.stringify({ 
+                        title, 
+                        content,
+                        user_id: user.id 
+                    })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -769,13 +774,11 @@
             });
         }
 
-        // ============== FIXED LOGOUT (uses localStorage) ==============
         function logout() {
             localStorage.removeItem('user');
             window.location.href = '/';
         }
 
-        // ============== FIXED ADMIN CHECK (uses localStorage, NOT API) ==============
         function checkAdmin() {
             const user = JSON.parse(localStorage.getItem('user'));
             
@@ -788,7 +791,6 @@
             
             document.getElementById('adminName').innerHTML = `👑 ${user.full_name}`;
             
-            // Check is_admin flag
             if (!user.is_admin) {
                 console.log('User is not admin, redirecting to dashboard');
                 window.location.href = '/dashboard';
@@ -798,7 +800,6 @@
             }
         }
 
-        // Initialize
         checkAdmin();
     </script>
 </body>
