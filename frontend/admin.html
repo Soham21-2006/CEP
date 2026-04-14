@@ -538,14 +538,14 @@
                 
                 const activityDiv = document.getElementById('recentActivity');
                 activityDiv.innerHTML = `
-                    <div class="activity-item" style="padding: 10px; border-bottom: 1px solid #334155;">
+                    <div style="padding: 10px; border-bottom: 1px solid #334155;">
                         <span>✅ System ready</span>
                         <small style="color: #64748b; float: right;">Just now</small>
                     </div>
-                    <div class="activity-item" style="padding: 10px; border-bottom: 1px solid #334155;">
+                    <div style="padding: 10px; border-bottom: 1px solid #334155;">
                         <span>📊 Total ${users.users?.length || 0} users registered</span>
                     </div>
-                    <div class="activity-item" style="padding: 10px;">
+                    <div style="padding: 10px;">
                         <span>🏛️ ${campuses.campuses?.length || 0} active campuses</span>
                     </div>
                 `;
@@ -774,26 +774,41 @@
             window.location.href = '/';
         }
 
+        // ============== FIXED ADMIN CHECK FUNCTION ==============
         async function checkAdmin() {
             try {
-                const response = await fetch('/api/current-user', { credentials: 'include' });
+                const response = await fetch('/api/current-user', { 
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
                 const data = await response.json();
-                if (data.success) {
+                
+                console.log('Admin check response:', data); // Debug log
+                
+                if (data.success && data.user) {
                     currentUser = data.user;
                     document.getElementById('adminName').innerHTML = `👑 ${currentUser.full_name}`;
-                    if (!currentUser.email.includes('admin')) {
+                    
+                    // FIXED: Check is_admin instead of email
+                    if (currentUser.is_admin !== true) {
+                        console.log('User is not admin, redirecting to dashboard');
                         window.location.href = '/dashboard';
+                    } else {
+                        console.log('Admin verified, loading admin panel');
+                        loadDashboard();
                     }
                 } else {
+                    console.log('Not logged in, redirecting to home');
                     window.location.href = '/';
                 }
             } catch (error) {
+                console.error('Admin check error:', error);
                 window.location.href = '/';
             }
         }
 
+        // Initialize
         checkAdmin();
-        loadDashboard();
     </script>
 </body>
 </html>
