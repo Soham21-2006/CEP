@@ -100,10 +100,12 @@ app.get('/api/current-user', async (req, res) => {
     }
     
     try {
-        const userId = toInt(req.session.userId);
+        const userId = parseInt(req.session.userId, 10);
+        console.log('Fetching user with ID:', userId);
+        
         const result = await pool.query(
             `SELECT id, full_name, email, phone, roll_number, department, profile_pic, 
-                    reputation_points, items_found, items_returned, created_at 
+                    reputation_points, items_found, items_returned, created_at, is_admin
              FROM users WHERE id = $1`,
             [userId]
         );
@@ -264,42 +266,73 @@ app.get('/api/debug-user/:email', async (req, res) => {
     }
 });
 
-// ============== LOGIN ==============
+// ============== LOGIN (Complete Working Version) ==============
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
+        if (!email || !password) {
+            return res.json({ success: false, message: 'Email and password are required!' });
+        }
+        
+        console.log('Login attempt for:', email);
+        
+        // Get user by email only (no JOIN to avoid type issues)
         const result = await pool.query(
-            `SELECT u.*, c.campus_name, c.campus_code 
-             FROM users u
-             LEFT JOIN campuses c ON u.campus_id = c.campus_id
-             WHERE u.email = $1`,
-            [email]
+            `SELECT id, full_name, email, password_hash, phone, roll_number, 
+                    department, profile_pic, is_admin, is_verified, reputation_points
+             FROM users 
+             WHERE email = $1`,
+            [email.toLowerCase().trim()]
         );
         
         if (result.rows.length === 0) {
-            return res.json({ success: false, message: 'Invalid credentials!' });
+            console.log('User not found:', email);
+            return res.json({ success: false, message: 'Invalid email or password!' });
         }
         
         const user = result.rows[0];
+        console.log('User found:', user.email, 'Admin:', user.is_admin);
         
-        const valid = await bcrypt.compare(password, user.password_hash);
+        // Check if user is verified (if you have verification enabled)
+        // if (!user.is_verified) {
+        //     return res.json({ success: false, message: 'Please verify your email first!' });
+        // }
         
-        if (!valid) {
-            return res.json({ success: false, message: 'Invalid credentials!' });
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        
+        if (!isValidPassword) {
+            console.log('Invalid password for:', email);
+            return res.json({ success: false, message: 'Invalid email or password!' });
         }
         
-        req.session.userId = toInt(user.id);
+        // Set session
+        req.session.userId = parseInt(user.id, 10);
         req.session.userName = user.full_name;
-        req.session.campusId = user.campus_id;
+        req.session.userEmail = user.email;
+        req.session.isAdmin = user.is_admin === true;
         
-        await pool.query('UPDATE users SET last_active = NOW() WHERE id = $1', [toInt(user.id)]);
+        // Update last active timestamp
+        await pool.query(
+            'UPDATE users SET last_active = NOW() WHERE id = $1',
+            [parseInt(user.id, 10)]
+        );
         
+        // Remove sensitive data
         delete user.password_hash;
-        res.json({ success: true, message: 'Login successful!', user: user });
+        
+        console.log('Login successful for:', email);
+        
+        res.json({ 
+            success: true, 
+            message: 'Login successful!',
+            user: user
+        });
+        
     } catch (error) {
-        console.error('Login error:', error);
-        res.json({ success: false, message: error.message });
+        console.error('Login error details:', error);
+        res.json({ success: false, message: 'Login failed. Please try again.' });
     }
 });
 
@@ -850,9 +883,15 @@ app.post('/api/admin/create-campus', async (req, res) => {
     }
     
     try {
-        // Check if user is admin (you can add is_admin column or check email)
-        const userCheck = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
-        if (!userCheck.rows[0]?.email?.includes('admin')) {
+        const userId = parseInt(req.session.userId, 10);
+        
+        // Check if user is admin
+        const adminCheck = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [userId]
+        );
+        
+        if (!adminCheck.rows[0]?.is_admin) {
             return res.json({ success: false, message: 'Admin access required!' });
         }
         
@@ -863,34 +902,59 @@ app.post('/api/admin/create-campus', async (req, res) => {
         }
         
         // Check if code already exists
-        const existing = await pool.query('SELECT * FROM campuses WHERE campus_code = $1', [campus_code]);
+        const existing = await pool.query(
+            'SELECT * FROM campuses WHERE campus_code = $1',
+            [campus_code]
+        );
+        
         if (existing.rows.length > 0) {
             return res.json({ success: false, message: 'Campus code already exists!' });
         }
         
         await pool.query(
-            `INSERT INTO campuses (campus_name, campus_code, location, created_by, is_active) 
-             VALUES ($1, $2, $3, $4, true)`,
-            [campus_name, campus_code, location, req.session.userId]
+            `INSERT INTO campuses (campus_name, campus_code, location, is_active, created_by) 
+             VALUES ($1, $2, $3, true, $4)`,
+            [campus_name, campus_code, location, userId]
         );
         
-        res.json({ success: true, message: 'Campus created successfully!', campus_code: campus_code });
+        res.json({ 
+            success: true, 
+            message: `Campus "${campus_name}" created with code: ${campus_code}`
+        });
     } catch (error) {
         console.error('Error creating campus:', error);
         res.json({ success: false, message: error.message });
     }
 });
 
-// ============== GET ALL CAMPUSES (for admin) ==============
+// ============== GET ALL CAMPUSES (Admin) ==============
 app.get('/api/admin/campuses', async (req, res) => {
     if (!req.session.userId) {
         return res.json({ success: false, message: 'Not logged in' });
     }
     
     try {
-        const result = await pool.query('SELECT campus_id, campus_name, campus_code, location, is_active, created_at FROM campuses ORDER BY created_at DESC');
+        const userId = parseInt(req.session.userId, 10);
+        
+        const adminCheck = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [userId]
+        );
+        
+        if (!adminCheck.rows[0]?.is_admin) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
+        const result = await pool.query(
+            `SELECT c.*, u.full_name as created_by_name 
+             FROM campuses c
+             LEFT JOIN users u ON c.created_by = u.id
+             ORDER BY c.created_at DESC`
+        );
+        
         res.json({ success: true, campuses: result.rows });
     } catch (error) {
+        console.error('Error fetching campuses:', error);
         res.json({ success: false, message: error.message });
     }
 });
@@ -964,6 +1028,29 @@ app.post('/api/admin/create-announcement', async (req, res) => {
         res.json({ success: true, message: 'Announcement created!' });
     } catch (error) {
         res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== CHECK IF USER IS ADMIN ==============
+app.get('/api/user/is-admin', async (req, res) => {
+    if (!req.session.userId) {
+        return res.json({ success: false, message: 'Not logged in', isAdmin: false });
+    }
+    
+    try {
+        const userId = parseInt(req.session.userId, 10);
+        const result = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [userId]
+        );
+        
+        const isAdmin = result.rows[0]?.is_admin === true;
+        console.log('Admin check for user:', userId, 'isAdmin:', isAdmin);
+        
+        res.json({ success: true, isAdmin: isAdmin });
+    } catch (error) {
+        console.error('Error checking admin:', error);
+        res.json({ success: false, message: error.message, isAdmin: false });
     }
 });
 
