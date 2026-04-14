@@ -769,41 +769,34 @@
             });
         }
 
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
+        // ============== FIXED LOGOUT (uses localStorage) ==============
+        function logout() {
+            localStorage.removeItem('user');
             window.location.href = '/';
         }
 
-        // ============== FIXED ADMIN CHECK FUNCTION ==============
-        async function checkAdmin() {
-    try {
-        const response = await fetch(`${API_URL}/current-user`, { 
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-        console.log('Admin check:', data);
-
-        if (data.success && data.user) {
-            currentUser = data.user;
-
-            document.getElementById('adminName').innerHTML = `👑 ${currentUser.full_name}`;
-
-            if (!currentUser.is_admin) {
-                window.location.href = '/dashboard.html';
+        // ============== FIXED ADMIN CHECK (uses localStorage, NOT API) ==============
+        function checkAdmin() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            console.log("User from localStorage:", user);
+            
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            document.getElementById('adminName').innerHTML = `👑 ${user.full_name}`;
+            
+            // Check is_admin flag
+            if (!user.is_admin) {
+                console.log('User is not admin, redirecting to dashboard');
+                window.location.href = '/dashboard';
             } else {
+                console.log('Admin verified from localStorage, loading admin panel');
                 loadDashboard();
             }
-
-        } else {
-            window.location.href = '/index.html';
         }
-
-    } catch (error) {
-        console.error('Admin check error:', error);
-        window.location.href = '/index.html';
-    }
-}
 
         // Initialize
         checkAdmin();
