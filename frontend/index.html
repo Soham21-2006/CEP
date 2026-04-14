@@ -700,12 +700,18 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         const data = await response.json();
         
         if (data.success) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast("Login successful! Redirecting...", "success");
-            setTimeout(() => {
-                window.location.href = '/dashboard';
-            }, 1000);
+    localStorage.setItem('user', JSON.stringify(data.user));
+
+    showToast("Login successful! Redirecting...", "success");
+
+    setTimeout(() => {
+        if (data.user.role === 'admin') {
+            window.location.href = '/admin.html';
         } else {
+            window.location.href = '/dashboard.html';
+        }
+    }, 1000);
+} else {
             showToast(data.message || "Invalid credentials", "error");
         }
     } catch (error) {
