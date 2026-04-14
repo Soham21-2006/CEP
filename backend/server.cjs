@@ -424,33 +424,24 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
 });
 
 // ============== GET MY ITEMS ==============
+// GET /api/my-items
 app.get('/api/my-items', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
+    const { user_id } = req.query;
+    if (!user_id) return res.json({ success: false, message: 'User ID required' });
     
-    try {
-        const userId = toInt(req.session.userId);
-        
-        const lostItems = await pool.query(
-            `SELECT * FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
-            [userId]
-        );
-        
-        const foundItems = await pool.query(
-            `SELECT * FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
-            [userId]
-        );
-        
-        res.json({ 
-            success: true, 
-            lostItems: lostItems.rows, 
-            foundItems: foundItems.rows 
-        });
-    } catch (error) {
-        console.error('Error fetching my items:', error);
-        res.json({ success: false, message: error.message });
-    }
+    const lostItems = await pool.query('SELECT * FROM lost_items WHERE user_id = $1', [user_id]);
+    const foundItems = await pool.query('SELECT * FROM found_items WHERE user_id = $1', [user_id]);
+    res.json({ success: true, lostItems: lostItems.rows, foundItems: foundItems.rows });
+});
+
+// DELETE /api/item/:type/:id
+app.delete('/api/item/:type/:id', async (req, res) => {
+    const { user_id } = req.query;
+    const { type, id } = req.params;
+    const table = type === 'lost' ? 'lost_items' : 'found_items';
+    const idField = type === 'lost' ? 'item_id' : 'found_id';
+    await pool.query(`DELETE FROM ${table} WHERE ${idField} = $1 AND user_id = $2`, [id, user_id]);
+    res.json({ success: true });
 });
 
 // ============== GET ALL LOST ITEMS ==============
