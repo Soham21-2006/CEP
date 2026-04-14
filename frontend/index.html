@@ -703,7 +703,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
             localStorage.setItem('user', JSON.stringify(data.user));
             showToast("Login successful! Redirecting...", "success");
             setTimeout(() => {
-                window.location.href = '/dashboard';
+                window.location.href = '/dashboard.html';
             }, 1000);
         } else {
             showToast(data.message || "Invalid credentials", "error");
