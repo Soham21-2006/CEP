@@ -907,12 +907,14 @@ app.get('/api/stats', async (req, res) => {
 
 // ============== ADMIN: CREATE CAMPUS ==============
 app.post('/api/admin/create-campus', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
     try {
-        const userId = parseInt(req.session.userId, 10);
+        const { campus_name, campus_code, location, user_id } = req.body;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
+        const userId = parseInt(user_id, 10);
         
         // Check if user is admin
         const adminCheck = await pool.query(
@@ -923,8 +925,6 @@ app.post('/api/admin/create-campus', async (req, res) => {
         if (!adminCheck.rows[0]?.is_admin) {
             return res.json({ success: false, message: 'Admin access required!' });
         }
-        
-        const { campus_name, campus_code, location } = req.body;
         
         if (!campus_name || !campus_code) {
             return res.json({ success: false, message: 'Campus name and code are required!' });
@@ -983,7 +983,6 @@ app.get('/api/admin/campuses', async (req, res) => {
         
         res.json({ success: true, campuses: result.rows });
     } catch (error) {
-        console.error('Error fetching campuses:', error);
         res.json({ success: false, message: error.message });
     }
 });
@@ -1039,13 +1038,23 @@ app.get('/api/admin/users', async (req, res) => {
     }
 });
 
-// ============== ADMIN: DELETE CAMPUS ==============
 app.delete('/api/admin/delete-campus/:campusId', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
     try {
+        const { user_id } = req.body;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
+        const adminCheck = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [parseInt(user_id)]
+        );
+        
+        if (!adminCheck.rows[0]?.is_admin) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
         await pool.query('DELETE FROM campuses WHERE campus_id = $1', [req.params.campusId]);
         res.json({ success: true, message: 'Campus deleted successfully!' });
     } catch (error) {
@@ -1055,15 +1064,25 @@ app.delete('/api/admin/delete-campus/:campusId', async (req, res) => {
 
 // ============== ADMIN: CREATE ANNOUNCEMENT ==============
 app.post('/api/admin/create-announcement', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
     try {
-        const { title, content } = req.body;
+        const { title, content, user_id } = req.body;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
+        const adminCheck = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [parseInt(user_id)]
+        );
+        
+        if (!adminCheck.rows[0]?.is_admin) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
         await pool.query(
             'INSERT INTO announcements (title, content, created_by, is_active) VALUES ($1, $2, $3, true)',
-            [title, content, req.session.userId]
+            [title, content, parseInt(user_id)]
         );
         res.json({ success: true, message: 'Announcement created!' });
     } catch (error) {
