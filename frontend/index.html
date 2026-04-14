@@ -705,7 +705,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     showToast("Login successful! Redirecting...", "success");
 
     setTimeout(() => {
-        if (data.user.role === 'admin') {
+        if (data.user.is_admin === true) {
             window.location.href = '/admin.html';
         } else {
             window.location.href = '/dashboard.html';
