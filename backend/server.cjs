@@ -65,12 +65,21 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// Dashboard page - User dashboard
-app.get('/dashboard', (req, res) => {
+// ============== DASHBOARD ROUTE (Redirects based on user type) ==============
+app.get('/dashboard', async (req, res) => {
+    // Check if user is logged in
     if (!req.session.userId) {
         return res.redirect('/');
     }
-    res.sendFile(path.join(__dirname, '../frontend/dashboard.html'));
+    
+    // Check if user is admin
+    if (req.session.isAdmin === true) {
+        // Admin goes to admin panel
+        return res.sendFile(path.join(__dirname, '../frontend/admin.html'));
+    } else {
+        // Regular user goes to user dashboard
+        return res.sendFile(path.join(__dirname, '../frontend/dashboard.html'));
+    }
 });
 
 // Admin page - Admin panel
@@ -283,7 +292,7 @@ app.get('/api/debug-user/:email', async (req, res) => {
     }
 });
 
-// ============== LOGIN (Complete Working Version) ==============
+// ============== LOGIN ==============
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -294,7 +303,6 @@ app.post('/api/login', async (req, res) => {
         
         console.log('Login attempt for:', email);
         
-        // Get user by email only (no JOIN to avoid type issues)
         const result = await pool.query(
             `SELECT id, full_name, email, password_hash, phone, roll_number, 
                     department, profile_pic, is_admin, is_verified, reputation_points
@@ -309,14 +317,8 @@ app.post('/api/login', async (req, res) => {
         }
         
         const user = result.rows[0];
-        console.log('User found:', user.email, 'Admin:', user.is_admin);
+        console.log('User found:', user.email, 'is_admin value:', user.is_admin);
         
-        // Check if user is verified (if you have verification enabled)
-        // if (!user.is_verified) {
-        //     return res.json({ success: false, message: 'Please verify your email first!' });
-        // }
-        
-        // Verify password
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
         
         if (!isValidPassword) {
@@ -324,19 +326,19 @@ app.post('/api/login', async (req, res) => {
             return res.json({ success: false, message: 'Invalid email or password!' });
         }
         
-        // Set session
+        // Set session - IMPORTANT: Store is_admin correctly
         req.session.userId = parseInt(user.id, 10);
         req.session.userName = user.full_name;
         req.session.userEmail = user.email;
-        req.session.isAdmin = user.is_admin === true;
+        req.session.isAdmin = user.is_admin === true || user.is_admin === 't' || user.is_admin === 1;
         
-        // Update last active timestamp
+        console.log('Session isAdmin set to:', req.session.isAdmin);
+        
         await pool.query(
             'UPDATE users SET last_active = NOW() WHERE id = $1',
             [parseInt(user.id, 10)]
         );
         
-        // Remove sensitive data
         delete user.password_hash;
         
         console.log('Login successful for:', email);
@@ -351,6 +353,16 @@ app.post('/api/login', async (req, res) => {
         console.error('Login error details:', error);
         res.json({ success: false, message: 'Login failed. Please try again.' });
     }
+});
+
+// ============== DEBUG SESSION ==============
+app.get('/api/debug-session', (req, res) => {
+    res.json({
+        userId: req.session.userId,
+        userName: req.session.userName,
+        isAdmin: req.session.isAdmin,
+        sessionExists: !!req.session
+    });
 });
 
 // ============== REPORT LOST ITEM ==============
