@@ -298,7 +298,7 @@ app.post('/api/update-profile', upload.single('profile_pic'), async (req, res) =
 
 // ============== ITEM ROUTES ==============
 
-// REPORT LOST ITEM
+// ============== REPORT LOST ITEM ==============
 app.post('/api/lost-item', upload.single('image'), async (req, res) => {
     try {
         const { item_name, category, description, location_lost, date_lost, time_lost, contact_phone, latitude, longitude, user_id } = req.body;
@@ -319,6 +319,34 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
              latitude, longitude, date_lost, time_lost, contact_phone]
         );
         
+        // ========== CREATE NOTIFICATIONS FOR SAME CAMPUS USERS ==========
+        // Get the user's campus_id
+        const userCampus = await pool.query(
+            'SELECT campus_id, full_name FROM users WHERE id = $1',
+            [userId]
+        );
+        const campusId = userCampus.rows[0]?.campus_id;
+        const userName = userCampus.rows[0]?.full_name;
+        
+        if (campusId) {
+            // Get all users from same campus except the reporter
+            const sameCampusUsers = await pool.query(
+                'SELECT id FROM users WHERE campus_id = $1 AND id != $2',
+                [campusId, userId]
+            );
+            
+            // Create notification for each user
+            for (const user of sameCampusUsers.rows) {
+                await pool.query(
+                    `INSERT INTO notifications (user_id, title, message, type, is_read) 
+                     VALUES ($1, $2, $3, $4, false)`,
+                    [user.id, 'New Lost Item', `${userName} reported a lost item: ${item_name} at ${location_lost}`, 'lost']
+                );
+            }
+            
+            console.log(`Created ${sameCampusUsers.rows.length} notifications for lost item`);
+        }
+        
         res.json({ success: true, message: 'Lost item reported!', item_id: result.rows[0].item_id });
     } catch (error) {
         console.error('Error reporting lost item:', error);
@@ -326,7 +354,7 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
     }
 });
 
-// REPORT FOUND ITEM
+// ============== REPORT FOUND ITEM ==============
 app.post('/api/found-item', upload.single('image'), async (req, res) => {
     try {
         const { item_name, category, description, location_found, date_found, time_found, contact_phone, latitude, longitude, user_id } = req.body;
@@ -353,10 +381,99 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
             [userId]
         );
         
+        // ========== CREATE NOTIFICATIONS FOR SAME CAMPUS USERS ==========
+        // Get the user's campus_id
+        const userCampus = await pool.query(
+            'SELECT campus_id, full_name FROM users WHERE id = $1',
+            [userId]
+        );
+        const campusId = userCampus.rows[0]?.campus_id;
+        const userName = userCampus.rows[0]?.full_name;
+        
+        if (campusId) {
+            // Get all users from same campus except the reporter
+            const sameCampusUsers = await pool.query(
+                'SELECT id FROM users WHERE campus_id = $1 AND id != $2',
+                [campusId, userId]
+            );
+            
+            // Create notification for each user
+            for (const user of sameCampusUsers.rows) {
+                await pool.query(
+                    `INSERT INTO notifications (user_id, title, message, type, is_read) 
+                     VALUES ($1, $2, $3, $4, false)`,
+                    [user.id, 'New Found Item', `${userName} found an item: ${item_name} at ${location_found}`, 'found']
+                );
+            }
+            
+            console.log(`Created ${sameCampusUsers.rows.length} notifications for found item`);
+        }
+        
         res.json({ success: true, message: 'Found item reported!', found_id: result.rows[0].found_id });
     } catch (error) {
         console.error('Error reporting found item:', error);
         res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== SUBMIT CLAIM ==============
+app.post('/api/submit-claim', async (req, res) => {
+    const { claimant_id, lost_item_id, found_item_id, message } = req.body;
+    let claimantId = claimant_id ? parseInt(claimant_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!claimantId) {
+        return res.json({ success: false, message: 'Claimant ID required!' });
+    }
+    
+    try {
+        let owner_id;
+        let itemName = '';
+        
+        if (lost_item_id) {
+            const item = await pool.query('SELECT user_id, item_name FROM lost_items WHERE item_id = $1', [lost_item_id]);
+            owner_id = item.rows[0]?.user_id;
+            itemName = item.rows[0]?.item_name;
+        } else {
+            const item = await pool.query('SELECT user_id, item_name FROM found_items WHERE found_id = $1', [found_item_id]);
+            owner_id = item.rows[0]?.user_id;
+            itemName = item.rows[0]?.item_name;
+        }
+        
+        await pool.query(
+            `INSERT INTO claims (lost_item_id, found_item_id, claimant_id, owner_id, message) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [lost_item_id || null, found_item_id || null, claimantId, owner_id, message]
+        );
+        
+        const claimant = await pool.query('SELECT full_name FROM users WHERE id = $1', [claimantId]);
+        
+        // Create notification for the owner
+        await pool.query(
+            `INSERT INTO notifications (user_id, title, message, type, is_read) 
+             VALUES ($1, $2, $3, $4, false)`,
+            [owner_id, 'New Claim', `${claimant.rows[0].full_name} has claimed "${itemName}". Please review the claim.`, 'claim']
+        );
+        
+        res.json({ success: true, message: 'Claim submitted!' });
+    } catch (error) {
+        console.error('Error submitting claim:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== TEST NOTIFICATION (for debugging) ==============
+app.post('/api/test-notification', async (req, res) => {
+    const { user_id, title, message } = req.body;
+    
+    try {
+        await pool.query(
+            `INSERT INTO notifications (user_id, title, message, type, is_read) 
+             VALUES ($1, $2, $3, $4, false)`,
+            [parseInt(user_id), title || 'Test Notification', message || 'This is a test notification', 'test']
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, error: error.message });
     }
 });
 
@@ -591,48 +708,6 @@ app.get('/api/announcements', async (req, res) => {
         res.json({ success: true, announcements: result.rows });
     } catch (error) {
         console.error('Error fetching announcements:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== CLAIM ROUTES ==============
-
-// SUBMIT CLAIM
-app.post('/api/submit-claim', async (req, res) => {
-    const { claimant_id, lost_item_id, found_item_id, message } = req.body;
-    let claimantId = claimant_id ? parseInt(claimant_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!claimantId) {
-        return res.json({ success: false, message: 'Claimant ID required!' });
-    }
-    
-    try {
-        let owner_id;
-        if (lost_item_id) {
-            const item = await pool.query('SELECT user_id FROM lost_items WHERE item_id = $1', [lost_item_id]);
-            owner_id = item.rows[0]?.user_id;
-        } else {
-            const item = await pool.query('SELECT user_id FROM found_items WHERE found_id = $1', [found_item_id]);
-            owner_id = item.rows[0]?.user_id;
-        }
-        
-        await pool.query(
-            `INSERT INTO claims (lost_item_id, found_item_id, claimant_id, owner_id, message) 
-             VALUES ($1, $2, $3, $4, $5)`,
-            [lost_item_id || null, found_item_id || null, claimantId, owner_id, message]
-        );
-        
-        const claimant = await pool.query('SELECT full_name FROM users WHERE id = $1', [claimantId]);
-        
-        await pool.query(
-            `INSERT INTO notifications (user_id, title, message, type) 
-             VALUES ($1, $2, $3, $4)`,
-            [owner_id, 'New Claim', `${claimant.rows[0].full_name} has claimed an item you reported.`, 'claim']
-        );
-        
-        res.json({ success: true, message: 'Claim submitted!' });
-    } catch (error) {
-        console.error('Error submitting claim:', error);
         res.json({ success: false, message: error.message });
     }
 });
