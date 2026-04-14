@@ -41,7 +41,7 @@ app.use(cors({
     credentials: true
 }));
 
-// Session configuration
+// Session configuration (kept for admin panel compatibility)
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
@@ -60,29 +60,21 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/uploads', express.static(path.join(__dirname, '../frontend/uploads')));
 
 // ============== HTML ROUTES ==============
-// Home page - Login/Register
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// ============== DASHBOARD ROUTE (Redirects based on user type) ==============
 app.get('/dashboard', async (req, res) => {
-    // Check if user is logged in
     if (!req.session.userId) {
         return res.redirect('/');
     }
-    
-    // Check if user is admin
     if (req.session.isAdmin === true) {
-        // Admin goes to admin panel
         return res.sendFile(path.join(__dirname, '../frontend/admin.html'));
     } else {
-        // Regular user goes to user dashboard
         return res.sendFile(path.join(__dirname, '../frontend/dashboard.html'));
     }
 });
 
-// Admin page - Admin panel
 app.get('/admin', (req, res) => {
     if (!req.session.userId) {
         return res.redirect('/');
@@ -115,76 +107,15 @@ const upload = multer({
     }
 });
 
-// Serve uploads
-app.use('/uploads', express.static(path.join(__dirname, '../frontend/uploads')));
-;
+// ============== AUTHENTICATION ROUTES ==============
 
-// ============== CURRENT USER ==============
-app.get('/api/current-user', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
-    try {
-        const userId = parseInt(req.session.userId, 10);
-        console.log('Fetching user with ID:', userId);
-        
-        const result = await pool.query(
-            `SELECT id, full_name, email, phone, roll_number, department, profile_pic, 
-                    reputation_points, items_found, items_returned, created_at, is_admin
-             FROM users WHERE id = $1`,
-            [userId]
-        );
-        
-        if (result.rows.length > 0) {
-            res.json({ success: true, user: result.rows[0] });
-        } else {
-            res.json({ success: false, message: 'User not found' });
-        }
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== UPDATE PROFILE ==============
-app.post('/api/update-profile', upload.single('profile_pic'), async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
-    try {
-        const userId = toInt(req.session.userId);
-        const { full_name, phone, department } = req.body;
-        let profile_pic = req.body.existing_pic;
-        
-        if (req.file) {
-            profile_pic = req.file.filename;
-        }
-        
-        await pool.query(
-            `UPDATE users SET full_name = $1, phone = $2, department = $3, profile_pic = $4 
-             WHERE id = $5`,
-            [full_name, phone, department, profile_pic, userId]
-        );
-        
-        res.json({ success: true, message: 'Profile updated successfully!' });
-    } catch (error) {
-        console.error('Error updating profile:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== REGISTER ==============
-// ============== REGISTER (No Email Verification) ==============
-// ============== REGISTER (With Campus Code) ==============
+// REGISTER
 app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
     try {
         const { full_name, email, password, phone, roll_number, department, campus_code } = req.body;
         
         console.log('Registration attempt for:', email, 'Campus code:', campus_code);
         
-        // Verify campus code exists
         const campusCheck = await pool.query(
             'SELECT campus_id, campus_name FROM campuses WHERE campus_code = $1 AND is_active = true',
             [campus_code]
@@ -197,7 +128,6 @@ app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
         const campus_id = campusCheck.rows[0].campus_id;
         const campus_name = campusCheck.rows[0].campus_name;
         
-        // Check if user already exists
         const existing = await pool.query(
             'SELECT * FROM users WHERE email = $1 OR roll_number = $2',
             [email, roll_number]
@@ -214,7 +144,6 @@ app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
             profile_pic = req.file.filename;
         }
         
-        // Insert user with campus_id
         await pool.query(
             `INSERT INTO users (full_name, email, password_hash, phone, roll_number, department, 
              profile_pic, college_name, campus_id, campus_code, is_verified, reputation_points, items_found, items_returned) 
@@ -225,74 +154,14 @@ app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
         
         console.log('User registered successfully with campus:', campus_name);
         
-        res.json({ 
-            success: true, 
-            message: 'Registration successful! You can now login.' 
-        });
+        res.json({ success: true, message: 'Registration successful! You can now login.' });
     } catch (error) {
         console.error('Registration error:', error);
         res.json({ success: false, message: error.message });
     }
 });
 
-// ============== VERIFY EMAIL ==============
-app.post('/api/verify-email', async (req, res) => {
-    try {
-        const { email, verification_code } = req.body;
-        
-        const result = await pool.query(
-            `SELECT * FROM users WHERE email = $1 AND verification_code = $2 
-             AND verification_expires > NOW() AND is_verified = false`,
-            [email, verification_code]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.json({ success: false, message: 'Invalid or expired verification code!' });
-        }
-        
-        await pool.query(
-            `UPDATE users SET is_verified = true, verification_code = NULL, verification_expires = NULL 
-             WHERE id = $1`,
-            [result.rows[0].id]
-        );
-        
-        res.json({ success: true, message: 'Email verified successfully! You can now login.' });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// DEBUG ROUTE - Remove after testing
-app.get('/api/debug-user/:email', async (req, res) => {
-    try {
-        const { email } = req.params;
-        
-        const result = await pool.query(
-            'SELECT id, email, full_name, is_verified, password_hash FROM users WHERE email = $1',
-            [email]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.json({ success: false, message: 'User not found' });
-        }
-        
-        const user = result.rows[0];
-        res.json({
-            success: true,
-            user: {
-                id: user.id,
-                email: user.email,
-                full_name: user.full_name,
-                is_verified: user.is_verified,
-                password_hash_length: user.password_hash?.length
-            }
-        });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-
-// ============== LOGIN ==============
+// LOGIN
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -326,7 +195,6 @@ app.post('/api/login', async (req, res) => {
             return res.json({ success: false, message: 'Invalid email or password!' });
         }
         
-        // Set session - IMPORTANT: Store is_admin correctly
         req.session.userId = parseInt(user.id, 10);
         req.session.userName = user.full_name;
         req.session.userEmail = user.email;
@@ -334,46 +202,113 @@ app.post('/api/login', async (req, res) => {
         
         console.log('Session isAdmin set to:', req.session.isAdmin);
         
-        await pool.query(
-            'UPDATE users SET last_active = NOW() WHERE id = $1',
-            [parseInt(user.id, 10)]
-        );
+        await pool.query('UPDATE users SET last_active = NOW() WHERE id = $1', [parseInt(user.id, 10)]);
         
         delete user.password_hash;
         
         console.log('Login successful for:', email);
         
-        res.json({ 
-            success: true, 
-            message: 'Login successful!',
-            user: user
-        });
-        
+        res.json({ success: true, message: 'Login successful!', user: user });
     } catch (error) {
         console.error('Login error details:', error);
         res.json({ success: false, message: 'Login failed. Please try again.' });
     }
 });
 
-// ============== DEBUG SESSION ==============
-app.get('/api/debug-session', (req, res) => {
-    res.json({
-        userId: req.session.userId,
-        userName: req.session.userName,
-        isAdmin: req.session.isAdmin,
-        sessionExists: !!req.session
-    });
+// LOGOUT
+app.post('/api/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ success: true, message: 'Logged out successfully!' });
 });
 
-// ============== REPORT LOST ITEM ==============
-app.post('/api/lost-item', upload.single('image'), async (req, res) => {
+// ============== USER PROFILE ROUTES ==============
+
+// GET current user (accepts user_id query param)
+app.get('/api/current-user', async (req, res) => {
+    const { user_id } = req.query;
+    
+    if (user_id) {
+        try {
+            const result = await pool.query(
+                `SELECT id, full_name, email, phone, roll_number, department, profile_pic, 
+                        reputation_points, items_found, items_returned, created_at, is_admin
+                 FROM users WHERE id = $1`,
+                [parseInt(user_id)]
+            );
+            if (result.rows.length > 0) {
+                return res.json({ success: true, user: result.rows[0] });
+            }
+        } catch (error) {
+            console.error('Error fetching user:', error);
+        }
+    }
+    
+    // Fallback to session
     if (!req.session.userId) {
         return res.json({ success: false, message: 'Not logged in' });
     }
     
     try {
-        const userId = toInt(req.session.userId);
-        const { item_name, category, description, location_lost, date_lost, time_lost, contact_phone, latitude, longitude } = req.body;
+        const userId = parseInt(req.session.userId, 10);
+        const result = await pool.query(
+            `SELECT id, full_name, email, phone, roll_number, department, profile_pic, 
+                    reputation_points, items_found, items_returned, created_at, is_admin
+             FROM users WHERE id = $1`,
+            [userId]
+        );
+        
+        if (result.rows.length > 0) {
+            res.json({ success: true, user: result.rows[0] });
+        } else {
+            res.json({ success: false, message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// UPDATE PROFILE
+app.post('/api/update-profile', upload.single('profile_pic'), async (req, res) => {
+    const { full_name, phone, department, user_id } = req.body;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required!' });
+    }
+    
+    try {
+        let profile_pic = req.body.existing_pic;
+        if (req.file) {
+            profile_pic = req.file.filename;
+        }
+        
+        await pool.query(
+            `UPDATE users SET full_name = $1, phone = $2, department = $3, profile_pic = $4 
+             WHERE id = $5`,
+            [full_name, phone, department, profile_pic, userId]
+        );
+        
+        res.json({ success: true, message: 'Profile updated successfully!' });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== ITEM ROUTES ==============
+
+// REPORT LOST ITEM
+app.post('/api/lost-item', upload.single('image'), async (req, res) => {
+    try {
+        const { item_name, category, description, location_lost, date_lost, time_lost, contact_phone, latitude, longitude, user_id } = req.body;
+        
+        let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+        
+        if (!userId) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
         let image_url = req.file ? '/uploads/' + req.file.filename : null;
         
         const result = await pool.query(
@@ -391,15 +326,17 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
     }
 });
 
-// ============== REPORT FOUND ITEM ==============
+// REPORT FOUND ITEM
 app.post('/api/found-item', upload.single('image'), async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
     try {
-        const userId = toInt(req.session.userId);
-        const { item_name, category, description, location_found, date_found, time_found, contact_phone, latitude, longitude } = req.body;
+        const { item_name, category, description, location_found, date_found, time_found, contact_phone, latitude, longitude, user_id } = req.body;
+        
+        let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+        
+        if (!userId) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
         let image_url = req.file ? '/uploads/' + req.file.filename : null;
         
         const result = await pool.query(
@@ -423,67 +360,43 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
     }
 });
 
-// ============== GET MY ITEMS ==============
-// GET /api/my-items
+// GET MY ITEMS
 app.get('/api/my-items', async (req, res) => {
     const { user_id } = req.query;
-    if (!user_id) return res.json({ success: false, message: 'User ID required' });
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
     
-    const lostItems = await pool.query('SELECT * FROM lost_items WHERE user_id = $1', [user_id]);
-    const foundItems = await pool.query('SELECT * FROM found_items WHERE user_id = $1', [user_id]);
-    res.json({ success: true, lostItems: lostItems.rows, foundItems: foundItems.rows });
-});
-
-// DELETE /api/item/:type/:id
-app.delete('/api/item/:type/:id', async (req, res) => {
-    const { user_id } = req.query;
-    const { type, id } = req.params;
-    const table = type === 'lost' ? 'lost_items' : 'found_items';
-    const idField = type === 'lost' ? 'item_id' : 'found_id';
-    await pool.query(`DELETE FROM ${table} WHERE ${idField} = $1 AND user_id = $2`, [id, user_id]);
-    res.json({ success: true });
-});
-
-// ============== GET ALL LOST ITEMS ==============
-app.get('/api/lost-items', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required' });
     }
     
     try {
-        const userId = toInt(req.session.userId);
-        
-        const userResult = await pool.query(
-            'SELECT campus_id FROM users WHERE id = $1',
+        const lostItems = await pool.query(
+            `SELECT * FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
             [userId]
         );
         
-        const campusId = userResult.rows[0]?.campus_id;
-        const { category, search } = req.query;
+        const foundItems = await pool.query(
+            `SELECT * FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
+            [userId]
+        );
         
-        let query = `
-            SELECT li.*, u.full_name, u.email, u.phone as user_phone, u.profile_pic 
-            FROM lost_items li 
-            JOIN users u ON li.user_id = u.id 
-            WHERE li.status = 'lost' AND u.campus_id::text = $1::text
-        `;
-        let params = [campusId];
-        let paramIndex = 2;
-        
-        if (category && category !== 'all') {
-            query += ` AND li.category = $${paramIndex}`;
-            params.push(category);
-            paramIndex++;
-        }
-        
-        if (search) {
-            query += ` AND (li.item_name ILIKE $${paramIndex} OR li.description ILIKE $${paramIndex})`;
-            params.push(`%${search}%`);
-        }
-        
-        query += ` ORDER BY li.created_at DESC`;
-        
-        const result = await pool.query(query, params);
+        res.json({ success: true, lostItems: lostItems.rows, foundItems: foundItems.rows });
+    } catch (error) {
+        console.error('Error fetching my items:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// GET ALL LOST ITEMS (for stats/public view)
+app.get('/api/lost-items', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT li.*, u.full_name, u.email, u.phone as user_phone, u.profile_pic 
+             FROM lost_items li 
+             JOIN users u ON li.user_id = u.id 
+             WHERE li.status = 'lost'
+             ORDER BY li.created_at DESC`
+        );
         res.json({ success: true, items: result.rows });
     } catch (error) {
         console.error('Error fetching lost items:', error);
@@ -491,46 +404,16 @@ app.get('/api/lost-items', async (req, res) => {
     }
 });
 
-// ============== GET ALL FOUND ITEMS ==============
+// GET ALL FOUND ITEMS (for stats/public view)
 app.get('/api/found-items', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
-    }
-    
     try {
-        const userId = toInt(req.session.userId);
-        
-        const userResult = await pool.query(
-            'SELECT campus_id FROM users WHERE id = $1',
-            [userId]
+        const result = await pool.query(
+            `SELECT fi.*, u.full_name, u.email, u.phone as user_phone, u.profile_pic 
+             FROM found_items fi 
+             JOIN users u ON fi.user_id = u.id 
+             WHERE fi.status = 'found'
+             ORDER BY fi.created_at DESC`
         );
-        
-        const campusId = userResult.rows[0]?.campus_id;
-        const { category, search } = req.query;
-        
-        let query = `
-            SELECT fi.*, u.full_name, u.email, u.phone as user_phone, u.profile_pic 
-            FROM found_items fi 
-            JOIN users u ON fi.user_id = u.id 
-            WHERE fi.status = 'found' AND u.campus_id::text = $1::text
-        `;
-        let params = [campusId];
-        let paramIndex = 2;
-        
-        if (category && category !== 'all') {
-            query += ` AND fi.category = $${paramIndex}`;
-            params.push(category);
-            paramIndex++;
-        }
-        
-        if (search) {
-            query += ` AND (fi.item_name ILIKE $${paramIndex} OR fi.description ILIKE $${paramIndex})`;
-            params.push(`%${search}%`);
-        }
-        
-        query += ` ORDER BY fi.created_at DESC`;
-        
-        const result = await pool.query(query, params);
         res.json({ success: true, items: result.rows });
     } catch (error) {
         console.error('Error fetching found items:', error);
@@ -538,15 +421,17 @@ app.get('/api/found-items', async (req, res) => {
     }
 });
 
-// ============== DELETE ITEM ==============
+// DELETE ITEM
 app.delete('/api/item/:type/:id', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { user_id } = req.query;
+    const { type, id } = req.params;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        const userId = toInt(req.session.userId);
-        const { type, id } = req.params;
         const table = type === 'lost' ? 'lost_items' : 'found_items';
         const idField = type === 'lost' ? 'item_id' : 'found_id';
         
@@ -562,16 +447,19 @@ app.delete('/api/item/:type/:id', async (req, res) => {
     }
 });
 
-// ============== GET MESSAGES ==============
+// ============== MESSAGE ROUTES ==============
+
+// GET MESSAGES
 app.get('/api/messages/:userId', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { user_id } = req.query;
+    let currentUserId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    const otherUserId = parseInt(req.params.userId);
+    
+    if (!currentUserId) {
+        return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        const currentUserId = toInt(req.session.userId);
-        const otherUserId = toInt(req.params.userId);
-        
         const campusCheck = await pool.query(
             `SELECT u1.campus_id::text as user1_campus, u2.campus_id::text as user2_campus 
              FROM users u1, users u2 
@@ -601,26 +489,25 @@ app.get('/api/messages/:userId', async (req, res) => {
     }
 });
 
-// ============== SEND MESSAGE ==============
+// SEND MESSAGE
 app.post('/api/send-message', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { sender_id, receiver_id, message } = req.body;
+    let senderId = sender_id ? parseInt(sender_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!senderId) {
+        return res.json({ success: false, message: 'Sender ID required!' });
     }
     
     try {
-        const senderId = toInt(req.session.userId);
-        const { receiver_id, message } = req.body;
-        const receiverId = toInt(receiver_id);
-        
         await pool.query(
             `INSERT INTO messages (sender_id, receiver_id, message) VALUES ($1, $2, $3)`,
-            [senderId, receiverId, message]
+            [senderId, parseInt(receiver_id), message]
         );
         
         await pool.query(
             `INSERT INTO notifications (user_id, title, message, type) 
              VALUES ($1, $2, $3, $4)`,
-            [receiverId, 'New Message', 'You have a new message', 'message']
+            [parseInt(receiver_id), 'New Message', 'You have a new message', 'message']
         );
         
         res.json({ success: true, message: 'Message sent!' });
@@ -630,15 +517,18 @@ app.post('/api/send-message', async (req, res) => {
     }
 });
 
-// ============== GET NOTIFICATIONS ==============
+// ============== NOTIFICATION ROUTES ==============
+
+// GET NOTIFICATIONS
 app.get('/api/notifications', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { user_id } = req.query;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        const userId = toInt(req.session.userId);
-        
         const result = await pool.query(
             `SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`,
             [userId]
@@ -656,15 +546,16 @@ app.get('/api/notifications', async (req, res) => {
     }
 });
 
-// ============== GET LEADERBOARD ==============
+// ============== LEADERBOARD ==============
 app.get('/api/leaderboard', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { user_id } = req.query;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        const userId = toInt(req.session.userId);
-        
         const userResult = await pool.query(
             'SELECT campus_id FROM users WHERE id = $1',
             [userId]
@@ -688,7 +579,7 @@ app.get('/api/leaderboard', async (req, res) => {
     }
 });
 
-// ============== GET ANNOUNCEMENTS ==============
+// ============== ANNOUNCEMENTS ==============
 app.get('/api/announcements', async (req, res) => {
     try {
         const result = await pool.query(
@@ -704,16 +595,18 @@ app.get('/api/announcements', async (req, res) => {
     }
 });
 
-// ============== SUBMIT CLAIM ==============
+// ============== CLAIM ROUTES ==============
+
+// SUBMIT CLAIM
 app.post('/api/submit-claim', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { claimant_id, lost_item_id, found_item_id, message } = req.body;
+    let claimantId = claimant_id ? parseInt(claimant_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!claimantId) {
+        return res.json({ success: false, message: 'Claimant ID required!' });
     }
     
     try {
-        const claimantId = toInt(req.session.userId);
-        const { lost_item_id, found_item_id, message } = req.body;
-        
         let owner_id;
         if (lost_item_id) {
             const item = await pool.query('SELECT user_id FROM lost_items WHERE item_id = $1', [lost_item_id]);
@@ -744,22 +637,18 @@ app.post('/api/submit-claim', async (req, res) => {
     }
 });
 
-// ============== GET MATCHES ==============
+// ============== MATCHES ==============
 app.get('/api/matches', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { user_id } = req.query;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        const userId = toInt(req.session.userId);
-        
-        const lostItems = await pool.query(
-            `SELECT * FROM lost_items WHERE status = 'lost'`
-        );
-        
-        const foundItems = await pool.query(
-            `SELECT * FROM found_items WHERE status = 'found'`
-        );
+        const lostItems = await pool.query(`SELECT * FROM lost_items WHERE status = 'lost'`);
+        const foundItems = await pool.query(`SELECT * FROM found_items WHERE status = 'found'`);
         
         const matches = [];
         
@@ -806,13 +695,14 @@ app.get('/api/matches', async (req, res) => {
 
 // ============== CAMPUS INFO ==============
 app.get('/api/campus-info', async (req, res) => {
-    if (!req.session.userId) {
-        return res.json({ success: false, message: 'Not logged in' });
+    const { user_id } = req.query;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        const userId = toInt(req.session.userId);
-        
         const result = await pool.query(
             `SELECT u.college_name, u.campus_id, c.campus_email_domain, c.location,
                     (SELECT COUNT(*) FROM users WHERE campus_id = u.campus_id AND is_verified = true) as total_students,
@@ -827,32 +717,6 @@ app.get('/api/campus-info', async (req, res) => {
         res.json({ success: true, campus: result.rows[0] });
     } catch (error) {
         console.error('Error fetching campus info:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== RESEND VERIFICATION ==============
-app.post('/api/resend-verification', async (req, res) => {
-    try {
-        const { email } = req.body;
-        
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const verificationExpires = new Date();
-        verificationExpires.setHours(verificationExpires.getHours() + 24);
-        
-        const result = await pool.query(
-            `UPDATE users SET verification_code = $1, verification_expires = $2 
-             WHERE email = $3 AND is_verified = false RETURNING id`,
-            [verificationCode, verificationExpires, email]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.json({ success: false, message: 'User not found or already verified!' });
-        }
-        
-        res.json({ success: true, message: 'New verification code sent!' });
-    } catch (error) {
-        console.error('Error resending verification:', error);
         res.json({ success: false, message: error.message });
     }
 });
@@ -879,24 +743,9 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// ============== ADMIN ROUTES ==============
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ============== ADMIN: CREATE CAMPUS ==============
+// ADMIN: CREATE CAMPUS
 app.post('/api/admin/create-campus', async (req, res) => {
     try {
         const { campus_name, campus_code, location, user_id } = req.body;
@@ -907,11 +756,7 @@ app.post('/api/admin/create-campus', async (req, res) => {
         
         const userId = parseInt(user_id, 10);
         
-        // Check if user is admin
-        const adminCheck = await pool.query(
-            'SELECT is_admin FROM users WHERE id = $1',
-            [userId]
-        );
+        const adminCheck = await pool.query('SELECT is_admin FROM users WHERE id = $1', [userId]);
         
         if (!adminCheck.rows[0]?.is_admin) {
             return res.json({ success: false, message: 'Admin access required!' });
@@ -921,11 +766,7 @@ app.post('/api/admin/create-campus', async (req, res) => {
             return res.json({ success: false, message: 'Campus name and code are required!' });
         }
         
-        // Check if code already exists
-        const existing = await pool.query(
-            'SELECT * FROM campuses WHERE campus_code = $1',
-            [campus_code]
-        );
+        const existing = await pool.query('SELECT * FROM campuses WHERE campus_code = $1', [campus_code]);
         
         if (existing.rows.length > 0) {
             return res.json({ success: false, message: 'Campus code already exists!' });
@@ -937,17 +778,14 @@ app.post('/api/admin/create-campus', async (req, res) => {
             [campus_name, campus_code, location, userId]
         );
         
-        res.json({ 
-            success: true, 
-            message: `Campus "${campus_name}" created with code: ${campus_code}`
-        });
+        res.json({ success: true, message: `Campus "${campus_name}" created with code: ${campus_code}` });
     } catch (error) {
         console.error('Error creating campus:', error);
         res.json({ success: false, message: error.message });
     }
 });
 
-// ============== GET ALL CAMPUSES (Admin) - Updated ==============
+// ADMIN: GET ALL CAMPUSES
 app.get('/api/admin/campuses', async (req, res) => {
     try {
         const { user_id } = req.query;
@@ -956,10 +794,7 @@ app.get('/api/admin/campuses', async (req, res) => {
             return res.json({ success: false, message: 'User ID required!' });
         }
         
-        const adminCheck = await pool.query(
-            'SELECT is_admin FROM users WHERE id = $1',
-            [parseInt(user_id)]
-        );
+        const adminCheck = await pool.query('SELECT is_admin FROM users WHERE id = $1', [parseInt(user_id)]);
         
         if (!adminCheck.rows[0]?.is_admin) {
             return res.json({ success: false, message: 'Admin access required!' });
@@ -974,11 +809,86 @@ app.get('/api/admin/campuses', async (req, res) => {
         
         res.json({ success: true, campuses: result.rows });
     } catch (error) {
+        console.error('Error fetching campuses:', error);
         res.json({ success: false, message: error.message });
     }
 });
 
-// ============== VERIFY CAMPUS CODE (for registration) ==============
+// ADMIN: GET ALL USERS
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const { user_id } = req.query;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
+        const adminCheck = await pool.query('SELECT is_admin FROM users WHERE id = $1', [parseInt(user_id)]);
+        
+        if (!adminCheck.rows[0]?.is_admin) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
+        const result = await pool.query(
+            'SELECT id, full_name, email, phone, roll_number, department, college_name, reputation_points, is_verified, created_at FROM users ORDER BY created_at DESC'
+        );
+        res.json({ success: true, users: result.rows });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ADMIN: DELETE CAMPUS
+app.delete('/api/admin/delete-campus/:campusId', async (req, res) => {
+    try {
+        const { user_id } = req.body;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
+        const adminCheck = await pool.query('SELECT is_admin FROM users WHERE id = $1', [parseInt(user_id)]);
+        
+        if (!adminCheck.rows[0]?.is_admin) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
+        await pool.query('DELETE FROM campuses WHERE campus_id = $1', [req.params.campusId]);
+        res.json({ success: true, message: 'Campus deleted successfully!' });
+    } catch (error) {
+        console.error('Error deleting campus:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ADMIN: CREATE ANNOUNCEMENT
+app.post('/api/admin/create-announcement', async (req, res) => {
+    try {
+        const { title, content, user_id } = req.body;
+        
+        if (!user_id) {
+            return res.json({ success: false, message: 'User ID required!' });
+        }
+        
+        const adminCheck = await pool.query('SELECT is_admin FROM users WHERE id = $1', [parseInt(user_id)]);
+        
+        if (!adminCheck.rows[0]?.is_admin) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
+        await pool.query(
+            'INSERT INTO announcements (title, content, created_by, is_active) VALUES ($1, $2, $3, true)',
+            [title, content, parseInt(user_id)]
+        );
+        res.json({ success: true, message: 'Announcement created!' });
+    } catch (error) {
+        console.error('Error creating announcement:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ADMIN: VERIFY CAMPUS CODE
 app.post('/api/verify-campus-code', async (req, res) => {
     try {
         const { campus_code } = req.body;
@@ -992,96 +902,14 @@ app.post('/api/verify-campus-code', async (req, res) => {
             return res.json({ success: false, message: 'Invalid campus code!' });
         }
         
-        res.json({ 
-            success: true, 
-            campus_id: result.rows[0].campus_id,
-            campus_name: result.rows[0].campus_name
-        });
+        res.json({ success: true, campus_id: result.rows[0].campus_id, campus_name: result.rows[0].campus_name });
     } catch (error) {
+        console.error('Error verifying campus code:', error);
         res.json({ success: false, message: error.message });
     }
 });
 
-// ============== GET ALL USERS (Admin) - Updated ==============
-app.get('/api/admin/users', async (req, res) => {
-    try {
-        const { user_id } = req.query;
-        
-        if (!user_id) {
-            return res.json({ success: false, message: 'User ID required!' });
-        }
-        
-        const adminCheck = await pool.query(
-            'SELECT is_admin FROM users WHERE id = $1',
-            [parseInt(user_id)]
-        );
-        
-        if (!adminCheck.rows[0]?.is_admin) {
-            return res.json({ success: false, message: 'Admin access required!' });
-        }
-        
-        const result = await pool.query(
-            'SELECT id, full_name, email, phone, roll_number, department, college_name, reputation_points, is_verified, created_at FROM users ORDER BY created_at DESC'
-        );
-        res.json({ success: true, users: result.rows });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-});
-
-app.delete('/api/admin/delete-campus/:campusId', async (req, res) => {
-    try {
-        const { user_id } = req.body;
-        
-        if (!user_id) {
-            return res.json({ success: false, message: 'User ID required!' });
-        }
-        
-        const adminCheck = await pool.query(
-            'SELECT is_admin FROM users WHERE id = $1',
-            [parseInt(user_id)]
-        );
-        
-        if (!adminCheck.rows[0]?.is_admin) {
-            return res.json({ success: false, message: 'Admin access required!' });
-        }
-        
-        await pool.query('DELETE FROM campuses WHERE campus_id = $1', [req.params.campusId]);
-        res.json({ success: true, message: 'Campus deleted successfully!' });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== ADMIN: CREATE ANNOUNCEMENT ==============
-app.post('/api/admin/create-announcement', async (req, res) => {
-    try {
-        const { title, content, user_id } = req.body;
-        
-        if (!user_id) {
-            return res.json({ success: false, message: 'User ID required!' });
-        }
-        
-        const adminCheck = await pool.query(
-            'SELECT is_admin FROM users WHERE id = $1',
-            [parseInt(user_id)]
-        );
-        
-        if (!adminCheck.rows[0]?.is_admin) {
-            return res.json({ success: false, message: 'Admin access required!' });
-        }
-        
-        await pool.query(
-            'INSERT INTO announcements (title, content, created_by, is_active) VALUES ($1, $2, $3, true)',
-            [title, content, parseInt(user_id)]
-        );
-        res.json({ success: true, message: 'Announcement created!' });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== CHECK IF USER IS ADMIN ==============
+// ADMIN: CHECK IF USER IS ADMIN
 app.get('/api/user/is-admin', async (req, res) => {
     if (!req.session.userId) {
         return res.json({ success: false, message: 'Not logged in', isAdmin: false });
@@ -1089,10 +917,7 @@ app.get('/api/user/is-admin', async (req, res) => {
     
     try {
         const userId = parseInt(req.session.userId, 10);
-        const result = await pool.query(
-            'SELECT is_admin FROM users WHERE id = $1',
-            [userId]
-        );
+        const result = await pool.query('SELECT is_admin FROM users WHERE id = $1', [userId]);
         
         const isAdmin = result.rows[0]?.is_admin === true;
         console.log('Admin check for user:', userId, 'isAdmin:', isAdmin);
