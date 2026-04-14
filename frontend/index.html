@@ -395,7 +395,10 @@
             <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
         </select>
     </div>
-    <div class="form-group"><input type="text" id="regCollege" placeholder="College Name" required></div>
+    <div class="form-group">
+        <input type="text" id="regCampusCode" placeholder="Campus Code *" required>
+        <small style="color: #94a3b8; font-size: 0.7rem;">Enter the unique code provided by your campus admin</small>
+    </div>
     <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
     <div class="form-group full-width">
         <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
@@ -633,11 +636,15 @@ try {
             document.getElementById('recoveredCount').innerText = "67+";
         }
         
-        // Register User
-        // Update your existing register form submit handler
-// Register User - Updated (no verification)
+// Register User with Campus Code
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    const campusCode = document.getElementById('regCampusCode').value.trim();
+    if (!campusCode) {
+        showToast('Please enter your campus code!', 'error');
+        return;
+    }
     
     const formData = new FormData();
     formData.append('full_name', document.getElementById('regFullName').value);
@@ -646,7 +653,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     formData.append('phone', document.getElementById('regPhone').value);
     formData.append('roll_number', document.getElementById('regRollNumber').value);
     formData.append('department', document.getElementById('regDepartment').value);
-    formData.append('college_name', document.getElementById('regCollege').value);
+    formData.append('campus_code', campusCode);
     
     const profilePic = document.getElementById('regProfilePic');
     if (profilePic && profilePic.files && profilePic.files.length > 0) {
@@ -662,9 +669,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         
         if (data.success) {
             showToast('Registration successful! You can now login.', 'success');
-            // Clear form
             document.getElementById('registerForm').reset();
-            // Flip to login form
             flipToLogin();
         } else {
             showToast(data.message, 'error');

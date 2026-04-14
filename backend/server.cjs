@@ -149,24 +149,27 @@ app.post('/api/update-profile', upload.single('profile_pic'), async (req, res) =
 
 // ============== REGISTER ==============
 // ============== REGISTER (No Email Verification) ==============
+// ============== REGISTER (With Campus Code) ==============
 app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
     try {
-        const { full_name, email, password, phone, roll_number, department } = req.body;
+        const { full_name, email, password, phone, roll_number, department, campus_code } = req.body;
         
-        const emailDomain = email.substring(email.lastIndexOf('@'));
+        console.log('Registration attempt for:', email, 'Campus code:', campus_code);
         
+        // Verify campus code exists
         const campusCheck = await pool.query(
-            'SELECT * FROM campuses WHERE campus_email_domain = $1 AND is_active = true',
-            [emailDomain]
+            'SELECT campus_id, campus_name FROM campuses WHERE campus_code = $1 AND is_active = true',
+            [campus_code]
         );
         
         if (campusCheck.rows.length === 0) {
-            return res.json({ 
-                success: false, 
-                message: 'Only college email addresses are allowed! Please use your college email (@yourcollege.edu)' 
-            });
+            return res.json({ success: false, message: 'Invalid campus code! Please enter a valid code.' });
         }
         
+        const campus_id = campusCheck.rows[0].campus_id;
+        const campus_name = campusCheck.rows[0].campus_name;
+        
+        // Check if user already exists
         const existing = await pool.query(
             'SELECT * FROM users WHERE email = $1 OR roll_number = $2',
             [email, roll_number]
@@ -179,16 +182,20 @@ app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
         const passwordHash = await bcrypt.hash(password, 10);
         let profile_pic = 'default-avatar.png';
         
-        if (req.file) profile_pic = req.file.filename;
+        if (req.file) {
+            profile_pic = req.file.filename;
+        }
         
-        // Set is_verified = true immediately (no email verification needed)
+        // Insert user with campus_id
         await pool.query(
             `INSERT INTO users (full_name, email, password_hash, phone, roll_number, department, 
-             profile_pic, college_name, campus_id, is_verified) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+             profile_pic, college_name, campus_id, campus_code, is_verified, reputation_points, items_found, items_returned) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
             [full_name, email, passwordHash, phone, roll_number, department, profile_pic, 
-             campusCheck.rows[0].campus_name, campusCheck.rows[0].campus_id, true]
+             campus_name, campus_id, campus_code, true, 0, 0, 0]
         );
+        
+        console.log('User registered successfully with campus:', campus_name);
         
         res.json({ 
             success: true, 
@@ -258,15 +265,14 @@ app.get('/api/debug-user/:email', async (req, res) => {
 });
 
 // ============== LOGIN ==============
-// ============== LOGIN (No Verification Required) ==============
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
         const result = await pool.query(
-            `SELECT u.*, c.campus_name as registered_campus 
+            `SELECT u.*, c.campus_name, c.campus_code 
              FROM users u
-             LEFT JOIN campuses c ON u.campus_id::text = c.campus_id::text
+             LEFT JOIN campuses c ON u.campus_id = c.campus_id
              WHERE u.email = $1`,
             [email]
         );
@@ -276,11 +282,6 @@ app.post('/api/login', async (req, res) => {
         }
         
         const user = result.rows[0];
-        
-        // REMOVE or COMMENT OUT this verification check:
-        // if (!user.is_verified) {
-        //     return res.json({ success: false, message: 'Please verify your email first! Check your inbox.' });
-        // }
         
         const valid = await bcrypt.compare(password, user.password_hash);
         
@@ -822,6 +823,147 @@ app.get('/api/stats', async (req, res) => {
             success: false,
             message: "Error fetching stats"
         });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ============== ADMIN: CREATE CAMPUS ==============
+app.post('/api/admin/create-campus', async (req, res) => {
+    if (!req.session.userId) {
+        return res.json({ success: false, message: 'Not logged in' });
+    }
+    
+    try {
+        // Check if user is admin (you can add is_admin column or check email)
+        const userCheck = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        if (!userCheck.rows[0]?.email?.includes('admin')) {
+            return res.json({ success: false, message: 'Admin access required!' });
+        }
+        
+        const { campus_name, campus_code, location } = req.body;
+        
+        if (!campus_name || !campus_code) {
+            return res.json({ success: false, message: 'Campus name and code are required!' });
+        }
+        
+        // Check if code already exists
+        const existing = await pool.query('SELECT * FROM campuses WHERE campus_code = $1', [campus_code]);
+        if (existing.rows.length > 0) {
+            return res.json({ success: false, message: 'Campus code already exists!' });
+        }
+        
+        await pool.query(
+            `INSERT INTO campuses (campus_name, campus_code, location, created_by, is_active) 
+             VALUES ($1, $2, $3, $4, true)`,
+            [campus_name, campus_code, location, req.session.userId]
+        );
+        
+        res.json({ success: true, message: 'Campus created successfully!', campus_code: campus_code });
+    } catch (error) {
+        console.error('Error creating campus:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== GET ALL CAMPUSES (for admin) ==============
+app.get('/api/admin/campuses', async (req, res) => {
+    if (!req.session.userId) {
+        return res.json({ success: false, message: 'Not logged in' });
+    }
+    
+    try {
+        const result = await pool.query('SELECT campus_id, campus_name, campus_code, location, is_active, created_at FROM campuses ORDER BY created_at DESC');
+        res.json({ success: true, campuses: result.rows });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== VERIFY CAMPUS CODE (for registration) ==============
+app.post('/api/verify-campus-code', async (req, res) => {
+    try {
+        const { campus_code } = req.body;
+        
+        const result = await pool.query(
+            'SELECT campus_id, campus_name FROM campuses WHERE campus_code = $1 AND is_active = true',
+            [campus_code]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ success: false, message: 'Invalid campus code!' });
+        }
+        
+        res.json({ 
+            success: true, 
+            campus_id: result.rows[0].campus_id,
+            campus_name: result.rows[0].campus_name
+        });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== ADMIN: GET ALL USERS ==============
+app.get('/api/admin/users', async (req, res) => {
+    if (!req.session.userId) {
+        return res.json({ success: false, message: 'Not logged in' });
+    }
+    
+    try {
+        const result = await pool.query(
+            'SELECT id, full_name, email, phone, roll_number, department, college_name, reputation_points, is_verified, created_at FROM users ORDER BY created_at DESC'
+        );
+        res.json({ success: true, users: result.rows });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== ADMIN: DELETE CAMPUS ==============
+app.delete('/api/admin/delete-campus/:campusId', async (req, res) => {
+    if (!req.session.userId) {
+        return res.json({ success: false, message: 'Not logged in' });
+    }
+    
+    try {
+        await pool.query('DELETE FROM campuses WHERE campus_id = $1', [req.params.campusId]);
+        res.json({ success: true, message: 'Campus deleted successfully!' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== ADMIN: CREATE ANNOUNCEMENT ==============
+app.post('/api/admin/create-announcement', async (req, res) => {
+    if (!req.session.userId) {
+        return res.json({ success: false, message: 'Not logged in' });
+    }
+    
+    try {
+        const { title, content } = req.body;
+        await pool.query(
+            'INSERT INTO announcements (title, content, created_by, is_active) VALUES ($1, $2, $3, true)',
+            [title, content, req.session.userId]
+        );
+        res.json({ success: true, message: 'Announcement created!' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
     }
 });
 
