@@ -1088,7 +1088,7 @@ app.get('/dashboard', (req, res) => {
     }
     
     // Send the dashboard HTML file
-    res.sendFile(path.join(__dirname, '/dashboard.html'));
+    res.sendFile(path.join(__dirname, '../frontend/dashboard.html'));
 });
 
 // ============== SERVE ADMIN PAGE ==============
@@ -1099,7 +1099,7 @@ app.get('/admin', (req, res) => {
     }
     
     // Send the admin HTML file
-    res.sendFile(path.join(__dirname, '/admin.html'));
+    res.sendFile(path.join(__dirname, '../frontend/admin.html'));
 });
 
 // ============== START SERVER ==============
