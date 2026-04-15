@@ -431,38 +431,70 @@ app.post('/api/submit-claim', async (req, res) => {
         let owner_id;
         let itemName = '';
         
+        // Get item details based on type
         if (lost_item_id) {
             const item = await pool.query('SELECT user_id, item_name FROM lost_items WHERE item_id = $1', [lost_item_id]);
-            owner_id = item.rows[0]?.user_id;
-            itemName = item.rows[0]?.item_name;
-        } else {
+            if (item.rows.length === 0) {
+                return res.json({ success: false, message: 'Lost item not found!' });
+            }
+            owner_id = item.rows[0].user_id;
+            itemName = item.rows[0].item_name;
+        } else if (found_item_id) {
             const item = await pool.query('SELECT user_id, item_name FROM found_items WHERE found_id = $1', [found_item_id]);
-            owner_id = item.rows[0]?.user_id;
-            itemName = item.rows[0]?.item_name;
+            if (item.rows.length === 0) {
+                return res.json({ success: false, message: 'Found item not found!' });
+            }
+            owner_id = item.rows[0].user_id;
+            itemName = item.rows[0].item_name;
+        } else {
+            return res.json({ success: false, message: 'Either lost_item_id or found_item_id is required!' });
         }
         
-        await pool.query(
-            `INSERT INTO claims (lost_item_id, found_item_id, claimant_id, owner_id, message) 
-             VALUES ($1, $2, $3, $4, $5)`,
-            [lost_item_id || null, found_item_id || null, claimantId, owner_id, message]
+        // Check if claim already exists
+        const existingClaim = await pool.query(
+            `SELECT * FROM claims WHERE (lost_item_id = $1 OR found_item_id = $2) AND claimant_id = $3 AND status = 'pending'`,
+            [lost_item_id || null, found_item_id || null, claimantId]
         );
         
+        if (existingClaim.rows.length > 0) {
+            return res.json({ success: false, message: 'You already have a pending claim for this item!' });
+        }
+        
+        // Insert the claim
+        const result = await pool.query(
+            `INSERT INTO claims (lost_item_id, found_item_id, claimant_id, owner_id, message, status) 
+             VALUES ($1, $2, $3, $4, $5, 'pending') RETURNING claim_id`,
+            [lost_item_id || null, found_item_id || null, claimantId, owner_id, message || '']
+        );
+        
+        const claimId = result.rows[0].claim_id;
+        
+        // Get claimant name for notification
         const claimant = await pool.query('SELECT full_name FROM users WHERE id = $1', [claimantId]);
+        const claimantName = claimant.rows[0]?.full_name || 'Someone';
         
-        // Create notification for the owner
-        await pool.query(
-            `INSERT INTO notifications (user_id, title, message, type, is_read) 
-             VALUES ($1, $2, $3, $4, false)`,
-            [owner_id, 'New Claim', `${claimant.rows[0].full_name} has claimed "${itemName}". Please review the claim.`, 'claim']
-        );
+        // ========== USE NOTIFICATION SERVICE (if available) ==========
+        // Check if notification service is loaded
+        if (notificationService && typeof notificationService.notifyClaimRequest === 'function') {
+            await notificationService.notifyClaimRequest(claimId, owner_id, claimantName, itemName);
+        } else {
+            // Fallback: Create notification directly
+            await pool.query(
+                `INSERT INTO notifications (user_id, title, message, type, is_read, related_id) 
+                 VALUES ($1, $2, $3, $4, false, $5)`,
+                [owner_id, '📋 New Claim Request', 
+                 `${claimantName} wants to claim "${itemName}". Please review the claim.`, 
+                 'claim', claimId]
+            );
+        }
+        // ============================================================
         
-        res.json({ success: true, message: 'Claim submitted!' });
+        res.json({ success: true, message: 'Claim submitted successfully! The owner will be notified.' });
     } catch (error) {
         console.error('Error submitting claim:', error);
         res.json({ success: false, message: error.message });
     }
 });
-
 // ============== TEST NOTIFICATION (for debugging) ==============
 app.post('/api/test-notification', async (req, res) => {
     const { user_id, title, message } = req.body;
@@ -516,6 +548,13 @@ app.get('/api/lost-items', async (req, res) => {
              WHERE li.status = 'lost'
              ORDER BY li.created_at DESC`
         );
+        // Send notifications to same campus users using the service
+        await notificationService.notifyNewLostItem(
+            result.rows[0].item_id,
+            userId,
+            item_name,
+            location_lost
+        );
         res.json({ success: true, items: result.rows });
     } catch (error) {
         console.error('Error fetching lost items:', error);
@@ -532,6 +571,13 @@ app.get('/api/found-items', async (req, res) => {
              JOIN users u ON fi.user_id = u.id 
              WHERE fi.status = 'found'
              ORDER BY fi.created_at DESC`
+        );
+
+        await notificationService.notifyNewFoundItem(
+            result.rows[0].found_id,
+            userId,
+            item_name,
+            location_found
         );
         res.json({ success: true, items: result.rows });
     } catch (error) {
