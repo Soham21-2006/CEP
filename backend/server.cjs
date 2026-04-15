@@ -511,32 +511,7 @@ app.post('/api/test-notification', async (req, res) => {
     }
 });
 
-// GET MY ITEMS
-app.get('/api/my-items', async (req, res) => {
-    const { user_id } = req.query;
-    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!userId) {
-        return res.json({ success: false, message: 'User ID required' });
-    }
-    
-    try {
-        const lostItems = await pool.query(
-            `SELECT * FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
-            [userId]
-        );
-        
-        const foundItems = await pool.query(
-            `SELECT * FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
-            [userId]
-        );
-        
-        res.json({ success: true, lostItems: lostItems.rows, foundItems: foundItems.rows });
-    } catch (error) {
-        console.error('Error fetching my items:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
+
 
 // GET ALL LOST ITEMS (for stats/public view)
 app.get('/api/lost-items', async (req, res) => {
@@ -547,13 +522,6 @@ app.get('/api/lost-items', async (req, res) => {
              JOIN users u ON li.user_id = u.id 
              WHERE li.status = 'lost'
              ORDER BY li.created_at DESC`
-        );
-        // Send notifications to same campus users using the service
-        await notificationService.notifyNewLostItem(
-            result.rows[0].item_id,
-            userId,
-            item_name,
-            location_lost
         );
         res.json({ success: true, items: result.rows });
     } catch (error) {
@@ -571,13 +539,6 @@ app.get('/api/found-items', async (req, res) => {
              JOIN users u ON fi.user_id = u.id 
              WHERE fi.status = 'found'
              ORDER BY fi.created_at DESC`
-        );
-
-        await notificationService.notifyNewFoundItem(
-            result.rows[0].found_id,
-            userId,
-            item_name,
-            location_found
         );
         res.json({ success: true, items: result.rows });
     } catch (error) {
@@ -1174,7 +1135,7 @@ app.put('/api/notifications/:id/read', async (req, res) => {
     }
 });
 
-// GET MY ITEMS WITH CLAIMS (updated version)
+// GET MY ITEMS
 app.get('/api/my-items', async (req, res) => {
     const { user_id } = req.query;
     let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
@@ -1194,35 +1155,7 @@ app.get('/api/my-items', async (req, res) => {
             [userId]
         );
         
-        // Get claims on user's found items
-        const claims = await pool.query(
-            `SELECT c.*, fi.item_name, u.full_name as claimant_name 
-             FROM claims c
-             JOIN found_items fi ON c.found_item_id = fi.found_id
-             JOIN users u ON c.claimant_id = u.id
-             WHERE fi.user_id = $1
-             ORDER BY c.created_at DESC`,
-            [userId]
-        );
-        
-        // Get claims submitted by user
-        const myClaims = await pool.query(
-            `SELECT c.*, fi.item_name, u.full_name as owner_name, c.status
-             FROM claims c
-             JOIN found_items fi ON c.found_item_id = fi.found_id
-             JOIN users u ON fi.user_id = u.id
-             WHERE c.claimant_id = $1
-             ORDER BY c.created_at DESC`,
-            [userId]
-        );
-        
-        res.json({ 
-            success: true, 
-            lostItems: lostItems.rows, 
-            foundItems: foundItems.rows,
-            claims: claims.rows,
-            myClaims: myClaims.rows
-        });
+        res.json({ success: true, lostItems: lostItems.rows, foundItems: foundItems.rows });
     } catch (error) {
         console.error('Error fetching my items:', error);
         res.json({ success: false, message: error.message });
