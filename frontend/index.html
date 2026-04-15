@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>CampusLost&Found | Recover Your Belongings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - CampusLost&Found</title>
     <style>
         * {
             margin: 0;
@@ -12,17 +12,13 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Poppins', sans-serif;
-            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             overflow-x: hidden;
-            scroll-behavior: smooth;
+            min-height: 100vh;
         }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #818cf8, #c084fc); border-radius: 12px; }
-
-        .header {
+        .dashboard-header {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(18px);
             position: fixed;
@@ -33,19 +29,42 @@
         }
 
         .nav-container {
-            max-width: 1280px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 1rem 2rem;
+            padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-pic {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #8b5cf6;
+            cursor: pointer;
+        }
+
+        .user-name-header {
+            color: white;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             font-weight: 700;
             background: linear-gradient(135deg, #c084fc, #60a5fa);
             -webkit-background-clip: text;
@@ -53,768 +72,1090 @@
             color: transparent;
         }
 
-        .logo-icon { font-size: 2rem; animation: gentleFloat 3s infinite ease-in-out; }
-        @keyframes gentleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
-
-        .nav-links { display: flex; gap: 2.2rem; list-style: none; }
-        .nav-links a {
-            text-decoration: none;
-            color: #e2e8f0;
-            font-weight: 500;
-            cursor: pointer;
-            position: relative;
-        }
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 0;
-            width: 0%;
-            height: 2px;
-            background: linear-gradient(90deg, #a855f7, #3b82f6);
-            transition: width 0.3s ease;
-        }
-        .nav-links a:hover::after { width: 100%; }
-
-        .hero {
-            min-height: 100vh;
+        .header-right {
             display: flex;
             align-items: center;
-            padding: 7rem 2rem 5rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            gap: 4rem;
-        }
-
-        .hero-left { flex: 1; animation: fadeSlideUp 0.9s ease; }
-        .hero-left h1 {
-            font-size: 3.8rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #ffffff, #c4b5fd, #a78bfa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1.2rem;
-        }
-        .hero-left p { font-size: 1.2rem; color: #cbd5e1; margin-bottom: 2rem; }
-
-        .stats {
-            display: flex;
-            gap: 2.5rem;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(4px);
-            border-radius: 50px;
-            padding: 1rem 2rem;
-            width: fit-content;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-number { font-size: 2.3rem; font-weight: 800; background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .stat-label { color: #94a3b8; font-size: 0.85rem; }
-
-        .flip-container {
-            background: rgba(255,255,255,0.03);
-            border-radius: 32px;
-            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.5);
-            padding: 8px;
-        }
-        .flip-card {
-            background: #0f172a;
-            width: 100%;
-            min-width: 480px;
-            height: 620px;
-            perspective: 1500px;
-            border-radius: 28px;
-        }
-        .flip-card-inner {
+            gap: 1.5rem;
             position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-style: preserve-3d;
-            border-radius: 28px;
         }
-        .flip-card-front, .flip-card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            padding: 2rem 2.2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            border-radius: 28px;
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .flip-card-front { transform: rotateY(0deg); }
-        .flip-card-back { transform: rotateY(180deg); }
 
-        .flip-toggle-bar { display: flex; gap: 1rem; margin-bottom: 2rem; justify-content: center; }
-        .flip-toggle-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            padding: 0.75rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
+        .notification-bell {
+            position: relative;
             cursor: pointer;
-            color: #cbd5e1;
-        }
-        .flip-toggle-btn.active {
-            background: linear-gradient(105deg, #8b5cf6, #6d28d9);
+            font-size: 1.5rem;
             color: white;
-            border-color: transparent;
         }
 
-        .form-group { margin-bottom: 1.3rem; text-align: left; }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.9rem 1rem;
-            background: #0f172a;
-            border: 1.5px solid #334155;
-            border-radius: 16px;
-            color: #f1f5f9;
-            font-size: 1rem;
-        }
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #a855f7;
-        }
-
-        .password-strength { margin-top: 0.5rem; height: 5px; background: #334155; border-radius: 5px; overflow: hidden; }
-        .strength-bar { height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 5px; }
-        .strength-text { font-size: 0.7rem; margin-top: 0.4rem; display: block; text-align: right; color: #94a3b8; }
-        .strength-text.weak { color: #ef4444; }
-        .strength-text.medium { color: #f59e0b; }
-        .strength-text.strong { color: #22c55e; }
-
-        .match-status { font-size: 0.7rem; margin-top: 0.4rem; display: flex; align-items: center; gap: 0.3rem; }
-        .match-status.success { color: #22c55e; }
-        .match-status.error { color: #ef4444; }
-
-        .btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(105deg, #8b5cf6, #6d28d9);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
-        }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(139,92,246,0.4); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        h2 { color: white; font-weight: 700; font-size: 1.8rem; margin-bottom: 1.5rem; }
-
-        .section { padding: 5rem 2rem; }
-        .section:nth-child(even) { background: #0f172a; }
-        .section:nth-child(odd) { background: #111827; }
-        .section-container { max-width: 1280px; margin: 0 auto; }
-        .section-title { text-align: center; font-size: 2.6rem; margin-bottom: 3rem; background: linear-gradient(135deg, #e2e8f0, #a5b4fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
-        .feature-card {
-            text-align: center;
-            padding: 2rem 1.8rem;
-            border-radius: 28px;
-            transition: all 0.35s ease;
-            background: rgba(30, 41, 59, 0.6);
-            border: 2px solid rgba(239, 68, 68, 0.3);
-        }
-        .feature-card:hover { transform: translateY(-10px); background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
-        .feature-icon { font-size: 3.2rem; margin-bottom: 1.2rem; display: inline-block; }
-        .feature-card h3 { color: #ef4444; margin-bottom: 0.8rem; font-size: 1.3rem; }
-        .feature-card p { color: #e2e8f0; line-height: 1.5; }
-
-        .red-highlight {
+        .notification-badge {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: -8px;
+            right: -8px;
             background: #ef4444;
             color: white;
             font-size: 0.7rem;
-            padding: 4px 10px;
-            border-radius: 20px;
             font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            text-align: center;
         }
-        .feature-card { position: relative; }
 
-        .contact-container { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
-        .contact-info, .contact-form {
-            padding: 2.5rem;
-            border-radius: 32px;
-            background: linear-gradient(125deg, #1e293b, #0f172a);
-            border: 1px solid #334155;
+        .dropdown {
+            position: relative;
+            display: inline-block;
         }
-        .contact-info { color: white; }
+        
+        .dropdown-btn {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .dropdown-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background: #1e293b;
+            min-width: 200px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 1001;
+        }
+        
+        .dropdown-content a {
+            color: #e2e8f0;
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .dropdown-content a:hover {
+            background: #334155;
+            border-radius: 16px;
+        }
+        
+        .dropdown.show .dropdown-content {
+            display: block;
+        }
 
-        .footer {
-            background: #020617;
-            color: #cbd5e1;
-            padding: 3rem 2rem 1rem;
-            border-top: 1px solid #1e293b;
+        .notification-panel {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            width: 400px;
+            max-height: 500px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 1001;
+            overflow: hidden;
+            display: none;
         }
-        .footer-container { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; }
+        
+        .notification-panel.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #334155;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .notification-list {
+            max-height: 450px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .notification-item:hover {
+            background: #334155;
+        }
+        
+        .notification-item.unread {
+            background: rgba(139, 92, 246, 0.2);
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .notification-title {
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .notification-message {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        
+        .notification-time {
+            color: #64748b;
+            font-size: 0.7rem;
+            margin-top: 4px;
+        }
+
+        .dashboard-main {
+            padding-top: 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 90px 2rem 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(55, 65, 81, 0.8);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            padding: 0.9rem 2rem;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139,92,246,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .card h3 {
+            color: white;
+            margin-bottom: 1.2rem;
+            border-left: 3px solid #8b5cf6;
+            padding-left: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1.5px solid #334155;
+            border-radius: 12px;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 550px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: white;
+            margin-bottom: 1.5rem;
+        }
 
         .toast {
             position: fixed;
-            top: 90px;
-            right: 25px;
-            padding: 1rem 1.8rem;
+            bottom: 20px;
+            right: 20px;
             background: #1e293b;
-            border-radius: 60px;
-            z-index: 2000;
-            animation: slideInRight 0.4s ease;
-            border-left: 5px solid;
+            padding: 12px 24px;
+            border-radius: 12px;
             color: white;
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid #22c55e;
         }
-        .toast.success { border-left-color: #22c55e; }
-        .toast.error { border-left-color: #ef4444; }
-        @keyframes slideInRight {
-            from { transform: translateX(120%); opacity: 0; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .empty-state {
+            color: #64748b;
+            text-align: center;
+            padding: 2rem;
         }
 
-        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .full-width { grid-column: span 2; }
-
-        @media (max-width: 1024px) {
-            .hero { flex-direction: column; text-align: center; }
-            .stats { margin: 1rem auto; }
-            .hero-right { min-width: auto; width: 100%; max-width: 520px; }
-            .flip-card { min-width: auto; height: 620px; }
+        .item-list {
+            max-height: 400px;
+            overflow-y: auto;
         }
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .contact-container { grid-template-columns: 1fr; }
-            .hero-left h1 { font-size: 2.6rem; }
+
+        .item-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-left: 3px solid #8b5cf6;
         }
-        .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(8px);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
 
-.modal-content {
-    background: #1e293b;
-    border-radius: 28px;
-    padding: 2rem;
-    border: 1px solid rgba(255,255,255,0.1);
-}
+        .item-title {
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
 
-.btn-primary {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
+        .item-meta {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin: 3px 0;
+        }
 
-.btn-secondary {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 0.8rem 1.5rem;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
+        .small-btn {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 8px;
+            margin-right: 5px;
+        }
+
+        .small-btn.delete { background: #ef4444; color: white; }
+        .small-btn.edit { background: #3b82f6; color: white; }
+        .small-btn.view { background: #8b5cf6; color: white; }
+
+        .dashboard-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .left-section {
+            width: 100%;
+        }
+
+        .right-section {
+            width: 100%;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #8b5cf6;
+            cursor: pointer;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .status-pending { background: #f59e0b; color: black; }
+        .status-approved { background: #22c55e; color: white; }
+        .status-rejected { background: #ef4444; color: white; }
+
+        @media (max-width: 900px) {
+            .two-columns { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <header class="header">
+    <header class="dashboard-header">
         <div class="nav-container">
-            <div class="logo"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
-            <ul class="nav-links">
-                <li><a onclick="scrollToSection('home')">🏠 Home</a></li>
-                <li><a onclick="scrollToSection('about')">📖 About</a></li>
-                <li><a onclick="scrollToSection('features')">✨ Features</a></li>
-                <li><a onclick="scrollToSection('contact')">💬 Contact</a></li>
-            </ul>
+            <div class="header-left">
+                <img id="profilePic" class="profile-pic" src="/uploads/default-avatar.png" alt="Profile" onclick="openProfileModal()">
+                <span id="userNameDisplay" class="user-name-header">Loading...</span>
+            </div>
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <span>CampusLost&Found</span>
+            </div>
+            <div class="header-right">
+                <div class="notification-bell" onclick="toggleNotifications()">
+                    🔔
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </div>
+                <div class="dropdown" id="userDropdown">
+                    <div class="dropdown-btn" onclick="toggleDropdown()">👤</div>
+                    <div class="dropdown-content">
+                        <a onclick="openProfileModal()">👤 My Profile</a>
+                        <a onclick="logout()">🚪 Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <main>
-        <section id="home" class="hero">
-            <div class="hero-left">
-                <h1>Lost Something?<br>We'll Unite & Find! 🔍</h1>
-                <p>Your smart campus-wide lost & found hub. Instantly report, match, and recover belongings with real-time collaboration.</p>
-                <div class="stats">
-                    <div class="stat-item"><div class="stat-number" id="lostCount">Loading...</div><div class="stat-label">Items Lost</div></div>
-                    <div class="stat-item"><div class="stat-number" id="foundCount">Loading...</div><div class="stat-label">Items Found</div></div>
-                    <div class="stat-item"><div class="stat-number" id="recoveredCount">Loading...</div><div class="stat-label">Recovered</div></div>
-                </div>
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notificationPanel">
+        <div class="notification-header">🔔 Notifications</div>
+        <div class="notification-list" id="notificationList">
+            <div class="empty-state">No notifications</div>
+        </div>
+    </div>
+
+    <!-- Claim Details Modal -->
+    <div id="claimDetailsModal" class="modal">
+        <div class="modal-content">
+            <h2>📋 Claim Request Details</h2>
+            <div id="claimDetailsContent">
+                <div class="form-group"><label style="color: #94a3b8;">Item Name:</label><p id="claimItemName" style="color: white;"></p></div>
+                <div class="form-group"><label style="color: #94a3b8;">Claimant Name:</label><p id="claimClaimantName" style="color: white;"></p></div>
+                <div class="form-group"><label style="color: #94a3b8;">Claimant Email:</label><p id="claimClaimantEmail" style="color: white;"></p></div>
+                <div class="form-group"><label style="color: #94a3b8;">Claimant Phone:</label><p id="claimClaimantPhone" style="color: white;"></p></div>
+                <div class="form-group"><label style="color: #94a3b8;">Claim Message:</label><p id="claimMessage" style="color: white;"></p></div>
+                <div class="form-group"><label style="color: #94a3b8;">Claim Date:</label><p id="claimDate" style="color: white;"></p></div>
             </div>
-            <div class="hero-right">
-                <div class="flip-container">
-                    <div class="flip-card">
-                        <div class="flip-card-inner" id="flipCard">
-                            <div class="flip-card-front">
-                                <div class="flip-toggle-bar">
-                                    <button class="flip-toggle-btn active" id="toggleLoginBtn">🔐 Login</button>
-                                    <button class="flip-toggle-btn" id="toggleRegisterBtn">📝 Register</button>
-                                </div>
-                                <h2>Welcome Back 👋</h2>
-                                <form id="loginForm">
-                                    <div class="form-group"><input type="email" id="loginEmail" placeholder="Student Email" required></div>
-                                    <div class="form-group"><input type="password" id="loginPassword" placeholder="Password" required></div>
-                                    <button type="submit" class="btn">🔐 Login to Dashboard</button>
-                                </form>
-                            </div>
-                            <div class="flip-card-back">
-                                <div class="flip-toggle-bar">
-                                    <button class="flip-toggle-btn" id="toggleLoginBtnBack">🔐 Login</button>
-                                    <button class="flip-toggle-btn active" id="toggleRegisterBtnBack">📝 Register</button>
-                                </div>
-                                <h2>Join Campus Community 🚀</h2>
-                                <form id="registerForm">
-                                    <div class="two-columns">
-    <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name" required></div>
-    <div class="form-group"><input type="email" id="regEmail" placeholder="Email Address" required></div>
-    <div class="form-group"><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
-    <div class="form-group"><input type="text" id="regRollNumber" placeholder="Roll Number" required></div>
-    <div class="form-group">
-        <select id="regDepartment" required>
-            <option value="">Select Department</option>
-            <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
-        </select>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button class="btn-primary" onclick="approveClaim()" style="flex: 1; background: linear-gradient(135deg, #22c55e, #16a34a);">✓ Approve</button>
+                <button class="btn-secondary" onclick="rejectClaim()" style="flex: 1;">✗ Reject</button>
+                <button class="btn-secondary" onclick="closeClaimDetailsModal()" style="flex: 1;">Close</button>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <input type="text" id="regCampusCode" placeholder="Campus Code *" required>
-        <small style="color: #94a3b8; font-size: 0.7rem;">Enter the unique code provided by your campus admin</small>
-    </div>
-    <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
-    <div class="form-group full-width">
-        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-        <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
-        <span class="strength-text" id="strengthText">Enter password</span>
-        <div class="match-status" id="matchStatus"></div>
-    </div>
-    <div class="form-group full-width">
-        <label style="color: #94a3b8; font-size: 0.9rem;">Profile Picture (Optional)</label>
-        <input type="file" id="regProfilePic" accept="image/*" style="padding: 0.5rem;">
-    </div>
-</div>
-                                    <button type="submit" class="btn" id="registerBtn">📝 Register Now</button>
-                                </form>
-                            </div>
-                        </div>
+
+    <main class="dashboard-main">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statLost">0</div>
+                <div class="stat-label">Items Lost</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statFound">0</div>
+                <div class="stat-label">Items Found</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statReputation">0</div>
+                <div class="stat-label">Reputation Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statClaims">0</div>
+                <div class="stat-label">Pending Claims</div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-primary" onclick="openLostItemModal()">📦 Report Lost Item</button>
+            <button class="btn-primary" onclick="openFoundItemModal()">🔍 Report Found Item</button>
+        </div>
+
+        <!-- Two Column Layout for Claims -->
+        <div class="two-columns">
+            <div class="left-section">
+                <!-- Claims on My Items -->
+                <div class="card">
+                    <h3>📋 Claims on My Items</h3>
+                    <div class="item-list" id="claimsList">
+                        <div class="empty-state">No claims received</div>
+                    </div>
+                </div>
+                
+                <!-- My Claims (Submitted) -->
+                <div class="card">
+                    <h3>📝 My Claims (Submitted)</h3>
+                    <div class="item-list" id="myClaimsList">
+                        <div class="empty-state">No claims submitted</div>
                     </div>
                 </div>
             </div>
-        </section>
-
-        <section id="about" class="section">
-            <div class="section-container">
-                <h2 class="section-title">✨ About Our Mission</h2>
-                <div style="max-width: 800px; margin: 0 auto; text-align: center; font-size: 1.15rem; line-height: 1.8; color: #cbd5e6;">
-                    <p>At CampusLost&Found, we believe no belonging should stay lost forever. Our platform digitally connects students, faculty, and staff to report lost/found items instantly, reducing waste and fostering a caring campus environment.</p>
-                    <p style="margin-top: 1.5rem;">🌟 Over 1000+ items reunited since launch. Secure, reliable, and built for campus communities.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="features" class="section">
-            <div class="section-container">
-                <h2 class="section-title">💡 Core Features</h2>
-                <div class="features-grid">
-                    <div class="feature-card"><div class="red-highlight">🔥 HOT</div><div class="feature-icon">🔐</div><h3>User Registration & Authentication</h3><p>Secure signup with email verification, roll number validation, and encrypted password storage.</p></div>
-                    <div class="feature-card"><div class="red-highlight">⭐ POPULAR</div><div class="feature-icon">🛡️</div><h3>Secure Claiming Mechanism</h3><p>Multi-step verification process for claiming found items with OTP confirmation.</p></div>
-                    <div class="feature-card"><div class="red-highlight">🚀 FEATURED</div><div class="feature-icon">📊</div><h3>Admin Dashboard</h3><p>Powerful analytics, user management, item moderation, and real-time campus insights.</p></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="contact" class="section">
-            <div class="section-container">
-                <h2 class="section-title">📬 Get In Touch</h2>
-                <div class="contact-container">
-                    <div class="contact-info">
-                        <h3>📍 Contact Desk</h3>
-                        <p style="margin: 1rem 0;">📧 help@campuslostfound.edu</p>
-                        <p style="margin: 1rem 0;">📞 +1 (800) 234-LOST</p>
-                        <p>🏛️ Student Union Building, Room 204</p>
-                        <p style="margin-top: 2rem;">⏰ Mon - Fri : 9AM – 6PM</p>
-                    </div>
-                    <div class="contact-form">
-                        <form id="contactForm">
-                            <div class="form-group"><input type="text" id="contactName" placeholder="Your Name" required></div>
-                            <div class="form-group"><input type="email" id="contactEmail" placeholder="Email Address" required></div>
-                            <div class="form-group"><input type="text" id="contactSubject" placeholder="Subject" required></div>
-                            <div class="form-group"><textarea id="contactMessage" rows="4" placeholder="Write your message..." required></textarea></div>
-                            <button type="submit" class="btn">✉️ Send Message</button>
-                        </form>
+            
+            <div class="right-section">
+                <!-- Notifications Summary -->
+                <div class="card">
+                    <h3>🔔 Recent Notifications</h3>
+                    <div class="item-list" id="recentNotificationsList">
+                        <div class="empty-state">No notifications</div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+
+        <!-- My Lost Items Section -->
+        <div class="card">
+            <h3>📦 My Lost Items</h3>
+            <div class="item-list" id="lostItemsList">
+                <div class="empty-state">No lost items reported</div>
+            </div>
+        </div>
+
+        <!-- My Found Items Section - Moved to bottom -->
+        <div class="card">
+            <h3>✅ My Found Items</h3>
+            <div class="item-list" id="foundItemsList">
+                <div class="empty-state">No found items reported</div>
+            </div>
+        </div>
     </main>
 
-
-
-    <footer class="footer">
-        <div class="footer-container">
-            <div><h3 style="margin-bottom:1rem; color:white;">CampusLost&Found</h3><p>Reuniting community, one item at a time.</p></div>
-            <div><h3 style="margin-bottom:1rem;">Quick Links</h3><p><a onclick="scrollToSection('home')">Home</a></p><p><a onclick="scrollToSection('about')">About</a></p><p><a onclick="scrollToSection('features')">Features</a></p></div>
-            <div><h3 style="margin-bottom:1rem;">Social</h3><p>📘 Campus Hub</p><p>📸 @campuslost</p><p>🐦 @clf_updates</p></div>
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h2>👤 My Profile</h2>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <img id="profileModalPic" class="profile-avatar-large" src="/uploads/default-avatar.png" alt="Profile" onclick="document.getElementById('profilePicUpload').click()">
+                <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 8px;">Click photo to change</p>
+            </div>
+            <div class="form-group"><label style="color: #94a3b8;">Full Name</label><input type="text" id="profileFullName" placeholder="Full Name"></div>
+            <div class="form-group"><label style="color: #94a3b8;">Email</label><input type="email" id="profileEmail" placeholder="Email" disabled></div>
+            <div class="form-group"><label style="color: #94a3b8;">Phone</label><input type="tel" id="profilePhone" placeholder="Phone"></div>
+            <div class="form-group"><label style="color: #94a3b8;">Roll Number</label><input type="text" id="profileRoll" placeholder="Roll Number" disabled></div>
+            <div class="form-group"><label style="color: #94a3b8;">Department</label><select id="profileDept">
+                <option>Computer Science</option><option>Information Technology</option>
+                <option>Electronics Engineering</option><option>Mechanical Engineering</option>
+                <option>Civil Engineering</option><option>Business Administration</option>
+                <option>Arts & Sciences</option>
+            </select></div>
+            <div class="form-group"><label style="color: #94a3b8;">Reputation Points</label><input type="text" id="profileReputation" disabled></div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button class="btn-primary" onclick="saveProfile()" style="flex: 1;">Save Changes</button>
+                <button class="btn-secondary" onclick="closeProfileModal()" style="flex: 1;">Cancel</button>
+            </div>
         </div>
-        <div style="text-align:center; margin-top: 2.5rem; padding-top:1rem; border-top:1px solid #334155;">&copy; 2025 CampusLost&Found — Unity in Recovery</div>
-    </footer>
+    </div>
+
+    <!-- Lost Item Modal -->
+    <div id="lostItemModal" class="modal">
+        <div class="modal-content">
+            <h2>📦 Report Lost Item</h2>
+            <div class="form-group"><input type="text" id="lostItemName" placeholder="Item Name *"></div>
+            <div class="form-group"><textarea id="lostDescription" rows="3" placeholder="Description *"></textarea></div>
+            <div class="form-group"><input type="text" id="lostLocation" placeholder="Location where lost *"></div>
+            <div class="form-group"><input type="date" id="lostDate"></div>
+            <div class="form-group"><input type="tel" id="lostContact" placeholder="Contact Phone *"></div>
+            <div class="form-group"><input type="file" id="lostImage" accept="image/*"></div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-primary" onclick="submitLostItem()" style="flex: 1;">Submit</button>
+                <button class="btn-secondary" onclick="closeLostItemModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Found Item Modal -->
+    <div id="foundItemModal" class="modal">
+        <div class="modal-content">
+            <h2>🔍 Report Found Item</h2>
+            <div class="form-group"><input type="text" id="foundItemName" placeholder="Item Name *"></div>
+            <div class="form-group"><textarea id="foundDescription" rows="3" placeholder="Description *"></textarea></div>
+            <div class="form-group"><input type="text" id="foundLocation" placeholder="Location where found *"></div>
+            <div class="form-group"><input type="date" id="foundDate"></div>
+            <div class="form-group"><input type="tel" id="foundContact" placeholder="Contact Phone *"></div>
+            <div class="form-group"><input type="file" id="foundImage" accept="image/*"></div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-primary" onclick="submitFoundItem()" style="flex: 1;">Submit</button>
+                <button class="btn-secondary" onclick="closeFoundItemModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // API Configuration - Update this with your Render backend URL
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:5000/api'
-    : 'https://cep-nxqq.onrender.com/api';
-        
-        const flipCardInner = document.getElementById('flipCard');
-        
-        function flipToLogin() {
-            flipCardInner.style.transform = 'rotateY(0deg)';
-            updateToggleActiveState('login');
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000/api'
+            : 'https://cep-nxqq.onrender.com/api';
+
+        let currentUser = null;
+        let notificationCheckInterval = null;
+        let currentClaimId = null;
+
+        function getCurrentUser() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            return user;
         }
-        
-        function flipToRegister() {
-            flipCardInner.style.transform = 'rotateY(180deg)';
-            updateToggleActiveState('register');
-        }
-        
-        function updateToggleActiveState(side) {
-            const loginBtns = document.querySelectorAll('#toggleLoginBtn, #toggleLoginBtnBack');
-            const registerBtns = document.querySelectorAll('#toggleRegisterBtn, #toggleRegisterBtnBack');
-            if (side === 'login') {
-                loginBtns.forEach(btn => btn.classList.add('active'));
-                registerBtns.forEach(btn => btn.classList.remove('active'));
-            } else {
-                registerBtns.forEach(btn => btn.classList.add('active'));
-                loginBtns.forEach(btn => btn.classList.remove('active'));
-            }
-        }
-        
-        document.getElementById('toggleLoginBtn')?.addEventListener('click', () => flipToLogin());
-        document.getElementById('toggleRegisterBtn')?.addEventListener('click', () => flipToRegister());
-        document.getElementById('toggleLoginBtnBack')?.addEventListener('click', () => flipToLogin());
-        document.getElementById('toggleRegisterBtnBack')?.addEventListener('click', () => flipToRegister());
-        
+
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<strong>${type === 'success' ? '✓' : '⚠️'}</strong> ${message}`;
+            toast.className = 'toast';
+            toast.innerHTML = message;
+            toast.style.borderLeftColor = type === 'success' ? '#22c55e' : '#ef4444';
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3200);
+            setTimeout(() => toast.remove(), 3000);
         }
-        
-        function scrollToSection(id) {
-            const el = document.getElementById(id);
-            if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        
-        // Password Strength Checker
-        const passwordInput = document.getElementById('regPassword');
-        const confirmInput = document.getElementById('regConfirmPassword');
-        const strengthBar = document.getElementById('strengthBar');
-        const strengthText = document.getElementById('strengthText');
-        const matchStatus = document.getElementById('matchStatus');
-        const registerBtn = document.getElementById('registerBtn');
-        
-        function checkPasswordStrength(password) {
-            let strength = 0;
-            if (password.length >= 6) strength++;
-            if (password.length >= 10) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
-            
-            let width = 0, text = '';
-            if (password.length === 0) {
-                width = 0;
-                text = 'Enter password';
-            } else if (strength <= 2) {
-                width = 33;
-                text = 'Weak password';
-            } else if (strength <= 4) {
-                width = 66;
-                text = 'Medium password';
-            } else {
-                width = 100;
-                text = 'Strong password!';
-            }
-            
-            strengthBar.style.width = width + '%';
-            strengthBar.style.backgroundColor = width <= 33 ? '#ef4444' : width <= 66 ? '#f59e0b' : '#22c55e';
-            strengthText.textContent = text;
-            strengthText.className = 'strength-text ' + (password.length === 0 ? '' : (strength <= 2 ? 'weak' : (strength <= 4 ? 'medium' : 'strong')));
-            return strength >= 3;
-        }
-        
-        function checkPasswordMatch() {
-            const password = passwordInput?.value || '';
-            const confirm = confirmInput?.value || '';
-            if (confirm.length === 0) {
-                matchStatus.innerHTML = '';
-                return false;
-            }
-            if (password === confirm) {
-                matchStatus.innerHTML = '<span class="match-icon">✓</span> <span>Passwords match!</span>';
-                matchStatus.className = 'match-status success';
-                return true;
-            } else {
-                matchStatus.innerHTML = '<span class="match-icon">✗</span> <span>Passwords do not match</span>';
-                matchStatus.className = 'match-status error';
-                return false;
-            }
-        }
-        
-        function validateForm() {
-            if (!passwordInput || !confirmInput || !registerBtn) return;
-            const isStrong = checkPasswordStrength(passwordInput.value);
-            const isMatch = passwordInput.value === confirmInput.value && confirmInput.value.length > 0;
-            registerBtn.disabled = !(isStrong && isMatch);
-        }
-        
-        if (passwordInput) {
-            passwordInput.addEventListener('input', () => {
-                checkPasswordStrength(passwordInput.value);
-                checkPasswordMatch();
-                validateForm();
-            });
-        }
-        if (confirmInput) {
-            confirmInput.addEventListener('input', () => {
-                checkPasswordMatch();
-                validateForm();
-            });
-        }
-        
-        // Fetch Statistics from Backend
-        async function fetchStats() {
-            try {
-                const response = await fetch(`${API_URL}/stats`);
-               const text = await response.text();
-let data;
 
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            panel.classList.toggle('show');
+            if (panel.classList.contains('show')) {
+                loadNotifications();
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const notificationPanel = document.getElementById('notificationPanel');
+            const notificationBell = document.querySelector('.notification-bell');
+            
+            if (dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+            
+            if (notificationPanel && !notificationPanel.contains(event.target) && notificationBell && !notificationBell.contains(event.target)) {
+                notificationPanel.classList.remove('show');
+            }
+        });
+
+        async function loadNotifications() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/notifications?user_id=${user.id}`);
+                const data = await response.json();
                 if (data.success) {
-                    document.getElementById('lostCount').innerText = data.lostCount + '+';
-                    document.getElementById('foundCount').innerText = data.foundCount + '+';
-                    document.getElementById('recoveredCount').innerText = data.recoveredCount + '+';
-                } else {
-                    setDefaultStats();
+                    const unreadCount = data.notifications?.filter(n => !n.is_read).length || 0;
+                    document.getElementById('notificationBadge').innerText = unreadCount;
+                    
+                    const container = document.getElementById('notificationList');
+                    const recentContainer = document.getElementById('recentNotificationsList');
+                    
+                    if (!data.notifications || data.notifications.length === 0) {
+                        container.innerHTML = '<div class="empty-state">No notifications</div>';
+                        if (recentContainer) recentContainer.innerHTML = '<div class="empty-state">No notifications</div>';
+                    } else {
+                        const notifHtml = data.notifications.slice(0, 5).map(notif => `
+                            <div class="notification-item ${!notif.is_read ? 'unread' : ''}" onclick="handleNotificationClick(${notif.id}, '${notif.type}', ${notif.related_id || 0})">
+                                <div class="notification-title">${escapeHtml(notif.title)}</div>
+                                <div class="notification-message">${escapeHtml(notif.message)}</div>
+                                <div class="notification-time">${new Date(notif.created_at).toLocaleString()}</div>
+                            </div>
+                        `).join('');
+                        
+                        container.innerHTML = notifHtml;
+                        if (recentContainer) recentContainer.innerHTML = notifHtml;
+                    }
                 }
             } catch (error) {
-                console.error('Error fetching stats:', error);
-                setDefaultStats();
+                console.error('Error loading notifications:', error);
             }
         }
 
-        
-        
-        function setDefaultStats() {
-            document.getElementById('lostCount').innerText = "150+";
-            document.getElementById('foundCount').innerText = "89+";
-            document.getElementById('recoveredCount').innerText = "67+";
+        async function handleNotificationClick(notifId, type, relatedId) {
+            if (type === 'claim_request') {
+                await viewClaimDetails(relatedId);
+            }
+            // Mark as read
+            try {
+                await fetch(`${API_URL}/notifications/${notifId}/read`, { method: 'PUT' });
+                loadNotifications();
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
         }
-        
-// Register User with Campus Code
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const campusCode = document.getElementById('regCampusCode').value.trim();
-    if (!campusCode) {
-        showToast('Please enter your campus code!', 'error');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('full_name', document.getElementById('regFullName').value);
-    formData.append('email', document.getElementById('regEmail').value);
-    formData.append('password', document.getElementById('regPassword').value);
-    formData.append('phone', document.getElementById('regPhone').value);
-    formData.append('roll_number', document.getElementById('regRollNumber').value);
-    formData.append('department', document.getElementById('regDepartment').value);
-    formData.append('campus_code', campusCode);
-    
-    const profilePic = document.getElementById('regProfilePic');
-    if (profilePic && profilePic.files && profilePic.files.length > 0) {
-        formData.append('profile_pic', profilePic.files[0]);
-    }
 
-    try {
-        const response = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast('Registration successful! You can now login.', 'success');
-            document.getElementById('registerForm').reset();
-            flipToLogin();
-        } else {
-            showToast(data.message, 'error');
+        async function viewClaimDetails(claimId) {
+            currentClaimId = claimId;
+            try {
+                const response = await fetch(`${API_URL}/claim/${claimId}`);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('claimItemName').innerText = data.claim.item_name;
+                    document.getElementById('claimClaimantName').innerText = data.claim.claimant_name;
+                    document.getElementById('claimClaimantEmail').innerText = data.claim.claimant_email;
+                    document.getElementById('claimClaimantPhone').innerText = data.claim.claimant_phone || 'Not provided';
+                    document.getElementById('claimMessage').innerText = data.claim.message || 'No message';
+                    document.getElementById('claimDate').innerText = new Date(data.claim.created_at).toLocaleString();
+                    document.getElementById('claimDetailsModal').style.display = 'flex';
+                }
+            } catch (error) {
+                showToast('Error loading claim details', 'error');
+            }
         }
-    } catch (error) {
-        console.error('Registration error:', error);
-        showToast('Registration failed! Please try again.', 'error');
-    }
-});
-        
-        // Login User
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        showToast("Please fill all fields", "error");
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-    localStorage.setItem('user', JSON.stringify(data.user));
 
-    showToast("Login successful! Redirecting...", "success");
+        async function approveClaim() {
+            if (!currentClaimId) return;
+            try {
+                const response = await fetch(`${API_URL}/claim/${currentClaimId}/approve`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Claim approved successfully!');
+                    closeClaimDetailsModal();
+                    loadMyItems();
+                    loadStats();
+                    loadNotifications();
+                }
+            } catch (error) {
+                showToast('Error approving claim', 'error');
+            }
+        }
 
-    setTimeout(() => {
-        if (data.user.is_admin === true) {
-            window.location.href = '/admin.html';
-        } else {
-            window.location.href = '/dashboard.html';
+        async function rejectClaim() {
+            if (!currentClaimId) return;
+            try {
+                const response = await fetch(`${API_URL}/claim/${currentClaimId}/reject`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Claim rejected');
+                    closeClaimDetailsModal();
+                    loadMyItems();
+                    loadStats();
+                    loadNotifications();
+                }
+            } catch (error) {
+                showToast('Error rejecting claim', 'error');
+            }
         }
-    }, 1000);
-} else {
-            showToast(data.message || "Invalid credentials", "error");
+
+        function closeClaimDetailsModal() {
+            document.getElementById('claimDetailsModal').style.display = 'none';
+            currentClaimId = null;
         }
-    } catch (error) {
-        console.error('Login error:', error);
-        showToast("Login failed! Please try again.", "error");
-    }
-});
-        
-        // Contact Form
-        document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('contactName').value;
-            const email = document.getElementById('contactEmail').value;
-            const subject = document.getElementById('contactSubject').value;
-            const message = document.getElementById('contactMessage').value;
+
+        function openProfileModal() {
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById('profileFullName').value = user.full_name || '';
+                document.getElementById('profileEmail').value = user.email || '';
+                document.getElementById('profilePhone').value = user.phone || '';
+                document.getElementById('profileRoll').value = user.roll_number || '';
+                document.getElementById('profileDept').value = user.department || 'Computer Science';
+                document.getElementById('profileReputation').value = user.reputation_points || 0;
+                if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
+                    document.getElementById('profileModalPic').src = '/uploads/' + user.profile_pic;
+                }
+            }
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        async function saveProfile() {
+            const user = getCurrentUser();
+            if (!user) return;
             
-            if (!name || !email || !subject || !message) {
-                showToast("Please fill all fields", "error");
+            const formData = new FormData();
+            formData.append('full_name', document.getElementById('profileFullName').value);
+            formData.append('phone', document.getElementById('profilePhone').value);
+            formData.append('department', document.getElementById('profileDept').value);
+            formData.append('user_id', user.id);
+            formData.append('existing_pic', user.profile_pic);
+            
+            const profilePic = document.getElementById('profilePicUpload').files[0];
+            if (profilePic) {
+                formData.append('profile_pic', profilePic);
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/update-profile`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Profile updated successfully!');
+                    user.full_name = document.getElementById('profileFullName').value;
+                    user.phone = document.getElementById('profilePhone').value;
+                    user.department = document.getElementById('profileDept').value;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    document.getElementById('userNameDisplay').innerText = user.full_name;
+                    closeProfileModal();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error updating profile!', 'error');
+            }
+        }
+
+        function openLostItemModal() {
+            document.getElementById('lostItemModal').style.display = 'flex';
+        }
+
+        function closeLostItemModal() {
+            document.getElementById('lostItemModal').style.display = 'none';
+            document.getElementById('lostItemName').value = '';
+            document.getElementById('lostDescription').value = '';
+            document.getElementById('lostLocation').value = '';
+            document.getElementById('lostDate').value = '';
+            document.getElementById('lostContact').value = '';
+            document.getElementById('lostImage').value = '';
+        }
+
+        function openFoundItemModal() {
+            document.getElementById('foundItemModal').style.display = 'flex';
+        }
+
+        function closeFoundItemModal() {
+            document.getElementById('foundItemModal').style.display = 'none';
+            document.getElementById('foundItemName').value = '';
+            document.getElementById('foundDescription').value = '';
+            document.getElementById('foundLocation').value = '';
+            document.getElementById('foundDate').value = '';
+            document.getElementById('foundContact').value = '';
+            document.getElementById('foundImage').value = '';
+        }
+
+        async function submitLostItem() {
+            const user = getCurrentUser();
+            if (!user) {
+                showToast('Please login again', 'error');
+                window.location.href = '/';
                 return;
             }
-            
-            try {
-                const response = await fetch(`${API_URL}/contact`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, subject, message })
-                });
-                const text = await response.text();
-let data;
 
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}
+            const name = document.getElementById('lostItemName').value.trim();
+            const desc = document.getElementById('lostDescription').value.trim();
+            const location = document.getElementById('lostLocation').value.trim();
+            const contact = document.getElementById('lostContact').value.trim();
+
+            if (!name || !desc || !location || !contact) {
+                showToast('Please fill all required fields!', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('item_name', name);
+            formData.append('description', desc);
+            formData.append('location_lost', location);
+            formData.append('contact_phone', contact);
+            formData.append('date_lost', document.getElementById('lostDate').value);
+            formData.append('user_id', user.id);
+
+            const image = document.getElementById('lostImage').files[0];
+            if (image) formData.append('image', image);
+
+            try {
+                const response = await fetch(`${API_URL}/lost-item`, { method: 'POST', body: formData });
+                const data = await response.json();
                 if (data.success) {
-                    showToast("Message sent successfully!", "success");
-                    document.getElementById('contactForm').reset();
+                    showToast('Lost item reported successfully!');
+                    closeLostItemModal();
+                    loadMyItems();
+                    loadStats();
                 } else {
-                    showToast("Failed to send message", "error");
+                    showToast(data.message, 'error');
                 }
             } catch (error) {
-                showToast("Error sending message", "error");
+                showToast('Error reporting item!', 'error');
             }
-        });
+        }
 
-        // Add these verification functions INSIDE your existing script tag
-        // async function verifyEmail() {
-        //     const code = document.getElementById('verificationCode').value;
-        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
+        async function submitFoundItem() {
+            const user = getCurrentUser();
+            if (!user) {
+                showToast('Please login again', 'error');
+                window.location.href = '/';
+                return;
+            }
+
+            const name = document.getElementById('foundItemName').value.trim();
+            const desc = document.getElementById('foundDescription').value.trim();
+            const location = document.getElementById('foundLocation').value.trim();
+            const contact = document.getElementById('foundContact').value.trim();
+
+            if (!name || !desc || !location || !contact) {
+                showToast('Please fill all required fields!', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('item_name', name);
+            formData.append('description', desc);
+            formData.append('location_found', location);
+            formData.append('contact_phone', contact);
+            formData.append('date_found', document.getElementById('foundDate').value);
+            formData.append('user_id', user.id);
+
+            const image = document.getElementById('foundImage').files[0];
+            if (image) formData.append('image', image);
+
+            try {
+                const response = await fetch(`${API_URL}/found-item`, { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Found item reported successfully!');
+                    closeFoundItemModal();
+                    loadMyItems();
+                    loadStats();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error reporting item!', 'error');
+            }
+        }
+
+        async function loadMyItems() {
+            const user = getCurrentUser();
+            if (!user) return;
+
+            try {
+                const response = await fetch(`${API_URL}/my-items?user_id=${user.id}`);
+                const data = await response.json();
+                if (data.success) {
+                    displayLostItems(data.lostItems);
+                    displayFoundItems(data.foundItems);
+                    displayClaims(data.claims);
+                    displayMyClaims(data.myClaims);
+                }
+            } catch (error) {
+                console.error('Error loading items:', error);
+            }
+        }
+
+        function displayLostItems(items) {
+            const container = document.getElementById('lostItemsList');
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty-state">No lost items reported</div>';
+                return;
+            }
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-title">📦 ${escapeHtml(item.item_name)}</div>
+                    <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
+                    <div class="item-meta">📍 ${escapeHtml(item.location_lost)}</div>
+                    <div class="item-meta">📅 ${item.date_lost ? new Date(item.date_lost).toLocaleDateString() : 'Date not set'}</div>
+                    <button class="small-btn delete" onclick="deleteItem('lost', ${item.item_id})">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function displayFoundItems(items) {
+            const container = document.getElementById('foundItemsList');
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty-state">No found items reported</div>';
+                return;
+            }
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-title">🔍 ${escapeHtml(item.item_name)}</div>
+                    <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
+                    <div class="item-meta">📍 ${escapeHtml(item.location_found)}</div>
+                    <div class="item-meta">📅 ${item.date_found ? new Date(item.date_found).toLocaleDateString() : 'Date not set'}</div>
+                    <button class="small-btn delete" onclick="deleteItem('found', ${item.found_id})">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function displayClaims(claims) {
+            const container = document.getElementById('claimsList');
+            if (!claims || claims.length === 0) {
+                container.innerHTML = '<div class="empty-state">No claims received</div>';
+                return;
+            }
+            container.innerHTML = claims.map(claim => `
+                <div class="item-card">
+                    <div class="item-title">📋 Claim on: ${escapeHtml(claim.item_name)}</div>
+                    <div class="item-meta">From: ${escapeHtml(claim.claimant_name)}</div>
+                    <div class="item-meta">Status: <span class="status-badge status-${claim.status}">${claim.status.toUpperCase()}</span></div>
+                    <div class="item-meta">📅 ${new Date(claim.created_at).toLocaleString()}</div>
+                    <button class="small-btn view" onclick="viewClaimDetails(${claim.claim_id})">View Details</button>
+                </div>
+            `).join('');
+        }
+
+        function displayMyClaims(claims) {
+            const container = document.getElementById('myClaimsList');
+            if (!claims || claims.length === 0) {
+                container.innerHTML = '<div class="empty-state">No claims submitted</div>';
+                return;
+            }
+            container.innerHTML = claims.map(claim => `
+                <div class="item-card">
+                    <div class="item-title">📝 Claim on: ${escapeHtml(claim.item_name)}</div>
+                    <div class="item-meta">Owner: ${escapeHtml(claim.owner_name)}</div>
+                    <div class="item-meta">Status: <span class="status-badge status-${claim.status}">${claim.status.toUpperCase()}</span></div>
+                    <div class="item-meta">📅 ${new Date(claim.created_at).toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        async function deleteItem(type, id) {
+            if (confirm('Delete this item?')) {
+                const user = getCurrentUser();
+                try {
+                    const response = await fetch(`${API_URL}/item/${type}/${id}?user_id=${user.id}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast('Item deleted!');
+                        loadMyItems();
+                        loadStats();
+                    }
+                } catch (error) {
+                    showToast('Error deleting item!', 'error');
+                }
+            }
+        }
+
+        async function loadStats() {
+            const user = getCurrentUser();
+            if (!user) return;
             
-        //     if (!code || code.length !== 6) {
-        //         showToast('Please enter valid 6-digit code', 'error');
-        //         return;
-        //     }
+            try {
+                const response = await fetch(`${API_URL}/user-stats?user_id=${user.id}`);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('statLost').innerText = data.lost_count || 0;
+                    document.getElementById('statFound').innerText = data.found_count || 0;
+                    document.getElementById('statClaims').innerText = data.pending_claims || 0;
+                    document.getElementById('statReputation').innerText = user.reputation_points || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadUserData() {
+            const user = getCurrentUser();
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            currentUser = user;
+            document.getElementById('userNameDisplay').innerText = user.full_name;
+            if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
+                document.getElementById('profilePic').src = '/uploads/' + user.profile_pic;
+            }
+            loadMyItems();
+            loadStats();
+            loadNotifications();
             
-        //     try {
-        //         const response = await fetch('/api/verify-email', {
-        //             method: 'POST',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify({ email, verification_code: code })
-        //         });
-        //         const data = await response.json();
-                
-        //         if (data.success) {
-        //             showToast('Email verified! You can now login.');
-        //             document.getElementById('verificationModal').style.display = 'none';
-        //             // Clear form and show login
-        //             flipToLogin();
-        //         } else {
-        //             showToast(data.message, 'error');
-        //         }
-        //     } catch (error) {
-        //         showToast('Verification failed!', 'error');
-        //     }
-        // }
-        
-        // async function resendCode() {
-        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
-            
-        //     try {
-        //         const response = await fetch('/api/resend-verification', {
-        //             method: 'POST',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify({ email })
-        //         });
-        //         const data = await response.json();
-                
-        //         if (data.success) {
-        //             showToast('New verification code sent to your email!');
-        //         } else {
-        //             showToast(data.message, 'error');
-        //         }
-        //     } catch (error) {
-        //         showToast('Failed to resend code!', 'error');
-        //     }
-        // }
-        
-        // Initialize
-        fetchStats();
-        updateToggleActiveState('login');
-        if (registerBtn) registerBtn.disabled = false;
+            if (notificationCheckInterval) clearInterval(notificationCheckInterval);
+            notificationCheckInterval = setInterval(loadNotifications, 30000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        loadUserData();
     </script>
 </body>
 </html>
