@@ -303,14 +303,6 @@
             transform: translateY(-2px);
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-        }
-
         .card {
             background: rgba(30, 41, 59, 0.5);
             backdrop-filter: blur(10px);
@@ -424,6 +416,7 @@
         .item-meta {
             font-size: 0.8rem;
             color: #94a3b8;
+            margin: 3px 0;
         }
 
         .small-btn {
@@ -439,10 +432,23 @@
 
         .small-btn.delete { background: #ef4444; color: white; }
         .small-btn.edit { background: #3b82f6; color: white; }
-        .small-btn.claim { background: #22c55e; color: white; }
         .small-btn.view { background: #8b5cf6; color: white; }
 
-        .dashboard-columns {
+        .dashboard-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .left-section {
+            width: 100%;
+        }
+
+        .right-section {
+            width: 100%;
+        }
+
+        .two-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
@@ -470,7 +476,7 @@
         .status-rejected { background: #ef4444; color: white; }
 
         @media (max-width: 900px) {
-            .dashboard-columns { grid-template-columns: 1fr; }
+            .two-columns { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -478,7 +484,7 @@
     <header class="dashboard-header">
         <div class="nav-container">
             <div class="header-left">
-                <img id="profilePic" class="profile-pic" src="/images/default-avatar.png" alt="Profile" onclick="openProfileModal()">
+                <img id="profilePic" class="profile-pic" src="/uploads/default-avatar.png" alt="Profile" onclick="openProfileModal()">
                 <span id="userNameDisplay" class="user-name-header">Loading...</span>
             </div>
             <div class="logo">
@@ -518,7 +524,6 @@
                 <div class="form-group"><label style="color: #94a3b8;">Claimant Name:</label><p id="claimClaimantName" style="color: white;"></p></div>
                 <div class="form-group"><label style="color: #94a3b8;">Claimant Email:</label><p id="claimClaimantEmail" style="color: white;"></p></div>
                 <div class="form-group"><label style="color: #94a3b8;">Claimant Phone:</label><p id="claimClaimantPhone" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Claimant Roll Number:</label><p id="claimClaimantRoll" style="color: white;"></p></div>
                 <div class="form-group"><label style="color: #94a3b8;">Claim Message:</label><p id="claimMessage" style="color: white;"></p></div>
                 <div class="form-group"><label style="color: #94a3b8;">Claim Date:</label><p id="claimDate" style="color: white;"></p></div>
             </div>
@@ -526,28 +531,6 @@
                 <button class="btn-primary" onclick="approveClaim()" style="flex: 1; background: linear-gradient(135deg, #22c55e, #16a34a);">✓ Approve</button>
                 <button class="btn-secondary" onclick="rejectClaim()" style="flex: 1;">✗ Reject</button>
                 <button class="btn-secondary" onclick="closeClaimDetailsModal()" style="flex: 1;">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lost Item Detail Modal (for viewing holder info when claiming) -->
-    <div id="lostItemDetailModal" class="modal">
-        <div class="modal-content">
-            <h2>📦 Lost Item Details</h2>
-            <div id="lostItemDetailContent">
-                <div class="form-group"><label style="color: #94a3b8;">Item Name:</label><p id="detailItemName" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Description:</label><p id="detailDescription" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Location Lost:</label><p id="detailLocation" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Date Lost:</label><p id="detailDate" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Owner Name:</label><p id="detailOwnerName" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Owner Email:</label><p id="detailOwnerEmail" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Owner Phone:</label><p id="detailOwnerPhone" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Owner Department:</label><p id="detailOwnerDept" style="color: white;"></p></div>
-            </div>
-            <div class="form-group"><textarea id="claimMessageInput" rows="3" placeholder="Add a message to the owner (optional)"></textarea></div>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button class="btn-primary" onclick="submitClaim()" style="flex: 1;">📝 Submit Claim</button>
-                <button class="btn-secondary" onclick="closeLostItemDetailModal()" style="flex: 1;">Cancel</button>
             </div>
         </div>
     </div>
@@ -577,34 +560,50 @@
             <button class="btn-primary" onclick="openFoundItemModal()">🔍 Report Found Item</button>
         </div>
 
-        <div class="dashboard-columns">
-            <div>
-                <div class="card">
-                    <h3>📦 My Lost Items</h3>
-                    <div class="item-list" id="lostItemsList">
-                        <div class="empty-state">No lost items reported</div>
-                    </div>
-                </div>
+        <!-- Two Column Layout for Claims -->
+        <div class="two-columns">
+            <div class="left-section">
+                <!-- Claims on My Items -->
                 <div class="card">
                     <h3>📋 Claims on My Items</h3>
                     <div class="item-list" id="claimsList">
                         <div class="empty-state">No claims received</div>
                     </div>
                 </div>
-            </div>
-            <div>
-                <div class="card">
-                    <h3>✅ My Found Items</h3>
-                    <div class="item-list" id="foundItemsList">
-                        <div class="empty-state">No found items reported</div>
-                    </div>
-                </div>
+                
+                <!-- My Claims (Submitted) -->
                 <div class="card">
                     <h3>📝 My Claims (Submitted)</h3>
                     <div class="item-list" id="myClaimsList">
                         <div class="empty-state">No claims submitted</div>
                     </div>
                 </div>
+            </div>
+            
+            <div class="right-section">
+                <!-- Notifications Summary -->
+                <div class="card">
+                    <h3>🔔 Recent Notifications</h3>
+                    <div class="item-list" id="recentNotificationsList">
+                        <div class="empty-state">No notifications</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Lost Items Section -->
+        <div class="card">
+            <h3>📦 My Lost Items</h3>
+            <div class="item-list" id="lostItemsList">
+                <div class="empty-state">No lost items reported</div>
+            </div>
+        </div>
+
+        <!-- My Found Items Section - Moved to bottom -->
+        <div class="card">
+            <h3>✅ My Found Items</h3>
+            <div class="item-list" id="foundItemsList">
+                <div class="empty-state">No found items reported</div>
             </div>
         </div>
     </main>
@@ -614,7 +613,7 @@
         <div class="modal-content">
             <h2>👤 My Profile</h2>
             <div style="text-align: center; margin-bottom: 1rem;">
-                <img id="profileModalPic" class="profile-avatar-large" src="/images/default-avatar.png" alt="Profile" onclick="document.getElementById('profilePicUpload').click()">
+                <img id="profileModalPic" class="profile-avatar-large" src="/uploads/default-avatar.png" alt="Profile" onclick="document.getElementById('profilePicUpload').click()">
                 <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
                 <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 8px;">Click photo to change</p>
             </div>
@@ -677,9 +676,7 @@
 
         let currentUser = null;
         let notificationCheckInterval = null;
-        let lastNotificationCount = 0;
         let currentClaimId = null;
-        let currentLostItemForClaim = null;
 
         function getCurrentUser() {
             const user = JSON.parse(localStorage.getItem('user'));
@@ -704,7 +701,7 @@
             const panel = document.getElementById('notificationPanel');
             panel.classList.toggle('show');
             if (panel.classList.contains('show')) {
-                markNotificationsRead();
+                loadNotifications();
             }
         }
 
@@ -730,26 +727,27 @@
                 const response = await fetch(`${API_URL}/notifications?user_id=${user.id}`);
                 const data = await response.json();
                 if (data.success) {
-                    const unreadCount = data.notifications.filter(n => !n.is_read).length;
+                    const unreadCount = data.notifications?.filter(n => !n.is_read).length || 0;
                     document.getElementById('notificationBadge').innerText = unreadCount;
                     
                     const container = document.getElementById('notificationList');
-                    if (data.notifications.length === 0) {
+                    const recentContainer = document.getElementById('recentNotificationsList');
+                    
+                    if (!data.notifications || data.notifications.length === 0) {
                         container.innerHTML = '<div class="empty-state">No notifications</div>';
+                        if (recentContainer) recentContainer.innerHTML = '<div class="empty-state">No notifications</div>';
                     } else {
-                        container.innerHTML = data.notifications.map(notif => `
+                        const notifHtml = data.notifications.slice(0, 5).map(notif => `
                             <div class="notification-item ${!notif.is_read ? 'unread' : ''}" onclick="handleNotificationClick(${notif.id}, '${notif.type}', ${notif.related_id || 0})">
                                 <div class="notification-title">${escapeHtml(notif.title)}</div>
                                 <div class="notification-message">${escapeHtml(notif.message)}</div>
                                 <div class="notification-time">${new Date(notif.created_at).toLocaleString()}</div>
                             </div>
                         `).join('');
+                        
+                        container.innerHTML = notifHtml;
+                        if (recentContainer) recentContainer.innerHTML = notifHtml;
                     }
-                    
-                    if (unreadCount !== lastNotificationCount && unreadCount > lastNotificationCount) {
-                        showToast(`🔔 You have ${unreadCount} new notification(s)!`);
-                    }
-                    lastNotificationCount = unreadCount;
                 }
             } catch (error) {
                 console.error('Error loading notifications:', error);
@@ -761,8 +759,12 @@
                 await viewClaimDetails(relatedId);
             }
             // Mark as read
-            await fetch(`${API_URL}/notifications/${notifId}/read`, { method: 'PUT' });
-            loadNotifications();
+            try {
+                await fetch(`${API_URL}/notifications/${notifId}/read`, { method: 'PUT' });
+                loadNotifications();
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
         }
 
         async function viewClaimDetails(claimId) {
@@ -775,7 +777,6 @@
                     document.getElementById('claimClaimantName').innerText = data.claim.claimant_name;
                     document.getElementById('claimClaimantEmail').innerText = data.claim.claimant_email;
                     document.getElementById('claimClaimantPhone').innerText = data.claim.claimant_phone || 'Not provided';
-                    document.getElementById('claimClaimantRoll').innerText = data.claim.claimant_roll || 'Not provided';
                     document.getElementById('claimMessage').innerText = data.claim.message || 'No message';
                     document.getElementById('claimDate').innerText = new Date(data.claim.created_at).toLocaleString();
                     document.getElementById('claimDetailsModal').style.display = 'flex';
@@ -822,17 +823,6 @@
         function closeClaimDetailsModal() {
             document.getElementById('claimDetailsModal').style.display = 'none';
             currentClaimId = null;
-        }
-
-        async function markNotificationsRead() {
-            const user = getCurrentUser();
-            if (!user) return;
-            try {
-                await fetch(`${API_URL}/notifications/mark-read?user_id=${user.id}`, { method: 'POST' });
-                loadNotifications();
-            } catch (error) {
-                console.error('Error marking notifications read:', error);
-            }
         }
 
         function openProfileModal() {
@@ -882,14 +872,8 @@
                     user.full_name = document.getElementById('profileFullName').value;
                     user.phone = document.getElementById('profilePhone').value;
                     user.department = document.getElementById('profileDept').value;
-                    if (profilePic) {
-                        user.profile_pic = data.profile_pic || user.profile_pic;
-                    }
                     localStorage.setItem('user', JSON.stringify(user));
                     document.getElementById('userNameDisplay').innerText = user.full_name;
-                    if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
-                        document.getElementById('profilePic').src = '/uploads/' + user.profile_pic;
-                    }
                     closeProfileModal();
                 } else {
                     showToast(data.message, 'error');
@@ -898,36 +882,6 @@
                 showToast('Error updating profile!', 'error');
             }
         }
-
-        document.getElementById('profilePicUpload').onchange = async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const user = getCurrentUser();
-                const formData = new FormData();
-                formData.append('profile_pic', file);
-                formData.append('full_name', user.full_name);
-                formData.append('phone', user.phone);
-                formData.append('department', user.department);
-                formData.append('user_id', user.id);
-                formData.append('existing_pic', user.profile_pic);
-                
-                try {
-                    const response = await fetch(`${API_URL}/update-profile`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        showToast('Profile picture updated!');
-                        loadUserData();
-                    } else {
-                        showToast('Error updating picture!', 'error');
-                    }
-                } catch (error) {
-                    showToast('Error updating picture!', 'error');
-                }
-            }
-        };
 
         function openLostItemModal() {
             document.getElementById('lostItemModal').style.display = 'flex';
@@ -1074,10 +1028,10 @@
             container.innerHTML = items.map(item => `
                 <div class="item-card">
                     <div class="item-title">📦 ${escapeHtml(item.item_name)}</div>
-                    <div class="item-meta">${escapeHtml(item.description)}</div>
+                    <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
                     <div class="item-meta">📍 ${escapeHtml(item.location_lost)}</div>
-                    <div class="item-meta">📅 ${item.date_lost || 'Date not set'}</div>
-                    <button class="small-btn delete" onclick="deleteItem('lost', ${item.lost_id})">Delete</button>
+                    <div class="item-meta">📅 ${item.date_lost ? new Date(item.date_lost).toLocaleDateString() : 'Date not set'}</div>
+                    <button class="small-btn delete" onclick="deleteItem('lost', ${item.item_id})">Delete</button>
                 </div>
             `).join('');
         }
@@ -1091,11 +1045,10 @@
             container.innerHTML = items.map(item => `
                 <div class="item-card">
                     <div class="item-title">🔍 ${escapeHtml(item.item_name)}</div>
-                    <div class="item-meta">${escapeHtml(item.description)}</div>
+                    <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
                     <div class="item-meta">📍 ${escapeHtml(item.location_found)}</div>
-                    <div class="item-meta">📅 ${item.date_found || 'Date not set'}</div>
+                    <div class="item-meta">📅 ${item.date_found ? new Date(item.date_found).toLocaleDateString() : 'Date not set'}</div>
                     <button class="small-btn delete" onclick="deleteItem('found', ${item.found_id})">Delete</button>
-                    <button class="small-btn claim" onclick="claimFoundItem(${item.found_id}, '${escapeHtml(item.item_name)}', ${item.user_id})">Claim This Item</button>
                 </div>
             `).join('');
         }
@@ -1131,72 +1084,6 @@
                     <div class="item-meta">📅 ${new Date(claim.created_at).toLocaleString()}</div>
                 </div>
             `).join('');
-        }
-
-        function claimFoundItem(foundId, itemName, ownerId) {
-            currentLostItemForClaim = { foundId, itemName, ownerId };
-            // Load owner details
-            loadOwnerDetails(ownerId);
-        }
-
-        async function loadOwnerDetails(ownerId) {
-            try {
-                const response = await fetch(`${API_URL}/user/${ownerId}`);
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('detailItemName').innerText = currentLostItemForClaim.itemName;
-                    document.getElementById('detailDescription').innerText = 'Found item - claim to verify ownership';
-                    document.getElementById('detailLocation').innerText = 'Check with finder for details';
-                    document.getElementById('detailDate').innerText = 'Contact finder for date';
-                    document.getElementById('detailOwnerName').innerText = data.user.full_name;
-                    document.getElementById('detailOwnerEmail').innerText = data.user.email;
-                    document.getElementById('detailOwnerPhone').innerText = data.user.phone || 'Not provided';
-                    document.getElementById('detailOwnerDept').innerText = data.user.department || 'Not specified';
-                    document.getElementById('claimMessageInput').value = '';
-                    document.getElementById('lostItemDetailModal').style.display = 'flex';
-                }
-            } catch (error) {
-                showToast('Error loading owner details', 'error');
-            }
-        }
-
-        async function submitClaim() {
-            const user = getCurrentUser();
-            if (!user) {
-                showToast('Please login again', 'error');
-                return;
-            }
-            
-            const message = document.getElementById('claimMessageInput').value;
-            
-            try {
-                const response = await fetch(`${API_URL}/claim`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        found_id: currentLostItemForClaim.foundId,
-                        claimant_id: user.id,
-                        owner_id: currentLostItemForClaim.ownerId,
-                        message: message
-                    })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    showToast('Claim submitted successfully! The owner will be notified.');
-                    closeLostItemDetailModal();
-                    loadMyItems();
-                    loadStats();
-                } else {
-                    showToast(data.message, 'error');
-                }
-            } catch (error) {
-                showToast('Error submitting claim', 'error');
-            }
-        }
-
-        function closeLostItemDetailModal() {
-            document.getElementById('lostItemDetailModal').style.display = 'none';
-            currentLostItemForClaim = null;
         }
 
         async function deleteItem(type, id) {
