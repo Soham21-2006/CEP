@@ -518,6 +518,9 @@
         @media (max-width: 900px) {
             .notification-panel { width: 350px; right: -20px; }
         }
+
+        .small-btn.found-btn { background: #22c55e; color: white; }
+.small-btn.claim-btn { background: #8b5cf6; color: white; }
     </style>
 </head>
 <body>
@@ -680,6 +683,19 @@
         </div>
     </div>
 
+    <!-- Chat Window -->
+<div id="chatWindow" class="chat-container">
+    <div class="chat-header">
+        <span id="chatUserName">💬 Chat</span>
+        <span onclick="closeChat()" style="cursor: pointer;">✕</span>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+        <button class="btn-primary" onclick="sendChatMessage()" style="padding: 0.5rem 1rem;">Send</button>
+    </div>
+</div>
+
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:5000/api'
@@ -690,6 +706,9 @@
         let currentCampusTab = 'lost';
         let campusLostItems = [];
         let campusFoundItems = [];
+
+        let currentChatUser = null;
+let currentChatItem = null;
 
         function getCurrentUser() {
             const user = JSON.parse(localStorage.getItem('user'));
@@ -797,29 +816,170 @@
         }
 
         function showCampusTab(tab) {
-            currentCampusTab = tab;
-            document.getElementById('tabLostBtn').classList.toggle('active', tab === 'lost');
-            document.getElementById('tabFoundBtn').classList.toggle('active', tab === 'found');
+    currentCampusTab = tab;
+    document.getElementById('tabLostBtn').classList.toggle('active', tab === 'lost');
+    document.getElementById('tabFoundBtn').classList.toggle('active', tab === 'found');
+    
+    const items = tab === 'lost' ? campusLostItems : campusFoundItems;
+    const container = document.getElementById('campusItemsList');
+    
+    if (!items || items.length === 0) {
+        container.innerHTML = `<div class="empty-state">No ${tab} items reported on campus</div>`;
+        return;
+    }
+    
+    // For Lost Items -> Show "FOUND" button (I found this item)
+    // For Found Items -> Show "CLAIM" button (This is my item)
+    container.innerHTML = items.map(item => {
+        const buttonText = tab === 'lost' ? '🔍 I Found This' : '📝 Claim This Item';
+        const buttonClass = tab === 'lost' ? 'found-btn' : 'claim-btn';
+        const itemId = tab === 'lost' ? item.item_id : item.found_id;
+        const reporterId = item.user_id;
+        
+        return `
+            <div class="item-card" data-item-id="${itemId}" data-item-type="${tab}" data-reporter-id="${reporterId}">
+                <div class="item-title">${tab === 'lost' ? '📦' : '🔍'} ${escapeHtml(item.item_name)}</div>
+                <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
+                <div class="item-meta">📍 ${escapeHtml(tab === 'lost' ? item.location_lost : item.location_found)}</div>
+                <div class="item-meta">📅 ${formatDate(tab === 'lost' ? item.date_lost : item.date_found)}</div>
+                <div class="item-meta">👤 Reported by: ${escapeHtml(item.full_name || 'Anonymous')}</div>
+                <button class="small-btn ${buttonClass}" onclick="openChatForItem(${itemId}, '${tab}', ${reporterId}, '${escapeHtml(item.item_name)}')">${buttonText}</button>
+            </div>
+        `;
+    }).join('');
+}
+
+// Open chat for item (Lost item -> reporter lost it, responder found it)
+// (Found item -> reporter found it, responder claims it)
+async function openChatForItem(itemId, type, reporterId, itemName) {
+    const user = getCurrentUser();
+    if (!user) {
+        showToast('Please login first', 'error');
+        return;
+    }
+    
+    if (user.id === reporterId) {
+        showToast('You cannot interact with your own item!', 'error');
+        return;
+    }
+    
+    // Store chat context
+    currentChatItem = {
+        itemId: itemId,
+        type: type,
+        reporterId: reporterId,
+        itemName: itemName
+    };
+    
+    // Get reporter details for automatic message
+    try {
+        const response = await fetch(`${API_URL}/user/${reporterId}`);
+        const data = await response.json();
+        if (data.success) {
+            currentChatUser = {
+                user_id: reporterId,
+                full_name: data.user.full_name
+            };
             
-            const items = tab === 'lost' ? campusLostItems : campusFoundItems;
-            const container = document.getElementById('campusItemsList');
+            document.getElementById('chatUserName').innerHTML = `💬 Chat with ${data.user.full_name} about: ${itemName}`;
+            document.getElementById('chatWindow').style.display = 'flex';
             
-            if (!items || items.length === 0) {
-                container.innerHTML = `<div class="empty-state">No ${tab} items reported on campus</div>`;
-                return;
-            }
+            // Send automatic message with contact details
+            const autoMessage = type === 'lost' 
+                ? `🔍 I found your lost item "${itemName}". Here are my contact details:\n\n📞 Phone: ${user.phone || 'Not provided'}\n📧 Email: ${user.email}\n\nPlease contact me to return it.`
+                : `📝 I believe this found item "${itemName}" belongs to me. Here are my contact details:\n\n📞 Phone: ${user.phone || 'Not provided'}\n📧 Email: ${user.email}\n\nPlease contact me to verify ownership.`;
             
-            container.innerHTML = items.map(item => `
-                <div class="item-card" onclick="viewCampusItem(${JSON.stringify(escapeHtml(JSON.stringify(item))).replace(/"/g, '&quot;')})" style="cursor: pointer;">
-                    <div class="item-title">${tab === 'lost' ? '📦' : '🔍'} ${escapeHtml(item.item_name)}</div>
-                    <div class="item-meta">📍 ${escapeHtml(tab === 'lost' ? item.location_lost : item.location_found)}</div>
-                    <div class="item-meta">📅 ${formatDate(tab === 'lost' ? item.date_lost : item.date_found)}</div>
-                    <div class="item-meta">👤 Reported by: ${escapeHtml(item.full_name || 'Anonymous')}</div>
-                    <div class="item-meta">📞 Contact: ${escapeHtml(item.contact_phone || 'Not provided')}</div>
-                    <button class="small-btn claim" onclick="event.stopPropagation(); submitClaimDirect('${tab}', ${item.item_id || item.found_id}, '${escapeHtml(item.item_name)}', ${item.user_id})">📝 Claim This Item</button>
+            await sendAutoMessage(reporterId, autoMessage, user);
+            loadChatMessages(reporterId);
+        }
+    } catch (error) {
+        console.error('Error opening chat:', error);
+        showToast('Error opening chat', 'error');
+    }
+}
+
+// Send automatic message with contact details
+async function sendAutoMessage(receiverId, message, user) {
+    try {
+        const response = await fetch(`${API_URL}/send-message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sender_id: user.id,
+                receiver_id: receiverId,
+                message: message,
+                share_contact: true
+            })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error sending auto message:', error);
+        return null;
+    }
+}
+
+// Load chat messages
+async function loadChatMessages(userId) {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/conversation/${userId}?user_id=${user.id}`);
+        const data = await response.json();
+        if (data.success) {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = data.messages.map(msg => `
+                <div class="message-bubble" style="${msg.sender_id === user.id ? 'text-align: right; margin-left: auto;' : ''}">
+                    <div class="${msg.sender_id === user.id ? 'message-sent' : 'message-received'}">
+                        ${escapeHtml(msg.message)}
+                    </div>
+                    <small style="color: #94a3b8; font-size: 0.7rem;">${new Date(msg.created_at).toLocaleString()}</small>
                 </div>
             `).join('');
+            container.scrollTop = container.scrollHeight;
         }
+    } catch (error) {
+        console.error('Error loading messages:', error);
+    }
+}
+
+// Send chat message
+async function sendChatMessage() {
+    const message = document.getElementById('chatInput').value;
+    const user = getCurrentUser();
+    
+    if (!message.trim() || !currentChatUser) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/send-message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sender_id: user.id,
+                receiver_id: currentChatUser.user_id,
+                message: message,
+                share_contact: false
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML += `
+                <div class="message-bubble" style="text-align: right; margin-left: auto;">
+                    <div class="message-sent">
+                        ${escapeHtml(message)}
+                    </div>
+                    <small style="color: #94a3b8;">Just now</small>
+                </div>
+            `;
+            document.getElementById('chatInput').value = '';
+            container.scrollTop = container.scrollHeight;
+        }
+    } catch (error) {
+        showToast('Error sending message', 'error');
+    }
+}
 
         function viewCampusItem(itemData) {
             // Parse the item data - this is a workaround for the onclick issue
@@ -1165,6 +1325,12 @@
             localStorage.removeItem('user');
             window.location.href = '/';
         }
+
+        function closeChat() {
+    document.getElementById('chatWindow').style.display = 'none';
+    currentChatUser = null;
+    currentChatItem = null;
+}
 
         loadUserData();
     </script>

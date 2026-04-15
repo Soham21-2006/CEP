@@ -14,6 +14,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 const notificationService = require('./notification.cjs');
+const messagingRoutes = require('./messaging.cjs');
 
 const app = express();
 
@@ -1161,6 +1162,8 @@ app.get('/api/my-items', async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 });
+
+app.use('/api', messagingRoutes);
 
 // ============== START SERVER ==============
 const PORT = process.env.PORT || 5000;
