@@ -1024,6 +1024,165 @@ app.post('/api/notifications/mark-read', async (req, res) => {
     }
 });
 
+// GET SINGLE LOST ITEM BY ID
+app.get('/api/lost-item/:id', async (req, res) => {
+    try {
+        const itemId = parseInt(req.params.id);
+        const result = await pool.query(
+            'SELECT * FROM lost_items WHERE item_id = $1',
+            [itemId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ success: false, message: 'Item not found' });
+        }
+        
+        res.json({ success: true, item: result.rows[0] });
+    } catch (error) {
+        console.error('Error fetching lost item:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// GET SINGLE FOUND ITEM BY ID
+app.get('/api/found-item/:id', async (req, res) => {
+    try {
+        const itemId = parseInt(req.params.id);
+        const result = await pool.query(
+            'SELECT * FROM found_items WHERE found_id = $1',
+            [itemId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ success: false, message: 'Item not found' });
+        }
+        
+        res.json({ success: true, item: result.rows[0] });
+    } catch (error) {
+        console.error('Error fetching found item:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// GET USER BY ID (for owner details)
+app.get('/api/user/:userId', async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const result = await pool.query(
+            `SELECT id, full_name, email, phone, roll_number, department, profile_pic, reputation_points 
+             FROM users WHERE id = $1`,
+            [userId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+        
+        res.json({ success: true, user: result.rows[0] });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// GET USER STATS (for dashboard stats)
+app.get('/api/user-stats', async (req, res) => {
+    const { user_id } = req.query;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required!', lost_count: 0, found_count: 0, pending_claims: 0 });
+    }
+    
+    try {
+        const lostCount = await pool.query('SELECT COUNT(*) FROM lost_items WHERE user_id = $1', [userId]);
+        const foundCount = await pool.query('SELECT COUNT(*) FROM found_items WHERE user_id = $1', [userId]);
+        const pendingClaims = await pool.query(
+            `SELECT COUNT(*) FROM claims c 
+             JOIN found_items fi ON c.found_item_id = fi.found_id 
+             WHERE fi.user_id = $1 AND c.status = 'pending'`,
+            [userId]
+        );
+        
+        res.json({ 
+            success: true, 
+            lost_count: parseInt(lostCount.rows[0].count),
+            found_count: parseInt(foundCount.rows[0].count),
+            pending_claims: parseInt(pendingClaims.rows[0].count)
+        });
+    } catch (error) {
+        console.error('Error fetching user stats:', error);
+        res.json({ success: false, message: error.message, lost_count: 0, found_count: 0, pending_claims: 0 });
+    }
+});
+
+// MARK SINGLE NOTIFICATION AS READ
+app.put('/api/notifications/:id/read', async (req, res) => {
+    const notificationId = parseInt(req.params.id);
+    
+    try {
+        await pool.query('UPDATE notifications SET is_read = TRUE WHERE id = $1', [notificationId]);
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// GET MY ITEMS WITH CLAIMS (updated version)
+app.get('/api/my-items', async (req, res) => {
+    const { user_id } = req.query;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required' });
+    }
+    
+    try {
+        const lostItems = await pool.query(
+            `SELECT * FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
+            [userId]
+        );
+        
+        const foundItems = await pool.query(
+            `SELECT * FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
+            [userId]
+        );
+        
+        // Get claims on user's found items
+        const claims = await pool.query(
+            `SELECT c.*, fi.item_name, u.full_name as claimant_name 
+             FROM claims c
+             JOIN found_items fi ON c.found_item_id = fi.found_id
+             JOIN users u ON c.claimant_id = u.id
+             WHERE fi.user_id = $1
+             ORDER BY c.created_at DESC`,
+            [userId]
+        );
+        
+        // Get claims submitted by user
+        const myClaims = await pool.query(
+            `SELECT c.*, fi.item_name, u.full_name as owner_name, c.status
+             FROM claims c
+             JOIN found_items fi ON c.found_item_id = fi.found_id
+             JOIN users u ON fi.user_id = u.id
+             WHERE c.claimant_id = $1
+             ORDER BY c.created_at DESC`,
+            [userId]
+        );
+        
+        res.json({ 
+            success: true, 
+            lostItems: lostItems.rows, 
+            foundItems: foundItems.rows,
+            claims: claims.rows,
+            myClaims: myClaims.rows
+        });
+    } catch (error) {
+        console.error('Error fetching my items:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
 // ============== START SERVER ==============
 const PORT = process.env.PORT || 5000;
 
