@@ -1,4 +1,6 @@
-// notification.cjs - Complete Notification System for Campus Lost & Found
+// ==========================================
+// NOTIFICATION SERVICE - Campus Lost & Found
+// ==========================================
 
 const { Pool } = require('pg');
 
@@ -15,7 +17,7 @@ const pool = new Pool({
 const NOTIFICATION_TYPES = {
     LOST_ITEM: 'lost',
     FOUND_ITEM: 'found',
-    CLAIM_REQUEST: 'claim_request',
+    CLAIM_REQUEST: 'claim',
     CLAIM_APPROVED: 'claim_approved',
     CLAIM_REJECTED: 'claim_rejected',
     NEW_MESSAGE: 'message',
@@ -23,7 +25,7 @@ const NOTIFICATION_TYPES = {
     CAMPUS_UPDATE: 'campus_update'
 };
 
-// ============== CREATE NOTIFICATION ==============
+// ============== CREATE SINGLE NOTIFICATION ==============
 async function createNotification(userId, title, message, type, relatedId = null) {
     try {
         const result = await pool.query(
@@ -143,22 +145,6 @@ async function deleteNotification(notificationId, userId) {
     }
 }
 
-// ============== DELETE ALL NOTIFICATIONS ==============
-async function deleteAllNotifications(userId) {
-    try {
-        const result = await pool.query(
-            `DELETE FROM notifications WHERE user_id = $1 RETURNING id`,
-            [userId]
-        );
-        
-        console.log(`✅ Deleted ${result.rowCount} notifications for user ${userId}`);
-        return { success: true, count: result.rowCount };
-    } catch (error) {
-        console.error('Error deleting all notifications:', error);
-        return { success: false, message: error.message };
-    }
-}
-
 // ============== GET UNREAD COUNT ==============
 async function getUnreadNotificationCount(userId) {
     try {
@@ -166,7 +152,6 @@ async function getUnreadNotificationCount(userId) {
             `SELECT COUNT(*) as unread FROM notifications WHERE user_id = $1 AND is_read = false`,
             [userId]
         );
-        
         return parseInt(result.rows[0].unread);
     } catch (error) {
         console.error('Error getting unread count:', error);
@@ -177,7 +162,6 @@ async function getUnreadNotificationCount(userId) {
 // ============== NOTIFICATION FOR NEW LOST ITEM ==============
 async function notifyNewLostItem(lostItemId, userId, itemName, location) {
     try {
-        // Get user's campus
         const userResult = await pool.query(
             `SELECT campus_id, full_name FROM users WHERE id = $1`,
             [userId]
@@ -187,7 +171,6 @@ async function notifyNewLostItem(lostItemId, userId, itemName, location) {
         const userName = userResult.rows[0]?.full_name;
         
         if (campusId) {
-            // Get all users from same campus except the reporter
             const sameCampusUsers = await pool.query(
                 `SELECT id FROM users WHERE campus_id = $1 AND id != $2`,
                 [campusId, userId]
@@ -205,7 +188,6 @@ async function notifyNewLostItem(lostItemId, userId, itemName, location) {
                 );
             }
         }
-        
         return { success: true };
     } catch (error) {
         console.error('Error notifying new lost item:', error);
@@ -216,7 +198,6 @@ async function notifyNewLostItem(lostItemId, userId, itemName, location) {
 // ============== NOTIFICATION FOR NEW FOUND ITEM ==============
 async function notifyNewFoundItem(foundItemId, userId, itemName, location) {
     try {
-        // Get user's campus
         const userResult = await pool.query(
             `SELECT campus_id, full_name FROM users WHERE id = $1`,
             [userId]
@@ -226,7 +207,6 @@ async function notifyNewFoundItem(foundItemId, userId, itemName, location) {
         const userName = userResult.rows[0]?.full_name;
         
         if (campusId) {
-            // Get all users from same campus except the reporter
             const sameCampusUsers = await pool.query(
                 `SELECT id FROM users WHERE campus_id = $1 AND id != $2`,
                 [campusId, userId]
@@ -244,7 +224,6 @@ async function notifyNewFoundItem(foundItemId, userId, itemName, location) {
                 );
             }
         }
-        
         return { success: true };
     } catch (error) {
         console.error('Error notifying new found item:', error);
@@ -262,7 +241,6 @@ async function notifyClaimRequest(claimId, ownerId, claimantName, itemName) {
             NOTIFICATION_TYPES.CLAIM_REQUEST,
             claimId
         );
-        
         return { success: true };
     } catch (error) {
         console.error('Error notifying claim request:', error);
@@ -280,7 +258,6 @@ async function notifyClaimApproved(claimId, claimantId, ownerName, itemName) {
             NOTIFICATION_TYPES.CLAIM_APPROVED,
             claimId
         );
-        
         return { success: true };
     } catch (error) {
         console.error('Error notifying claim approved:', error);
@@ -302,7 +279,6 @@ async function notifyClaimRejected(claimId, claimantId, ownerName, itemName, rea
             NOTIFICATION_TYPES.CLAIM_REJECTED,
             claimId
         );
-        
         return { success: true };
     } catch (error) {
         console.error('Error notifying claim rejected:', error);
@@ -319,88 +295,9 @@ async function notifyNewMessage(receiverId, senderName, message) {
             `${senderName} sent you a message: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`,
             NOTIFICATION_TYPES.NEW_MESSAGE
         );
-        
         return { success: true };
     } catch (error) {
         console.error('Error notifying new message:', error);
-        return { success: false, message: error.message };
-    }
-}
-
-// ============== NOTIFICATION FOR SYSTEM UPDATE ==============
-async function notifySystemUpdate(userId, title, message) {
-    try {
-        await createNotification(
-            userId,
-            title || '🔔 System Update',
-            message,
-            NOTIFICATION_TYPES.SYSTEM
-        );
-        
-        return { success: true };
-    } catch (error) {
-        console.error('Error notifying system update:', error);
-        return { success: false, message: error.message };
-    }
-}
-
-// ============== NOTIFICATION FOR CAMPUS UPDATE ==============
-async function notifyCampusUpdate(campusId, title, message) {
-    try {
-        // Get all users from the campus
-        const campusUsers = await pool.query(
-            `SELECT id FROM users WHERE campus_id = $1`,
-            [campusId]
-        );
-        
-        const userIds = campusUsers.rows.map(row => row.id);
-        
-        if (userIds.length > 0) {
-            await createBulkNotifications(
-                userIds,
-                title || '🏛️ Campus Update',
-                message,
-                NOTIFICATION_TYPES.CAMPUS_UPDATE
-            );
-        }
-        
-        return { success: true, count: userIds.length };
-    } catch (error) {
-        console.error('Error notifying campus update:', error);
-        return { success: false, message: error.message };
-    }
-}
-
-// ============== NOTIFICATION FOR ITEM MATCH ==============
-async function notifyItemMatch(userId, lostItemName, foundItemName, matchScore) {
-    try {
-        await createNotification(
-            userId,
-            '🎯 Potential Match Found!',
-            `Your item "${lostItemName}" might match with "${foundItemName}" (${matchScore}% match). Check your matches!`,
-            NOTIFICATION_TYPES.SYSTEM
-        );
-        
-        return { success: true };
-    } catch (error) {
-        console.error('Error notifying item match:', error);
-        return { success: false, message: error.message };
-    }
-}
-
-// ============== NOTIFICATION FOR REMINDER ==============
-async function notifyReminder(userId, itemName, daysOld) {
-    try {
-        await createNotification(
-            userId,
-            '⏰ Item Reminder',
-            `Your item "${itemName}" was reported ${daysOld} days ago. Still looking for it? Try posting again!`,
-            NOTIFICATION_TYPES.SYSTEM
-        );
-        
-        return { success: true };
-    } catch (error) {
-        console.error('Error notifying reminder:', error);
         return { success: false, message: error.message };
     }
 }
@@ -411,15 +308,21 @@ async function getNotificationDetails(notificationId, userId) {
         const result = await pool.query(
             `SELECT n.*, 
                     CASE 
-                        WHEN n.type = 'claim_request' AND n.related_id IS NOT NULL THEN
-                            (SELECT json_build_object('claim_id', c.claim_id, 'item_name', fi.item_name, 'claimant_name', u.full_name)
+                        WHEN n.type = 'claim' AND n.related_id IS NOT NULL THEN
+                            (SELECT json_build_object('claim_id', c.claim_id, 'item_name', 
+                                CASE 
+                                    WHEN c.lost_item_id IS NOT NULL THEN li.item_name
+                                    ELSE fi.item_name
+                                END, 
+                                'claimant_name', u.full_name)
                              FROM claims c
-                             JOIN found_items fi ON c.found_item_id = fi.found_id
+                             LEFT JOIN lost_items li ON c.lost_item_id = li.item_id
+                             LEFT JOIN found_items fi ON c.found_item_id = fi.found_id
                              JOIN users u ON c.claimant_id = u.id
                              WHERE c.claim_id = n.related_id)
                         WHEN n.type IN ('lost', 'found') AND n.related_id IS NOT NULL THEN
-                            (SELECT json_build_object('item_id', item_id, 'item_name', item_name, 'location', 
-                                CASE WHEN n.type = 'lost' THEN location_lost ELSE location_found END)
+                            (SELECT json_build_object('item_id', item_id, 'item_name', item_name, 
+                                'location', CASE WHEN n.type = 'lost' THEN location_lost ELSE location_found END)
                              FROM ${n.type === 'lost' ? 'lost_items' : 'found_items'}
                              WHERE ${n.type === 'lost' ? 'item_id' : 'found_id'} = n.related_id)
                         ELSE NULL
@@ -450,7 +353,6 @@ async function cleanOldNotifications(daysOld = 30) {
              RETURNING id`,
             []
         );
-        
         console.log(`✅ Cleaned up ${result.rowCount} old notifications`);
         return { success: true, count: result.rowCount };
     } catch (error) {
@@ -468,7 +370,6 @@ module.exports = {
     markNotificationAsRead,
     markAllNotificationsAsRead,
     deleteNotification,
-    deleteAllNotifications,
     getUnreadNotificationCount,
     notifyNewLostItem,
     notifyNewFoundItem,
@@ -476,10 +377,6 @@ module.exports = {
     notifyClaimApproved,
     notifyClaimRejected,
     notifyNewMessage,
-    notifySystemUpdate,
-    notifyCampusUpdate,
-    notifyItemMatch,
-    notifyReminder,
     getNotificationDetails,
     cleanOldNotifications
 };
