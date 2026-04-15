@@ -13,8 +13,6 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-const notificationService = require('./notification.cjs');
-
 const app = express();
 
 // Database connection
@@ -43,7 +41,7 @@ app.use(cors({
     credentials: true
 }));
 
-// Session configuration (kept for admin panel compatibility)
+// Session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
@@ -225,7 +223,7 @@ app.post('/api/logout', (req, res) => {
 
 // ============== USER PROFILE ROUTES ==============
 
-// GET current user (accepts user_id query param)
+// GET current user
 app.get('/api/current-user', async (req, res) => {
     const { user_id } = req.query;
     
@@ -245,7 +243,6 @@ app.get('/api/current-user', async (req, res) => {
         }
     }
     
-    // Fallback to session
     if (!req.session.userId) {
         return res.json({ success: false, message: 'Not logged in' });
     }
@@ -300,7 +297,7 @@ app.post('/api/update-profile', upload.single('profile_pic'), async (req, res) =
 
 // ============== ITEM ROUTES ==============
 
-// ============== REPORT LOST ITEM ==============
+// REPORT LOST ITEM
 app.post('/api/lost-item', upload.single('image'), async (req, res) => {
     try {
         const { item_name, category, description, location_lost, date_lost, time_lost, contact_phone, latitude, longitude, user_id } = req.body;
@@ -321,8 +318,7 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
              latitude, longitude, date_lost, time_lost, contact_phone]
         );
         
-        // ========== CREATE NOTIFICATIONS FOR SAME CAMPUS USERS ==========
-        // Get the user's campus_id
+        // Get user's campus for notifications
         const userCampus = await pool.query(
             'SELECT campus_id, full_name FROM users WHERE id = $1',
             [userId]
@@ -331,13 +327,11 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
         const userName = userCampus.rows[0]?.full_name;
         
         if (campusId) {
-            // Get all users from same campus except the reporter
             const sameCampusUsers = await pool.query(
                 'SELECT id FROM users WHERE campus_id = $1 AND id != $2',
                 [campusId, userId]
             );
             
-            // Create notification for each user
             for (const user of sameCampusUsers.rows) {
                 await pool.query(
                     `INSERT INTO notifications (user_id, title, message, type, is_read) 
@@ -345,7 +339,6 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
                     [user.id, 'New Lost Item', `${userName} reported a lost item: ${item_name} at ${location_lost}`, 'lost']
                 );
             }
-            
             console.log(`Created ${sameCampusUsers.rows.length} notifications for lost item`);
         }
         
@@ -356,7 +349,7 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
     }
 });
 
-// ============== REPORT FOUND ITEM ==============
+// REPORT FOUND ITEM
 app.post('/api/found-item', upload.single('image'), async (req, res) => {
     try {
         const { item_name, category, description, location_found, date_found, time_found, contact_phone, latitude, longitude, user_id } = req.body;
@@ -383,8 +376,7 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
             [userId]
         );
         
-        // ========== CREATE NOTIFICATIONS FOR SAME CAMPUS USERS ==========
-        // Get the user's campus_id
+        // Get user's campus for notifications
         const userCampus = await pool.query(
             'SELECT campus_id, full_name FROM users WHERE id = $1',
             [userId]
@@ -393,13 +385,11 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
         const userName = userCampus.rows[0]?.full_name;
         
         if (campusId) {
-            // Get all users from same campus except the reporter
             const sameCampusUsers = await pool.query(
                 'SELECT id FROM users WHERE campus_id = $1 AND id != $2',
                 [campusId, userId]
             );
             
-            // Create notification for each user
             for (const user of sameCampusUsers.rows) {
                 await pool.query(
                     `INSERT INTO notifications (user_id, title, message, type, is_read) 
@@ -407,7 +397,6 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
                     [user.id, 'New Found Item', `${userName} found an item: ${item_name} at ${location_found}`, 'found']
                 );
             }
-            
             console.log(`Created ${sameCampusUsers.rows.length} notifications for found item`);
         }
         
@@ -418,102 +407,34 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
     }
 });
 
-// ============== SUBMIT CLAIM ==============
-app.post('/api/submit-claim', async (req, res) => {
-    const { claimant_id, lost_item_id, found_item_id, message } = req.body;
-    let claimantId = claimant_id ? parseInt(claimant_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+// GET MY ITEMS
+app.get('/api/my-items', async (req, res) => {
+    const { user_id } = req.query;
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
     
-    if (!claimantId) {
-        return res.json({ success: false, message: 'Claimant ID required!' });
+    if (!userId) {
+        return res.json({ success: false, message: 'User ID required' });
     }
     
     try {
-        let owner_id;
-        let itemName = '';
-        
-        // Get item details based on type
-        if (lost_item_id) {
-            const item = await pool.query('SELECT user_id, item_name FROM lost_items WHERE item_id = $1', [lost_item_id]);
-            if (item.rows.length === 0) {
-                return res.json({ success: false, message: 'Lost item not found!' });
-            }
-            owner_id = item.rows[0].user_id;
-            itemName = item.rows[0].item_name;
-        } else if (found_item_id) {
-            const item = await pool.query('SELECT user_id, item_name FROM found_items WHERE found_id = $1', [found_item_id]);
-            if (item.rows.length === 0) {
-                return res.json({ success: false, message: 'Found item not found!' });
-            }
-            owner_id = item.rows[0].user_id;
-            itemName = item.rows[0].item_name;
-        } else {
-            return res.json({ success: false, message: 'Either lost_item_id or found_item_id is required!' });
-        }
-        
-        // Check if claim already exists
-        const existingClaim = await pool.query(
-            `SELECT * FROM claims WHERE (lost_item_id = $1 OR found_item_id = $2) AND claimant_id = $3 AND status = 'pending'`,
-            [lost_item_id || null, found_item_id || null, claimantId]
+        const lostItems = await pool.query(
+            `SELECT * FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
+            [userId]
         );
         
-        if (existingClaim.rows.length > 0) {
-            return res.json({ success: false, message: 'You already have a pending claim for this item!' });
-        }
-        
-        // Insert the claim
-        const result = await pool.query(
-            `INSERT INTO claims (lost_item_id, found_item_id, claimant_id, owner_id, message, status) 
-             VALUES ($1, $2, $3, $4, $5, 'pending') RETURNING claim_id`,
-            [lost_item_id || null, found_item_id || null, claimantId, owner_id, message || '']
+        const foundItems = await pool.query(
+            `SELECT * FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
+            [userId]
         );
         
-        const claimId = result.rows[0].claim_id;
-        
-        // Get claimant name for notification
-        const claimant = await pool.query('SELECT full_name FROM users WHERE id = $1', [claimantId]);
-        const claimantName = claimant.rows[0]?.full_name || 'Someone';
-        
-        // ========== USE NOTIFICATION SERVICE (if available) ==========
-        // Check if notification service is loaded
-        if (notificationService && typeof notificationService.notifyClaimRequest === 'function') {
-            await notificationService.notifyClaimRequest(claimId, owner_id, claimantName, itemName);
-        } else {
-            // Fallback: Create notification directly
-            await pool.query(
-                `INSERT INTO notifications (user_id, title, message, type, is_read, related_id) 
-                 VALUES ($1, $2, $3, $4, false, $5)`,
-                [owner_id, '📋 New Claim Request', 
-                 `${claimantName} wants to claim "${itemName}". Please review the claim.`, 
-                 'claim', claimId]
-            );
-        }
-        // ============================================================
-        
-        res.json({ success: true, message: 'Claim submitted successfully! The owner will be notified.' });
+        res.json({ success: true, lostItems: lostItems.rows, foundItems: foundItems.rows });
     } catch (error) {
-        console.error('Error submitting claim:', error);
+        console.error('Error fetching my items:', error);
         res.json({ success: false, message: error.message });
     }
 });
-// ============== TEST NOTIFICATION (for debugging) ==============
-app.post('/api/test-notification', async (req, res) => {
-    const { user_id, title, message } = req.body;
-    
-    try {
-        await pool.query(
-            `INSERT INTO notifications (user_id, title, message, type, is_read) 
-             VALUES ($1, $2, $3, $4, false)`,
-            [parseInt(user_id), title || 'Test Notification', message || 'This is a test notification', 'test']
-        );
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
 
-
-
-// GET ALL LOST ITEMS (for stats/public view)
+// GET ALL LOST ITEMS (for public view)
 app.get('/api/lost-items', async (req, res) => {
     try {
         const result = await pool.query(
@@ -530,7 +451,7 @@ app.get('/api/lost-items', async (req, res) => {
     }
 });
 
-// GET ALL FOUND ITEMS (for stats/public view)
+// GET ALL FOUND ITEMS (for public view)
 app.get('/api/found-items', async (req, res) => {
     try {
         const result = await pool.query(
@@ -573,72 +494,68 @@ app.delete('/api/item/:type/:id', async (req, res) => {
     }
 });
 
-// ============== MESSAGE ROUTES ==============
-
-// GET MESSAGES
-app.get('/api/messages/:userId', async (req, res) => {
-    const { user_id } = req.query;
-    let currentUserId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    const otherUserId = parseInt(req.params.userId);
+// SUBMIT CLAIM
+app.post('/api/submit-claim', async (req, res) => {
+    const { claimant_id, lost_item_id, found_item_id, message } = req.body;
+    let claimantId = claimant_id ? parseInt(claimant_id) : (req.session.userId ? parseInt(req.session.userId) : null);
     
-    if (!currentUserId) {
-        return res.json({ success: false, message: 'User ID required!' });
+    if (!claimantId) {
+        return res.json({ success: false, message: 'Claimant ID required!' });
     }
     
     try {
-        const campusCheck = await pool.query(
-            `SELECT u1.campus_id::text as user1_campus, u2.campus_id::text as user2_campus 
-             FROM users u1, users u2 
-             WHERE u1.id = $1 AND u2.id = $2`,
-            [currentUserId, otherUserId]
-        );
+        let owner_id;
+        let itemName = '';
         
-        if (campusCheck.rows[0]?.user1_campus !== campusCheck.rows[0]?.user2_campus) {
-            return res.json({ success: false, message: 'Users from different campuses cannot chat!' });
+        if (lost_item_id) {
+            const item = await pool.query('SELECT user_id, item_name FROM lost_items WHERE item_id = $1', [lost_item_id]);
+            if (item.rows.length === 0) {
+                return res.json({ success: false, message: 'Lost item not found!' });
+            }
+            owner_id = item.rows[0].user_id;
+            itemName = item.rows[0].item_name;
+        } else if (found_item_id) {
+            const item = await pool.query('SELECT user_id, item_name FROM found_items WHERE found_id = $1', [found_item_id]);
+            if (item.rows.length === 0) {
+                return res.json({ success: false, message: 'Found item not found!' });
+            }
+            owner_id = item.rows[0].user_id;
+            itemName = item.rows[0].item_name;
+        } else {
+            return res.json({ success: false, message: 'Either lost_item_id or found_item_id is required!' });
         }
         
-        const result = await pool.query(
-            `SELECT m.*, u1.full_name as sender_name, u2.full_name as receiver_name 
-             FROM messages m
-             JOIN users u1 ON m.sender_id = u1.id
-             JOIN users u2 ON m.receiver_id = u2.id
-             WHERE (m.sender_id = $1 AND m.receiver_id = $2) 
-                OR (m.sender_id = $2 AND m.receiver_id = $1)
-             ORDER BY m.created_at ASC`,
-            [currentUserId, otherUserId]
+        // Check if claim already exists
+        const existingClaim = await pool.query(
+            `SELECT * FROM claims WHERE (lost_item_id = $1 OR found_item_id = $2) AND claimant_id = $3 AND status = 'pending'`,
+            [lost_item_id || null, found_item_id || null, claimantId]
         );
         
-        res.json({ success: true, messages: result.rows });
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// SEND MESSAGE
-app.post('/api/send-message', async (req, res) => {
-    const { sender_id, receiver_id, message } = req.body;
-    let senderId = sender_id ? parseInt(sender_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!senderId) {
-        return res.json({ success: false, message: 'Sender ID required!' });
-    }
-    
-    try {
+        if (existingClaim.rows.length > 0) {
+            return res.json({ success: false, message: 'You already have a pending claim for this item!' });
+        }
+        
+        // Insert the claim
         await pool.query(
-            `INSERT INTO messages (sender_id, receiver_id, message) VALUES ($1, $2, $3)`,
-            [senderId, parseInt(receiver_id), message]
+            `INSERT INTO claims (lost_item_id, found_item_id, claimant_id, owner_id, message, status) 
+             VALUES ($1, $2, $3, $4, $5, 'pending')`,
+            [lost_item_id || null, found_item_id || null, claimantId, owner_id, message || '']
         );
         
+        // Get claimant name for notification
+        const claimant = await pool.query('SELECT full_name FROM users WHERE id = $1', [claimantId]);
+        const claimantName = claimant.rows[0]?.full_name || 'Someone';
+        
+        // Create notification for owner
         await pool.query(
-            `INSERT INTO notifications (user_id, title, message, type) 
-             VALUES ($1, $2, $3, $4)`,
-            [parseInt(receiver_id), 'New Message', 'You have a new message', 'message']
+            `INSERT INTO notifications (user_id, title, message, type, is_read) 
+             VALUES ($1, $2, $3, $4, false)`,
+            [owner_id, 'New Claim Request', `${claimantName} wants to claim "${itemName}". Please review.`, 'claim']
         );
         
-        res.json({ success: true, message: 'Message sent!' });
+        res.json({ success: true, message: 'Claim submitted successfully! The owner will be notified.' });
     } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('Error submitting claim:', error);
         res.json({ success: false, message: error.message });
     }
 });
@@ -672,143 +589,29 @@ app.get('/api/notifications', async (req, res) => {
     }
 });
 
-// ============== LEADERBOARD ==============
-app.get('/api/leaderboard', async (req, res) => {
+// MARK NOTIFICATIONS AS READ
+app.post('/api/notifications/mark-read', async (req, res) => {
     const { user_id } = req.query;
-    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!userId) {
+    if (!user_id) {
         return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        const userResult = await pool.query(
-            'SELECT campus_id FROM users WHERE id = $1',
-            [userId]
+        await pool.query(
+            'UPDATE notifications SET is_read = TRUE WHERE user_id = $1 AND is_read = FALSE',
+            [parseInt(user_id)]
         );
-        
-        const campusId = userResult.rows[0]?.campus_id;
-        
-        const result = await pool.query(
-            `SELECT id, full_name, profile_pic, reputation_points, items_found, items_returned 
-             FROM users 
-             WHERE reputation_points > 0 AND campus_id::text = $1::text
-             ORDER BY reputation_points DESC 
-             LIMIT 50`,
-            [campusId]
-        );
-        
-        res.json({ success: true, leaderboard: result.rows });
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error fetching leaderboard:', error);
         res.json({ success: false, message: error.message });
     }
 });
 
-// ============== ANNOUNCEMENTS ==============
-app.get('/api/announcements', async (req, res) => {
-    try {
-        const result = await pool.query(
-            `SELECT * FROM announcements 
-             WHERE is_active = TRUE AND (expires_at IS NULL OR expires_at > NOW()) 
-             ORDER BY created_at DESC`
-        );
-        
-        res.json({ success: true, announcements: result.rows });
-    } catch (error) {
-        console.error('Error fetching announcements:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
+// ============== STATS ROUTES ==============
 
-// ============== MATCHES ==============
-app.get('/api/matches', async (req, res) => {
-    const { user_id } = req.query;
-    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!userId) {
-        return res.json({ success: false, message: 'User ID required!' });
-    }
-    
-    try {
-        const lostItems = await pool.query(`SELECT * FROM lost_items WHERE status = 'lost'`);
-        const foundItems = await pool.query(`SELECT * FROM found_items WHERE status = 'found'`);
-        
-        const matches = [];
-        
-        for (const lost of lostItems.rows) {
-            for (const found of foundItems.rows) {
-                let matchScore = 0;
-                
-                if (lost.item_name.toLowerCase().includes(found.item_name.toLowerCase()) ||
-                    found.item_name.toLowerCase().includes(lost.item_name.toLowerCase())) {
-                    matchScore += 40;
-                }
-                
-                if (lost.category === found.category) matchScore += 30;
-                if (lost.location_lost === found.location_found) matchScore += 20;
-                
-                const lostKeywords = lost.description.toLowerCase().split(' ');
-                const foundKeywords = found.description.toLowerCase().split(' ');
-                const commonKeywords = lostKeywords.filter(k => foundKeywords.includes(k));
-                matchScore += Math.min(commonKeywords.length * 5, 20);
-                
-                if (matchScore >= 50) {
-                    matches.push({
-                        lost_item: lost,
-                        found_item: found,
-                        score: matchScore,
-                        match_percentage: Math.min(matchScore, 100)
-                    });
-                }
-            }
-        }
-        
-        matches.sort((a, b) => b.score - a.score);
-        const userMatches = matches.filter(m => 
-            m.lost_item.user_id === userId || 
-            m.found_item.user_id === userId
-        );
-        
-        res.json({ success: true, matches: userMatches });
-    } catch (error) {
-        console.error('Error finding matches:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== CAMPUS INFO ==============
-app.get('/api/campus-info', async (req, res) => {
-    const { user_id } = req.query;
-    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!userId) {
-        return res.json({ success: false, message: 'User ID required!' });
-    }
-    
-    try {
-        const result = await pool.query(
-            `SELECT u.college_name, u.campus_id, c.campus_email_domain, c.location,
-                    (SELECT COUNT(*) FROM users WHERE campus_id = u.campus_id AND is_verified = true) as total_students,
-                    (SELECT COUNT(*) FROM lost_items li JOIN users u2 ON li.user_id = u2.id WHERE u2.campus_id = u.campus_id) as total_lost_items,
-                    (SELECT COUNT(*) FROM found_items fi JOIN users u2 ON fi.user_id = u2.id WHERE u2.campus_id = u.campus_id) as total_found_items
-             FROM users u
-             JOIN campuses c ON u.campus_id::text = c.campus_id::text
-             WHERE u.id = $1`,
-            [userId]
-        );
-        
-        res.json({ success: true, campus: result.rows[0] });
-    } catch (error) {
-        console.error('Error fetching campus info:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// ============== STATS ==============
+// GET STATS
 app.get('/api/stats', async (req, res) => {
     try {
-        const users = await pool.query('SELECT COUNT(*) FROM users');
         const lost = await pool.query('SELECT COUNT(*) FROM lost_items');
         const found = await pool.query('SELECT COUNT(*) FROM found_items');
 
@@ -972,7 +775,7 @@ app.post('/api/admin/create-announcement', async (req, res) => {
     }
 });
 
-// ADMIN: VERIFY CAMPUS CODE
+// VERIFY CAMPUS CODE
 app.post('/api/verify-campus-code', async (req, res) => {
     try {
         const { campus_code } = req.body;
@@ -993,7 +796,7 @@ app.post('/api/verify-campus-code', async (req, res) => {
     }
 });
 
-// ADMIN: CHECK IF USER IS ADMIN
+// CHECK IF USER IS ADMIN
 app.get('/api/user/is-admin', async (req, res) => {
     if (!req.session.userId) {
         return res.json({ success: false, message: 'Not logged in', isAdmin: false });
@@ -1013,151 +816,47 @@ app.get('/api/user/is-admin', async (req, res) => {
     }
 });
 
-// MARK NOTIFICATIONS AS READ
-app.post('/api/notifications/mark-read', async (req, res) => {
+// ============== LEADERBOARD ==============
+app.get('/api/leaderboard', async (req, res) => {
     const { user_id } = req.query;
-    if (!user_id) {
+    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
+    
+    if (!userId) {
         return res.json({ success: false, message: 'User ID required!' });
     }
     
     try {
-        await pool.query(
-            'UPDATE notifications SET is_read = TRUE WHERE user_id = $1 AND is_read = FALSE',
-            [parseInt(user_id)]
-        );
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// GET SINGLE LOST ITEM BY ID
-app.get('/api/lost-item/:id', async (req, res) => {
-    try {
-        const itemId = parseInt(req.params.id);
+        const userResult = await pool.query('SELECT campus_id FROM users WHERE id = $1', [userId]);
+        const campusId = userResult.rows[0]?.campus_id;
+        
         const result = await pool.query(
-            'SELECT * FROM lost_items WHERE item_id = $1',
-            [itemId]
+            `SELECT id, full_name, profile_pic, reputation_points, items_found, items_returned 
+             FROM users 
+             WHERE reputation_points > 0 AND campus_id::text = $1::text
+             ORDER BY reputation_points DESC 
+             LIMIT 50`,
+            [campusId]
         );
         
-        if (result.rows.length === 0) {
-            return res.json({ success: false, message: 'Item not found' });
-        }
-        
-        res.json({ success: true, item: result.rows[0] });
+        res.json({ success: true, leaderboard: result.rows });
     } catch (error) {
-        console.error('Error fetching lost item:', error);
+        console.error('Error fetching leaderboard:', error);
         res.json({ success: false, message: error.message });
     }
 });
 
-// GET SINGLE FOUND ITEM BY ID
-app.get('/api/found-item/:id', async (req, res) => {
+// ============== ANNOUNCEMENTS ==============
+app.get('/api/announcements', async (req, res) => {
     try {
-        const itemId = parseInt(req.params.id);
         const result = await pool.query(
-            'SELECT * FROM found_items WHERE found_id = $1',
-            [itemId]
+            `SELECT * FROM announcements 
+             WHERE is_active = TRUE AND (expires_at IS NULL OR expires_at > NOW()) 
+             ORDER BY created_at DESC`
         );
         
-        if (result.rows.length === 0) {
-            return res.json({ success: false, message: 'Item not found' });
-        }
-        
-        res.json({ success: true, item: result.rows[0] });
+        res.json({ success: true, announcements: result.rows });
     } catch (error) {
-        console.error('Error fetching found item:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// GET USER BY ID (for owner details)
-app.get('/api/user/:userId', async (req, res) => {
-    try {
-        const userId = parseInt(req.params.userId);
-        const result = await pool.query(
-            `SELECT id, full_name, email, phone, roll_number, department, profile_pic, reputation_points 
-             FROM users WHERE id = $1`,
-            [userId]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.json({ success: false, message: 'User not found' });
-        }
-        
-        res.json({ success: true, user: result.rows[0] });
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// GET USER STATS (for dashboard stats)
-app.get('/api/user-stats', async (req, res) => {
-    const { user_id } = req.query;
-    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!userId) {
-        return res.json({ success: false, message: 'User ID required!', lost_count: 0, found_count: 0, pending_claims: 0 });
-    }
-    
-    try {
-        const lostCount = await pool.query('SELECT COUNT(*) FROM lost_items WHERE user_id = $1', [userId]);
-        const foundCount = await pool.query('SELECT COUNT(*) FROM found_items WHERE user_id = $1', [userId]);
-        const pendingClaims = await pool.query(
-            `SELECT COUNT(*) FROM claims c 
-             JOIN found_items fi ON c.found_item_id = fi.found_id 
-             WHERE fi.user_id = $1 AND c.status = 'pending'`,
-            [userId]
-        );
-        
-        res.json({ 
-            success: true, 
-            lost_count: parseInt(lostCount.rows[0].count),
-            found_count: parseInt(foundCount.rows[0].count),
-            pending_claims: parseInt(pendingClaims.rows[0].count)
-        });
-    } catch (error) {
-        console.error('Error fetching user stats:', error);
-        res.json({ success: false, message: error.message, lost_count: 0, found_count: 0, pending_claims: 0 });
-    }
-});
-
-// MARK SINGLE NOTIFICATION AS READ
-app.put('/api/notifications/:id/read', async (req, res) => {
-    const notificationId = parseInt(req.params.id);
-    
-    try {
-        await pool.query('UPDATE notifications SET is_read = TRUE WHERE id = $1', [notificationId]);
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-});
-
-// GET MY ITEMS
-app.get('/api/my-items', async (req, res) => {
-    const { user_id } = req.query;
-    let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-    
-    if (!userId) {
-        return res.json({ success: false, message: 'User ID required' });
-    }
-    
-    try {
-        const lostItems = await pool.query(
-            `SELECT * FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
-            [userId]
-        );
-        
-        const foundItems = await pool.query(
-            `SELECT * FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
-            [userId]
-        );
-        
-        res.json({ success: true, lostItems: lostItems.rows, foundItems: foundItems.rows });
-    } catch (error) {
-        console.error('Error fetching my items:', error);
+        console.error('Error fetching announcements:', error);
         res.json({ success: false, message: error.message });
     }
 });
