@@ -743,23 +743,28 @@
                 console.error('Error marking notification as read:', error);
             }
             
-            // Handle based on notification type
-            if (type === 'lost' || type === 'found') {
-                await showLostItemDetails(relatedId, type);
+            // Show loading toast
+            showToast('Loading item details...', 'info');
+            
+            // Handle based on notification type - Use direct API calls
+            if (type === 'lost') {
+                await fetchAndShowLostItemDetails(relatedId);
+            } else if (type === 'found') {
+                await fetchAndShowFoundItemDetails(relatedId);
             } else {
-                showToast('Notification clicked', 'info');
+                showToast('This notification does not contain claimable item details', 'info');
             }
         }
 
-        async function showLostItemDetails(itemId, type) {
+        async function fetchAndShowLostItemDetails(itemId) {
             try {
-                const endpoint = type === 'lost' ? `lost-items/${itemId}` : `found-items/${itemId}`;
-                const response = await fetch(`${API_URL}/${endpoint}`);
+                // Fetch lost item details
+                const response = await fetch(`${API_URL}/lost-item/${itemId}`);
                 const data = await response.json();
                 
-                if (data.success) {
-                    const item = type === 'lost' ? data.item : data.item;
-                    // Get owner details
+                if (data.success && data.item) {
+                    const item = data.item;
+                    // Fetch owner details
                     const ownerResponse = await fetch(`${API_URL}/user/${item.user_id}`);
                     const ownerData = await ownerResponse.json();
                     
@@ -768,32 +773,82 @@
                             itemId: itemId,
                             itemName: item.item_name,
                             description: item.description,
-                            location: type === 'lost' ? item.location_lost : item.location_found,
-                            date: type === 'lost' ? item.date_lost : item.date_found,
+                            location: item.location_lost,
+                            date: item.date_lost,
                             ownerId: item.user_id,
                             ownerName: ownerData.user.full_name,
                             ownerEmail: ownerData.user.email,
                             ownerPhone: ownerData.user.phone || 'Not provided',
                             ownerDept: ownerData.user.department || 'Not specified',
-                            type: type
+                            type: 'lost'
                         };
                         
-                        document.getElementById('detailItemName').innerText = currentSelectedLostItem.itemName;
-                        document.getElementById('detailDescription').innerText = currentSelectedLostItem.description;
-                        document.getElementById('detailLocation').innerText = currentSelectedLostItem.location;
-                        document.getElementById('detailDate').innerText = currentSelectedLostItem.date ? new Date(currentSelectedLostItem.date).toLocaleDateString() : 'Date not set';
-                        document.getElementById('detailOwnerName').innerText = currentSelectedLostItem.ownerName;
-                        document.getElementById('detailOwnerEmail').innerText = currentSelectedLostItem.ownerEmail;
-                        document.getElementById('detailOwnerPhone').innerText = currentSelectedLostItem.ownerPhone;
-                        document.getElementById('detailOwnerDept').innerText = currentSelectedLostItem.ownerDept;
-                        document.getElementById('claimMessageInput').value = '';
-                        
-                        document.getElementById('lostItemDetailModal').style.display = 'flex';
+                        populateAndShowModal();
+                    } else {
+                        showToast('Error loading owner details', 'error');
                     }
+                } else {
+                    showToast('Item not found', 'error');
                 }
             } catch (error) {
-                console.error('Error loading item details:', error);
-                showToast('Error loading item details', 'error');
+                console.error('Error fetching lost item:', error);
+                showToast('Error loading item details. Please try again.', 'error');
+            }
+        }
+
+        async function fetchAndShowFoundItemDetails(itemId) {
+            try {
+                // Fetch found item details
+                const response = await fetch(`${API_URL}/found-item/${itemId}`);
+                const data = await response.json();
+                
+                if (data.success && data.item) {
+                    const item = data.item;
+                    // Fetch owner details
+                    const ownerResponse = await fetch(`${API_URL}/user/${item.user_id}`);
+                    const ownerData = await ownerResponse.json();
+                    
+                    if (ownerData.success) {
+                        currentSelectedLostItem = {
+                            itemId: itemId,
+                            itemName: item.item_name,
+                            description: item.description,
+                            location: item.location_found,
+                            date: item.date_found,
+                            ownerId: item.user_id,
+                            ownerName: ownerData.user.full_name,
+                            ownerEmail: ownerData.user.email,
+                            ownerPhone: ownerData.user.phone || 'Not provided',
+                            ownerDept: ownerData.user.department || 'Not specified',
+                            type: 'found'
+                        };
+                        
+                        populateAndShowModal();
+                    } else {
+                        showToast('Error loading owner details', 'error');
+                    }
+                } else {
+                    showToast('Item not found', 'error');
+                }
+            } catch (error) {
+                console.error('Error fetching found item:', error);
+                showToast('Error loading item details. Please try again.', 'error');
+            }
+        }
+
+        function populateAndShowModal() {
+            if (currentSelectedLostItem) {
+                document.getElementById('detailItemName').innerText = currentSelectedLostItem.itemName;
+                document.getElementById('detailDescription').innerText = currentSelectedLostItem.description || 'No description provided';
+                document.getElementById('detailLocation').innerText = currentSelectedLostItem.location;
+                document.getElementById('detailDate').innerText = currentSelectedLostItem.date ? new Date(currentSelectedLostItem.date).toLocaleDateString() : 'Date not set';
+                document.getElementById('detailOwnerName').innerText = currentSelectedLostItem.ownerName;
+                document.getElementById('detailOwnerEmail').innerText = currentSelectedLostItem.ownerEmail;
+                document.getElementById('detailOwnerPhone').innerText = currentSelectedLostItem.ownerPhone;
+                document.getElementById('detailOwnerDept').innerText = currentSelectedLostItem.ownerDept;
+                document.getElementById('claimMessageInput').value = '';
+                
+                document.getElementById('lostItemDetailModal').style.display = 'flex';
             }
         }
 
@@ -812,14 +867,13 @@
             const message = document.getElementById('claimMessageInput').value;
             
             try {
-                const response = await fetch(`${API_URL}/claim`, {
+                const response = await fetch(`${API_URL}/submit-claim`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        item_id: currentSelectedLostItem.itemId,
-                        item_type: currentSelectedLostItem.type,
+                        lost_item_id: currentSelectedLostItem.type === 'lost' ? currentSelectedLostItem.itemId : null,
+                        found_item_id: currentSelectedLostItem.type === 'found' ? currentSelectedLostItem.itemId : null,
                         claimant_id: user.id,
-                        owner_id: currentSelectedLostItem.ownerId,
                         message: message
                     })
                 });
