@@ -844,10 +844,7 @@ let currentChatItem = null;
                 <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
                 <div class="item-meta">📍 ${escapeHtml(tab === 'lost' ? item.location_lost : item.location_found)}</div>
                 <div class="item-meta">📅 ${formatDate(tab === 'lost' ? item.date_lost : item.date_found)}</div>
-                <div class="item-meta">👤 Reported by: ${escapeHtml(item.full_name || 'Anonymous')}</div>
-                <button class="small-btn ${buttonClass}" onclick="openChatForItem(${itemId}, '${tab}', ${reporterId}, '${escapeHtml(item.item_name)}')">${buttonText}</button>
-                // In showCampusTab function, update the button:
-<button class="small-btn ${buttonClass}" onclick="startMessaging(${reporterId}, '${escapeHtml(item.full_name)}', '${escapeHtml(item.item_name)}', '${tab}', ${itemId})">${buttonText}</button>
+                <div class="item-meta">👤 Reported by: ${escapeHtml(item.full_name || 'Anonymous')}</div><button class="small-btn ${buttonClass}" onclick="startMessaging(${reporterId}, '${escapeHtml(item.full_name)}', '${escapeHtml(item.item_name)}', '${tab}', ${itemId})">${buttonText}</button>
             </div>
         `;
     }).join('');
