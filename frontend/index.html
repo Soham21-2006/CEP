@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>CampusLost&Found | Recover Your Belongings</title>
+    <title>CampusTrace | Recover Your Belongings</title>
     <style>
         * {
             margin: 0;
@@ -45,7 +45,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 700;
             background: linear-gradient(135deg, #c084fc, #60a5fa);
             -webkit-background-clip: text;
@@ -53,28 +53,51 @@
             color: transparent;
         }
 
-        .logo-icon { font-size: 2rem; animation: gentleFloat 3s infinite ease-in-out; }
-        @keyframes gentleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            animation: gentleFloat 3s infinite ease-in-out;
+        }
 
-        .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .nav-links { 
+            display: flex; 
+            gap: 2.2rem; 
+            list-style: none;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+        
         .nav-links a {
             text-decoration: none;
             color: #e2e8f0;
             font-weight: 500;
             cursor: pointer;
             position: relative;
+            padding: 0.5rem 0;
         }
+        
         .nav-links a::after {
             content: '';
             position: absolute;
-            bottom: -6px;
+            bottom: 0;
             left: 0;
             width: 0%;
             height: 2px;
             background: linear-gradient(90deg, #a855f7, #3b82f6);
             transition: width 0.3s ease;
         }
+        
         .nav-links a:hover::after { width: 100%; }
+        .nav-links a:hover { color: white; }
 
         .hero {
             min-height: 100vh;
@@ -145,6 +168,7 @@
             border-radius: 28px;
             background: linear-gradient(145deg, #1e293b, #0f172a);
             border: 1px solid rgba(255,255,255,0.1);
+            overflow-y: auto;
         }
         .flip-card-front { transform: rotateY(0deg); }
         .flip-card-back { transform: rotateY(180deg); }
@@ -158,7 +182,9 @@
             font-weight: 600;
             cursor: pointer;
             color: #cbd5e1;
+            transition: all 0.3s;
         }
+        .flip-toggle-btn:hover { background: rgba(139,92,246,0.3); color: white; }
         .flip-toggle-btn.active {
             background: linear-gradient(105deg, #8b5cf6, #6d28d9);
             color: white;
@@ -206,7 +232,7 @@
         .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(139,92,246,0.4); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        h2 { color: white; font-weight: 700; font-size: 1.8rem; margin-bottom: 1.5rem; }
+        h2 { color: white; font-weight: 700; font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center; }
 
         .section { padding: 5rem 2rem; }
         .section:nth-child(even) { background: #0f172a; }
@@ -222,6 +248,7 @@
             transition: all 0.35s ease;
             background: rgba(30, 41, 59, 0.6);
             border: 2px solid rgba(239, 68, 68, 0.3);
+            position: relative;
         }
         .feature-card:hover { transform: translateY(-10px); background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
         .feature-icon { font-size: 3.2rem; margin-bottom: 1.2rem; display: inline-block; }
@@ -239,7 +266,6 @@
             border-radius: 20px;
             font-weight: bold;
         }
-        .feature-card { position: relative; }
 
         .contact-container { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
         .contact-info, .contact-form {
@@ -295,52 +321,56 @@
             .contact-container { grid-template-columns: 1fr; }
             .hero-left h1 { font-size: 2.6rem; }
         }
+
         .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(8px);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
 
-.modal-content {
-    background: #1e293b;
-    border-radius: 28px;
-    padding: 2rem;
-    border: 1px solid rgba(255,255,255,0.1);
-}
+        .modal-content {
+            background: #1e293b;
+            border-radius: 28px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
 
-.btn-primary {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-.btn-secondary {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 0.8rem 1.5rem;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="nav-container">
-            <div class="logo"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
+            <div class="logo">
+                <img src="logo.jpeg" class="logo-icon" alt="CampusTrace Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
+                <span style="display: inline;">CampusTrace</span>
+            </div>
             <ul class="nav-links">
                 <li><a onclick="scrollToSection('home')">🏠 Home</a></li>
                 <li><a onclick="scrollToSection('about')">📖 About</a></li>
@@ -385,32 +415,32 @@
                                 <h2>Join Campus Community 🚀</h2>
                                 <form id="registerForm">
                                     <div class="two-columns">
-    <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name" required></div>
-    <div class="form-group"><input type="email" id="regEmail" placeholder="Email Address" required></div>
-    <div class="form-group"><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
-    <div class="form-group"><input type="text" id="regRollNumber" placeholder="Roll Number" required></div>
-    <div class="form-group">
-        <select id="regDepartment" required>
-            <option value="">Select Department</option>
-            <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <input type="text" id="regCampusCode" placeholder="Campus Code *" required>
-        <small style="color: #94a3b8; font-size: 0.7rem;">Enter the unique code provided by your campus admin</small>
-    </div>
-    <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
-    <div class="form-group full-width">
-        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-        <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
-        <span class="strength-text" id="strengthText">Enter password</span>
-        <div class="match-status" id="matchStatus"></div>
-    </div>
-    <div class="form-group full-width">
-        <label style="color: #94a3b8; font-size: 0.9rem;">Profile Picture (Optional)</label>
-        <input type="file" id="regProfilePic" accept="image/*" style="padding: 0.5rem;">
-    </div>
-</div>
+                                        <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name" required></div>
+                                        <div class="form-group"><input type="email" id="regEmail" placeholder="Email Address" required></div>
+                                        <div class="form-group"><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
+                                        <div class="form-group"><input type="text" id="regRollNumber" placeholder="Roll Number" required></div>
+                                        <div class="form-group">
+                                            <select id="regDepartment" required>
+                                                <option value="">Select Department</option>
+                                                <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" id="regCampusCode" placeholder="Campus Code *" required>
+                                            <small style="color: #94a3b8; font-size: 0.7rem;">Enter the unique code provided by your campus admin</small>
+                                        </div>
+                                        <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
+                                        <div class="form-group full-width">
+                                            <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+                                            <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
+                                            <span class="strength-text" id="strengthText">Enter password</span>
+                                            <div class="match-status" id="matchStatus"></div>
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label style="color: #94a3b8; font-size: 0.9rem;">Profile Picture (Optional)</label>
+                                            <input type="file" id="regProfilePic" accept="image/*" style="padding: 0.5rem;">
+                                        </div>
+                                    </div>
                                     <button type="submit" class="btn" id="registerBtn">📝 Register Now</button>
                                 </form>
                             </div>
@@ -424,7 +454,7 @@
             <div class="section-container">
                 <h2 class="section-title">✨ About Our Mission</h2>
                 <div style="max-width: 800px; margin: 0 auto; text-align: center; font-size: 1.15rem; line-height: 1.8; color: #cbd5e6;">
-                    <p>At CampusLost&Found, we believe no belonging should stay lost forever. Our platform digitally connects students, faculty, and staff to report lost/found items instantly, reducing waste and fostering a caring campus environment.</p>
+                    <p>At CampusTrace, we believe no belonging should stay lost forever. Our platform digitally connects students, faculty, and staff to report lost/found items instantly, reducing waste and fostering a caring campus environment.</p>
                     <p style="margin-top: 1.5rem;">🌟 Over 1000+ items reunited since launch. Secure, reliable, and built for campus communities.</p>
                 </div>
             </div>
@@ -447,9 +477,9 @@
                 <div class="contact-container">
                     <div class="contact-info">
                         <h3>📍 Contact Desk</h3>
-                        <p style="margin: 1rem 0;">📧 help@campuslostfound.edu</p>
-                        <p style="margin: 1rem 0;">📞 +1 (800) 234-LOST</p>
-                        <p>🏛️ Student Union Building, Room 204</p>
+                        <p style="margin: 1rem 0;">📧 help@campustrace.edu</p>
+                        <p style="margin: 1rem 0;">📞 +91 8830862537</p>
+                        <p>🏛️ Room No 0.15,Hostel-D,GCEK,Karad</p>
                         <p style="margin-top: 2rem;">⏰ Mon - Fri : 9AM – 6PM</p>
                     </div>
                     <div class="contact-form">
@@ -466,22 +496,20 @@
         </section>
     </main>
 
-
-
     <footer class="footer">
         <div class="footer-container">
-            <div><h3 style="margin-bottom:1rem; color:white;">CampusLost&Found</h3><p>Reuniting community, one item at a time.</p></div>
+            <div><h3 style="margin-bottom:1rem; color:white;">CampusTrace</h3><p>Reuniting community, one item at a time.</p></div>
             <div><h3 style="margin-bottom:1rem;">Quick Links</h3><p><a onclick="scrollToSection('home')">Home</a></p><p><a onclick="scrollToSection('about')">About</a></p><p><a onclick="scrollToSection('features')">Features</a></p></div>
-            <div><h3 style="margin-bottom:1rem;">Social</h3><p>📘 Campus Hub</p><p>📸 @campuslost</p><p>🐦 @clf_updates</p></div>
+            <div><h3 style="margin-bottom:1rem;">Social</h3><p>📘 Campus Hub</p><p>📸 @campustrace</p><p>🐦 @ct_updates</p></div>
         </div>
-        <div style="text-align:center; margin-top: 2.5rem; padding-top:1rem; border-top:1px solid #334155;">&copy; 2025 CampusLost&Found — Unity in Recovery</div>
+        <div style="text-align:center; margin-top: 2.5rem; padding-top:1rem; border-top:1px solid #334155;">&copy; 2025 CampusTrace — Unity in Recovery</div>
     </footer>
 
     <script>
         // API Configuration - Update this with your Render backend URL
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:5000/api'
-    : 'https://cep-nxqq.onrender.com/api';
+            ? 'http://localhost:5000/api'
+            : 'https://cep-nxqq.onrender.com/api';
         
         const flipCardInner = document.getElementById('flipCard');
         
@@ -606,15 +634,14 @@
         async function fetchStats() {
             try {
                 const response = await fetch(`${API_URL}/stats`);
-               const text = await response.text();
-let data;
-
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("Not JSON:", text);
+                    throw new Error("Invalid response from server");
+                }
                 if (data.success) {
                     document.getElementById('lostCount').innerText = data.lostCount + '+';
                     document.getElementById('foundCount').innerText = data.foundCount + '+';
@@ -627,8 +654,6 @@ try {
                 setDefaultStats();
             }
         }
-
-        
         
         function setDefaultStats() {
             document.getElementById('lostCount').innerText = "150+";
@@ -636,89 +661,87 @@ try {
             document.getElementById('recoveredCount').innerText = "67+";
         }
         
-// Register User with Campus Code
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const campusCode = document.getElementById('regCampusCode').value.trim();
-    if (!campusCode) {
-        showToast('Please enter your campus code!', 'error');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('full_name', document.getElementById('regFullName').value);
-    formData.append('email', document.getElementById('regEmail').value);
-    formData.append('password', document.getElementById('regPassword').value);
-    formData.append('phone', document.getElementById('regPhone').value);
-    formData.append('roll_number', document.getElementById('regRollNumber').value);
-    formData.append('department', document.getElementById('regDepartment').value);
-    formData.append('campus_code', campusCode);
-    
-    const profilePic = document.getElementById('regProfilePic');
-    if (profilePic && profilePic.files && profilePic.files.length > 0) {
-        formData.append('profile_pic', profilePic.files[0]);
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
+        // Register User with Campus Code
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const campusCode = document.getElementById('regCampusCode').value.trim();
+            if (!campusCode) {
+                showToast('Please enter your campus code!', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('full_name', document.getElementById('regFullName').value);
+            formData.append('email', document.getElementById('regEmail').value);
+            formData.append('password', document.getElementById('regPassword').value);
+            formData.append('phone', document.getElementById('regPhone').value);
+            formData.append('roll_number', document.getElementById('regRollNumber').value);
+            formData.append('department', document.getElementById('regDepartment').value);
+            formData.append('campus_code', campusCode);
+            
+            const profilePic = document.getElementById('regProfilePic');
+            if (profilePic && profilePic.files && profilePic.files.length > 0) {
+                formData.append('profile_pic', profilePic.files[0]);
+            }
         
-        if (data.success) {
-            showToast('Registration successful! You can now login.', 'success');
-            document.getElementById('registerForm').reset();
-            flipToLogin();
-        } else {
-            showToast(data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
-        showToast('Registration failed! Please try again.', 'error');
-    }
-});
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Registration successful! You can now login.', 'success');
+                    document.getElementById('registerForm').reset();
+                    flipToLogin();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast('Registration failed! Please try again.', 'error');
+            }
+        });
         
         // Login User
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        showToast("Please fill all fields", "error");
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showToast("Please fill all fields", "error");
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showToast("Login successful! Redirecting...", "success");
+                    setTimeout(() => {
+                        if (data.user.is_admin === true) {
+                            window.location.href = '/admin.html';
+                        } else {
+                            window.location.href = '/dashboard.html';
+                        }
+                    }, 1000);
+                } else {
+                    showToast(data.message || "Invalid credentials", "error");
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast("Login failed! Please try again.", "error");
+            }
         });
-        const data = await response.json();
-        
-        if (data.success) {
-    localStorage.setItem('user', JSON.stringify(data.user));
-
-    showToast("Login successful! Redirecting...", "success");
-
-    setTimeout(() => {
-        if (data.user.is_admin === true) {
-            window.location.href = '/admin.html';
-        } else {
-            window.location.href = '/dashboard.html';
-        }
-    }, 1000);
-} else {
-            showToast(data.message || "Invalid credentials", "error");
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showToast("Login failed! Please try again.", "error");
-    }
-});
         
         // Contact Form
         document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
@@ -740,14 +763,13 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
                     body: JSON.stringify({ name, email, subject, message })
                 });
                 const text = await response.text();
-let data;
-
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("Not JSON:", text);
+                    throw new Error("Invalid response from server");
+                }
                 if (data.success) {
                     showToast("Message sent successfully!", "success");
                     document.getElementById('contactForm').reset();
@@ -758,58 +780,6 @@ try {
                 showToast("Error sending message", "error");
             }
         });
-
-        // Add these verification functions INSIDE your existing script tag
-        // async function verifyEmail() {
-        //     const code = document.getElementById('verificationCode').value;
-        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
-            
-        //     if (!code || code.length !== 6) {
-        //         showToast('Please enter valid 6-digit code', 'error');
-        //         return;
-        //     }
-            
-        //     try {
-        //         const response = await fetch('/api/verify-email', {
-        //             method: 'POST',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify({ email, verification_code: code })
-        //         });
-        //         const data = await response.json();
-                
-        //         if (data.success) {
-        //             showToast('Email verified! You can now login.');
-        //             document.getElementById('verificationModal').style.display = 'none';
-        //             // Clear form and show login
-        //             flipToLogin();
-        //         } else {
-        //             showToast(data.message, 'error');
-        //         }
-        //     } catch (error) {
-        //         showToast('Verification failed!', 'error');
-        //     }
-        // }
-        
-        // async function resendCode() {
-        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
-            
-        //     try {
-        //         const response = await fetch('/api/resend-verification', {
-        //             method: 'POST',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify({ email })
-        //         });
-        //         const data = await response.json();
-                
-        //         if (data.success) {
-        //             showToast('New verification code sent to your email!');
-        //         } else {
-        //             showToast(data.message, 'error');
-        //         }
-        //     } catch (error) {
-        //         showToast('Failed to resend code!', 'error');
-        //     }
-        // }
         
         // Initialize
         fetchStats();
