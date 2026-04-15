@@ -29,7 +29,7 @@
         }
 
         .nav-container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 0.8rem 2rem;
             display: flex;
@@ -84,6 +84,11 @@
             cursor: pointer;
             font-size: 1.5rem;
             color: white;
+            transition: transform 0.2s;
+        }
+
+        .notification-bell:hover {
+            transform: scale(1.1);
         }
 
         .notification-badge {
@@ -221,14 +226,14 @@
 
         .dashboard-main {
             padding-top: 80px;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 90px 2rem 2rem;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -237,10 +242,9 @@
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 1.5rem;
+            padding: 1.2rem;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.08);
-            cursor: pointer;
             transition: all 0.3s;
         }
 
@@ -250,7 +254,7 @@
         }
 
         .stat-value {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 800;
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             -webkit-background-clip: text;
@@ -261,6 +265,7 @@
         .stat-label {
             color: #94a3b8;
             margin-top: 0.5rem;
+            font-size: 0.85rem;
         }
 
         .action-buttons {
@@ -272,13 +277,13 @@
 
         .btn-primary {
             background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            padding: 0.9rem 2rem;
+            padding: 0.8rem 1.8rem;
             border: none;
             border-radius: 50px;
             color: white;
             font-weight: 600;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.3s;
         }
 
@@ -290,7 +295,7 @@
         .btn-secondary {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
-            padding: 0.9rem 2rem;
+            padding: 0.8rem 1.8rem;
             border-radius: 50px;
             color: white;
             font-weight: 600;
@@ -321,6 +326,7 @@
             margin-bottom: 1.2rem;
             border-left: 3px solid #8b5cf6;
             padding-left: 12px;
+            font-size: 1.2rem;
         }
 
         .form-group {
@@ -334,7 +340,7 @@
             border: 1.5px solid #334155;
             border-radius: 12px;
             color: white;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
@@ -406,6 +412,13 @@
             padding: 1rem;
             margin-bottom: 0.8rem;
             border-left: 3px solid #8b5cf6;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .item-card:hover {
+            transform: translateX(5px);
+            background: #1a2340;
         }
 
         .item-title {
@@ -418,7 +431,7 @@
         }
 
         .item-meta {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #94a3b8;
             margin: 3px 0;
         }
@@ -435,7 +448,6 @@
         }
 
         .small-btn.delete { background: #ef4444; color: white; }
-        .small-btn.edit { background: #3b82f6; color: white; }
         .small-btn.claim { background: #22c55e; color: white; }
 
         .profile-avatar-large {
@@ -464,6 +476,47 @@
         .info-value {
             flex: 1;
             color: white;
+        }
+
+        /* Two column layout for items */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .campus-items-section {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .campus-items-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: #8b5cf6;
+            border-bottom: 2px solid #8b5cf6;
+        }
+
+        @media (max-width: 1200px) {
+            .two-column-layout {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 900px) {
@@ -506,11 +559,11 @@
         </div>
     </div>
 
-    <!-- Lost Item Details Modal (for claiming) -->
-    <div id="lostItemDetailModal" class="modal">
+    <!-- Item Detail Modal (for viewing campus items) -->
+    <div id="itemDetailModal" class="modal">
         <div class="modal-content">
-            <h2>📦 Lost Item Details</h2>
-            <div id="lostItemDetailContent">
+            <h2 id="itemDetailTitle">📦 Item Details</h2>
+            <div id="itemDetailContent">
                 <div class="info-row">
                     <span class="info-label">Item Name:</span>
                     <span class="info-value" id="detailItemName">-</span>
@@ -520,37 +573,29 @@
                     <span class="info-value" id="detailDescription">-</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Location Lost:</span>
+                    <span class="info-label">Location:</span>
                     <span class="info-value" id="detailLocation">-</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Date Lost:</span>
+                    <span class="info-label">Date:</span>
                     <span class="info-value" id="detailDate">-</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Owner Name:</span>
-                    <span class="info-value" id="detailOwnerName">-</span>
+                    <span class="info-label">Reported By:</span>
+                    <span class="info-value" id="detailReporterName">-</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Owner Email:</span>
-                    <span class="info-value" id="detailOwnerEmail">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Owner Phone:</span>
-                    <span class="info-value" id="detailOwnerPhone">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Owner Department:</span>
-                    <span class="info-value" id="detailOwnerDept">-</span>
+                    <span class="info-label">Contact:</span>
+                    <span class="info-value" id="detailReporterContact">-</span>
                 </div>
             </div>
             <div class="form-group">
                 <label style="color: #94a3b8;">Message to Owner (Optional):</label>
-                <textarea id="claimMessageInput" rows="3" placeholder="Add a message explaining why this item belongs to you..."></textarea>
+                <textarea id="claimMessageInput2" rows="3" placeholder="Add a message explaining why this item belongs to you..."></textarea>
             </div>
             <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button class="btn-primary btn-success" onclick="submitClaimFromNotification()" style="flex: 1;">📝 Submit Claim</button>
-                <button class="btn-secondary" onclick="closeLostItemDetailModal()" style="flex: 1;">Cancel</button>
+                <button class="btn-primary btn-success" id="claimFromDetailBtn" style="flex: 1;">📝 Claim This Item</button>
+                <button class="btn-secondary" onclick="closeItemDetailModal()" style="flex: 1;">Cancel</button>
             </div>
         </div>
     </div>
@@ -559,15 +604,27 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value" id="statLost">0</div>
-                <div class="stat-label">Items Lost</div>
+                <div class="stat-label">My Lost Items</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statFound">0</div>
-                <div class="stat-label">Items Found</div>
+                <div class="stat-label">My Found Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statClaims">0</div>
+                <div class="stat-label">My Claims</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statReputation">0</div>
                 <div class="stat-label">Reputation Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statCampusLost">0</div>
+                <div class="stat-label">Campus Lost</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statCampusFound">0</div>
+                <div class="stat-label">Campus Found</div>
             </div>
         </div>
 
@@ -576,19 +633,37 @@
             <button class="btn-primary" onclick="openFoundItemModal()">🔍 Report Found Item</button>
         </div>
 
-        <!-- My Lost Items Section -->
-        <div class="card">
-            <h3>📦 My Lost Items</h3>
-            <div class="item-list" id="lostItemsList">
-                <div class="empty-state">No lost items reported</div>
-            </div>
-        </div>
+        <!-- Two Column Layout -->
+        <div class="two-column-layout">
+            <!-- Left Column - My Items -->
+            <div>
+                <div class="card">
+                    <h3>📦 My Lost Items</h3>
+                    <div class="item-list" id="lostItemsList">
+                        <div class="empty-state">No lost items reported</div>
+                    </div>
+                </div>
 
-        <!-- My Found Items Section -->
-        <div class="card">
-            <h3>✅ My Found Items</h3>
-            <div class="item-list" id="foundItemsList">
-                <div class="empty-state">No found items reported</div>
+                <div class="card">
+                    <h3>✅ My Found Items</h3>
+                    <div class="item-list" id="foundItemsList">
+                        <div class="empty-state">No found items reported</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Campus Items -->
+            <div>
+                <div class="card">
+                    <h3>🏛️ Campus Lost & Found Items</h3>
+                    <div class="campus-items-tabs">
+                        <button class="tab-btn active" id="tabLostBtn" onclick="showCampusTab('lost')">📦 Lost Items</button>
+                        <button class="tab-btn" id="tabFoundBtn" onclick="showCampusTab('found')">🔍 Found Items</button>
+                    </div>
+                    <div class="campus-items-section" id="campusItemsList">
+                        <div class="empty-state">Loading campus items...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -661,7 +736,10 @@
 
         let currentUser = null;
         let notificationCheckInterval = null;
-        let currentSelectedLostItem = null;
+        let currentSelectedItem = null;
+        let currentCampusTab = 'lost';
+        let campusLostItems = [];
+        let campusFoundItems = [];
 
         function getCurrentUser() {
             const user = JSON.parse(localStorage.getItem('user'));
@@ -675,6 +753,16 @@
             toast.style.borderLeftColor = type === 'success' ? '#22c55e' : '#ef4444';
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Not specified';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString();
+            } catch (e) {
+                return dateString;
+            }
         }
 
         function toggleDropdown() {
@@ -704,6 +792,7 @@
             }
         });
 
+        // ============== NOTIFICATION FUNCTIONS ==============
         async function loadNotifications() {
             const user = getCurrentUser();
             if (!user) return;
@@ -711,168 +800,137 @@
             try {
                 const response = await fetch(`${API_URL}/notifications?user_id=${user.id}`);
                 const data = await response.json();
-                if (data.success) {
-                    const unreadCount = data.notifications?.filter(n => !n.is_read).length || 0;
-                    document.getElementById('notificationBadge').innerText = unreadCount;
-                    
-                    const container = document.getElementById('notificationList');
-                    
-                    if (!data.notifications || data.notifications.length === 0) {
-                        container.innerHTML = '<div class="empty-state">No notifications</div>';
-                    } else {
-                        container.innerHTML = data.notifications.map(notif => `
-                            <div class="notification-item ${!notif.is_read ? 'unread' : ''}" onclick="handleNotificationClick(${notif.id}, '${notif.type}', ${notif.related_id || 0})">
-                                <div class="notification-title">${escapeHtml(notif.title)}</div>
-                                <div class="notification-message">${escapeHtml(notif.message)}</div>
-                                <div class="notification-time">${new Date(notif.created_at).toLocaleString()}</div>
-                            </div>
-                        `).join('');
-                    }
+                
+                const notifications = data.notifications || [];
+                const unreadCount = notifications.filter(n => !n.is_read).length || 0;
+                document.getElementById('notificationBadge').innerText = unreadCount;
+                
+                const container = document.getElementById('notificationList');
+                
+                if (notifications.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No notifications</div>';
+                } else {
+                    container.innerHTML = notifications.map(notif => `
+                        <div class="notification-item ${!notif.is_read ? 'unread' : ''}">
+                            <div class="notification-title">${escapeHtml(notif.title || 'Notification')}</div>
+                            <div class="notification-message">${escapeHtml(notif.message || '')}</div>
+                            <div class="notification-time">${formatDate(notif.created_at)}</div>
+                        </div>
+                    `).join('');
                 }
             } catch (error) {
                 console.error('Error loading notifications:', error);
             }
         }
 
-        async function handleNotificationClick(notifId, type, relatedId) {
-            // Mark as read
+        // ============== CAMPUS ITEMS FUNCTIONS ==============
+        async function loadCampusItems() {
             try {
-                await fetch(`${API_URL}/notifications/${notifId}/read`, { method: 'PUT' });
-                loadNotifications();
+                const [lostRes, foundRes] = await Promise.all([
+                    fetch(`${API_URL}/lost-items`),
+                    fetch(`${API_URL}/found-items`)
+                ]);
+                
+                const lostData = await lostRes.json();
+                const foundData = await foundRes.json();
+                
+                campusLostItems = lostData.items || [];
+                campusFoundItems = foundData.items || [];
+                
+                document.getElementById('statCampusLost').innerText = campusLostItems.length;
+                document.getElementById('statCampusFound').innerText = campusFoundItems.length;
+                
+                showCampusTab(currentCampusTab);
             } catch (error) {
-                console.error('Error marking notification as read:', error);
-            }
-            
-            // Show loading toast
-            showToast('Loading item details...', 'info');
-            
-            // Handle based on notification type - Use direct API calls
-            if (type === 'lost') {
-                await fetchAndShowLostItemDetails(relatedId);
-            } else if (type === 'found') {
-                await fetchAndShowFoundItemDetails(relatedId);
-            } else {
-                showToast('This notification does not contain claimable item details', 'info');
+                console.error('Error loading campus items:', error);
             }
         }
 
-        async function fetchAndShowLostItemDetails(itemId) {
+        function showCampusTab(tab) {
+            currentCampusTab = tab;
+            document.getElementById('tabLostBtn').classList.toggle('active', tab === 'lost');
+            document.getElementById('tabFoundBtn').classList.toggle('active', tab === 'found');
+            
+            const items = tab === 'lost' ? campusLostItems : campusFoundItems;
+            const container = document.getElementById('campusItemsList');
+            
+            if (!items || items.length === 0) {
+                container.innerHTML = `<div class="empty-state">No ${tab} items reported on campus</div>`;
+                return;
+            }
+            
+            container.innerHTML = items.map(item => `
+                <div class="item-card" onclick="viewCampusItem(${item.item_id || item.found_id}, '${tab}')">
+                    <div class="item-title">${tab === 'lost' ? '📦' : '🔍'} ${escapeHtml(item.item_name)}</div>
+                    <div class="item-meta">📍 ${escapeHtml(tab === 'lost' ? item.location_lost : item.location_found)}</div>
+                    <div class="item-meta">📅 ${formatDate(tab === 'lost' ? item.date_lost : item.date_found)}</div>
+                    <div class="item-meta">👤 Reported by: ${escapeHtml(item.full_name || 'Anonymous')}</div>
+                </div>
+            `).join('');
+        }
+
+        async function viewCampusItem(itemId, type) {
             try {
-                // Fetch lost item details
-                const response = await fetch(`${API_URL}/lost-item/${itemId}`);
+                const endpoint = type === 'lost' ? `lost-item/${itemId}` : `found-item/${itemId}`;
+                const response = await fetch(`${API_URL}/${endpoint}`);
                 const data = await response.json();
                 
                 if (data.success && data.item) {
                     const item = data.item;
-                    // Fetch owner details
-                    const ownerResponse = await fetch(`${API_URL}/user/${item.user_id}`);
-                    const ownerData = await ownerResponse.json();
+                    const reporterResponse = await fetch(`${API_URL}/user/${item.user_id}`);
+                    const reporterData = await reporterResponse.json();
                     
-                    if (ownerData.success) {
-                        currentSelectedLostItem = {
-                            itemId: itemId,
-                            itemName: item.item_name,
-                            description: item.description,
-                            location: item.location_lost,
-                            date: item.date_lost,
-                            ownerId: item.user_id,
-                            ownerName: ownerData.user.full_name,
-                            ownerEmail: ownerData.user.email,
-                            ownerPhone: ownerData.user.phone || 'Not provided',
-                            ownerDept: ownerData.user.department || 'Not specified',
-                            type: 'lost'
-                        };
-                        
-                        populateAndShowModal();
-                    } else {
-                        showToast('Error loading owner details', 'error');
-                    }
-                } else {
-                    showToast('Item not found', 'error');
+                    currentSelectedItem = {
+                        id: itemId,
+                        type: type,
+                        itemName: item.item_name,
+                        description: item.description || 'No description',
+                        location: type === 'lost' ? item.location_lost : item.location_found,
+                        date: type === 'lost' ? item.date_lost : item.date_found,
+                        reporterId: item.user_id,
+                        reporterName: reporterData.success ? reporterData.user.full_name : 'Unknown',
+                        reporterContact: item.contact_phone || 'Not provided'
+                    };
+                    
+                    document.getElementById('itemDetailTitle').innerHTML = type === 'lost' ? '📦 Lost Item Details' : '🔍 Found Item Details';
+                    document.getElementById('detailItemName').innerText = currentSelectedItem.itemName;
+                    document.getElementById('detailDescription').innerText = currentSelectedItem.description;
+                    document.getElementById('detailLocation').innerText = currentSelectedItem.location;
+                    document.getElementById('detailDate').innerText = formatDate(currentSelectedItem.date);
+                    document.getElementById('detailReporterName').innerText = currentSelectedItem.reporterName;
+                    document.getElementById('detailReporterContact').innerText = currentSelectedItem.reporterContact;
+                    document.getElementById('claimMessageInput2').value = '';
+                    
+                    document.getElementById('claimFromDetailBtn').onclick = () => submitClaimFromCampusItem();
+                    document.getElementById('itemDetailModal').style.display = 'flex';
                 }
             } catch (error) {
-                console.error('Error fetching lost item:', error);
-                showToast('Error loading item details. Please try again.', 'error');
+                console.error('Error viewing item:', error);
+                showToast('Error loading item details', 'error');
             }
         }
 
-        async function fetchAndShowFoundItemDetails(itemId) {
-            try {
-                // Fetch found item details
-                const response = await fetch(`${API_URL}/found-item/${itemId}`);
-                const data = await response.json();
-                
-                if (data.success && data.item) {
-                    const item = data.item;
-                    // Fetch owner details
-                    const ownerResponse = await fetch(`${API_URL}/user/${item.user_id}`);
-                    const ownerData = await ownerResponse.json();
-                    
-                    if (ownerData.success) {
-                        currentSelectedLostItem = {
-                            itemId: itemId,
-                            itemName: item.item_name,
-                            description: item.description,
-                            location: item.location_found,
-                            date: item.date_found,
-                            ownerId: item.user_id,
-                            ownerName: ownerData.user.full_name,
-                            ownerEmail: ownerData.user.email,
-                            ownerPhone: ownerData.user.phone || 'Not provided',
-                            ownerDept: ownerData.user.department || 'Not specified',
-                            type: 'found'
-                        };
-                        
-                        populateAndShowModal();
-                    } else {
-                        showToast('Error loading owner details', 'error');
-                    }
-                } else {
-                    showToast('Item not found', 'error');
-                }
-            } catch (error) {
-                console.error('Error fetching found item:', error);
-                showToast('Error loading item details. Please try again.', 'error');
-            }
-        }
-
-        function populateAndShowModal() {
-            if (currentSelectedLostItem) {
-                document.getElementById('detailItemName').innerText = currentSelectedLostItem.itemName;
-                document.getElementById('detailDescription').innerText = currentSelectedLostItem.description || 'No description provided';
-                document.getElementById('detailLocation').innerText = currentSelectedLostItem.location;
-                document.getElementById('detailDate').innerText = currentSelectedLostItem.date ? new Date(currentSelectedLostItem.date).toLocaleDateString() : 'Date not set';
-                document.getElementById('detailOwnerName').innerText = currentSelectedLostItem.ownerName;
-                document.getElementById('detailOwnerEmail').innerText = currentSelectedLostItem.ownerEmail;
-                document.getElementById('detailOwnerPhone').innerText = currentSelectedLostItem.ownerPhone;
-                document.getElementById('detailOwnerDept').innerText = currentSelectedLostItem.ownerDept;
-                document.getElementById('claimMessageInput').value = '';
-                
-                document.getElementById('lostItemDetailModal').style.display = 'flex';
-            }
-        }
-
-        async function submitClaimFromNotification() {
+        async function submitClaimFromCampusItem() {
             const user = getCurrentUser();
             if (!user) {
                 showToast('Please login again', 'error');
                 return;
             }
             
-            if (!currentSelectedLostItem) {
+            if (!currentSelectedItem) {
                 showToast('No item selected', 'error');
                 return;
             }
             
-            const message = document.getElementById('claimMessageInput').value;
+            const message = document.getElementById('claimMessageInput2').value;
             
             try {
                 const response = await fetch(`${API_URL}/submit-claim`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        lost_item_id: currentSelectedLostItem.type === 'lost' ? currentSelectedLostItem.itemId : null,
-                        found_item_id: currentSelectedLostItem.type === 'found' ? currentSelectedLostItem.itemId : null,
+                        lost_item_id: currentSelectedItem.type === 'lost' ? currentSelectedItem.id : null,
+                        found_item_id: currentSelectedItem.type === 'found' ? currentSelectedItem.id : null,
                         claimant_id: user.id,
                         message: message
                     })
@@ -880,8 +938,8 @@
                 const data = await response.json();
                 if (data.success) {
                     showToast('Claim submitted successfully! The owner will be notified.');
-                    closeLostItemDetailModal();
-                    loadNotifications();
+                    closeItemDetailModal();
+                    loadStats();
                 } else {
                     showToast(data.message, 'error');
                 }
@@ -890,11 +948,12 @@
             }
         }
 
-        function closeLostItemDetailModal() {
-            document.getElementById('lostItemDetailModal').style.display = 'none';
-            currentSelectedLostItem = null;
+        function closeItemDetailModal() {
+            document.getElementById('itemDetailModal').style.display = 'none';
+            currentSelectedItem = null;
         }
 
+        // ============== PROFILE FUNCTIONS ==============
         function openProfileModal() {
             const user = getCurrentUser();
             if (user) {
@@ -953,6 +1012,7 @@
             }
         }
 
+        // ============== ITEM FUNCTIONS ==============
         function openLostItemModal() {
             document.getElementById('lostItemModal').style.display = 'flex';
         }
@@ -1017,6 +1077,7 @@
                     showToast('Lost item reported successfully!');
                     closeLostItemModal();
                     loadMyItems();
+                    loadCampusItems();
                     loadStats();
                 } else {
                     showToast(data.message, 'error');
@@ -1062,6 +1123,7 @@
                     showToast('Found item reported successfully!');
                     closeFoundItemModal();
                     loadMyItems();
+                    loadCampusItems();
                     loadStats();
                 } else {
                     showToast(data.message, 'error');
@@ -1079,8 +1141,8 @@
                 const response = await fetch(`${API_URL}/my-items?user_id=${user.id}`);
                 const data = await response.json();
                 if (data.success) {
-                    displayLostItems(data.lostItems);
-                    displayFoundItems(data.foundItems);
+                    displayLostItems(data.lostItems || []);
+                    displayFoundItems(data.foundItems || []);
                 }
             } catch (error) {
                 console.error('Error loading items:', error);
@@ -1098,8 +1160,8 @@
                     <div class="item-title">📦 ${escapeHtml(item.item_name)}</div>
                     <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
                     <div class="item-meta">📍 ${escapeHtml(item.location_lost)}</div>
-                    <div class="item-meta">📅 ${item.date_lost ? new Date(item.date_lost).toLocaleDateString() : 'Date not set'}</div>
-                    <button class="small-btn delete" onclick="deleteItem('lost', ${item.item_id})">Delete</button>
+                    <div class="item-meta">📅 ${formatDate(item.date_lost)}</div>
+                    <button class="small-btn delete" onclick="event.stopPropagation(); deleteItem('lost', ${item.item_id})">Delete</button>
                 </div>
             `).join('');
         }
@@ -1115,8 +1177,8 @@
                     <div class="item-title">🔍 ${escapeHtml(item.item_name)}</div>
                     <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
                     <div class="item-meta">📍 ${escapeHtml(item.location_found)}</div>
-                    <div class="item-meta">📅 ${item.date_found ? new Date(item.date_found).toLocaleDateString() : 'Date not set'}</div>
-                    <button class="small-btn delete" onclick="deleteItem('found', ${item.found_id})">Delete</button>
+                    <div class="item-meta">📅 ${formatDate(item.date_found)}</div>
+                    <button class="small-btn delete" onclick="event.stopPropagation(); deleteItem('found', ${item.found_id})">Delete</button>
                 </div>
             `).join('');
         }
@@ -1130,6 +1192,7 @@
                     if (data.success) {
                         showToast('Item deleted!');
                         loadMyItems();
+                        loadCampusItems();
                         loadStats();
                     }
                 } catch (error) {
@@ -1148,6 +1211,7 @@
                 if (data.success) {
                     document.getElementById('statLost').innerText = data.lost_count || 0;
                     document.getElementById('statFound').innerText = data.found_count || 0;
+                    document.getElementById('statClaims').innerText = data.pending_claims || 0;
                     document.getElementById('statReputation').innerText = user.reputation_points || 0;
                 }
             } catch (error) {
@@ -1166,9 +1230,10 @@
             if (user.profile_pic && user.profile_pic !== 'default-avatar.png') {
                 document.getElementById('profilePic').src = '/uploads/' + user.profile_pic;
             }
-            loadMyItems();
-            loadStats();
-            loadNotifications();
+            await loadMyItems();
+            await loadCampusItems();
+            await loadStats();
+            await loadNotifications();
             
             if (notificationCheckInterval) clearInterval(notificationCheckInterval);
             notificationCheckInterval = setInterval(loadNotifications, 30000);
