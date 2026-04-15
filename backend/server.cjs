@@ -67,6 +67,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
+app.get('/messaging', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/');
+    }
+    res.sendFile(path.join(__dirname, '../frontend/messaging.html'));
+});
+
 app.get('/dashboard', async (req, res) => {
     if (!req.session.userId) {
         return res.redirect('/');

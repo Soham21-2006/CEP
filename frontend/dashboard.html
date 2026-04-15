@@ -535,6 +535,8 @@
                 <span>CampusLost&Found</span>
             </div>
             <div class="header-right">
+                <div class="header-right">
+    <a href="/messaging.html" class="message-icon" style="color: white; text-decoration: none; font-size: 1.3rem;">💬</a>
                 <div class="notification-bell" onclick="toggleNotifications()">
                     🔔
                     <span class="notification-badge" id="notificationBadge">0</span>
@@ -844,6 +846,8 @@ let currentChatItem = null;
                 <div class="item-meta">📅 ${formatDate(tab === 'lost' ? item.date_lost : item.date_found)}</div>
                 <div class="item-meta">👤 Reported by: ${escapeHtml(item.full_name || 'Anonymous')}</div>
                 <button class="small-btn ${buttonClass}" onclick="openChatForItem(${itemId}, '${tab}', ${reporterId}, '${escapeHtml(item.item_name)}')">${buttonText}</button>
+                // In showCampusTab function, update the button:
+<button class="small-btn ${buttonClass}" onclick="startMessaging(${reporterId}, '${escapeHtml(item.full_name)}', '${escapeHtml(item.item_name)}', '${tab}', ${itemId})">${buttonText}</button>
             </div>
         `;
     }).join('');
@@ -1330,6 +1334,10 @@ async function sendChatMessage() {
     document.getElementById('chatWindow').style.display = 'none';
     currentChatUser = null;
     currentChatItem = null;
+}
+
+function startMessaging(reporterId, reporterName, itemName, itemType, itemId) {
+    window.location.href = `/messaging.html?user_id=${reporterId}&name=${encodeURIComponent(reporterName)}&item=${encodeURIComponent(itemName)}&type=${itemType}&item_id=${itemId}`;
 }
 
         loadUserData();

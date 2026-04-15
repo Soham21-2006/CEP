@@ -25,8 +25,8 @@ router.post('/send-message', async (req, res) => {
         }
         
         await pool.query(
-            `INSERT INTO messages (sender_id, receiver_id, message, created_at) 
-             VALUES ($1, $2, $3, NOW())`,
+            `INSERT INTO messages (sender_id, receiver_id, message, created_at, is_read) 
+             VALUES ($1, $2, $3, NOW(), false)`,
             [parseInt(sender_id), parseInt(receiver_id), finalMessage]
         );
         
@@ -167,7 +167,28 @@ router.get('/chats', async (req, res) => {
     }
 });
 
-// ============== MARK MESSAGE AS READ ==============
+// ============== MARK CONVERSATION AS READ ==============
+router.put('/mark-conversation-read/:otherUserId', async (req, res) => {
+    const { user_id } = req.query;
+    const otherUserId = parseInt(req.params.otherUserId);
+    
+    if (!user_id) {
+        return res.json({ success: false, message: 'User ID required!' });
+    }
+    
+    try {
+        await pool.query(
+            'UPDATE messages SET is_read = true WHERE receiver_id = $1 AND sender_id = $2 AND is_read = false',
+            [parseInt(user_id), otherUserId]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking conversation as read:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ============== MARK SINGLE MESSAGE AS READ ==============
 router.put('/mark-read/:messageId', async (req, res) => {
     const { user_id } = req.query;
     const messageId = parseInt(req.params.messageId);
