@@ -13,6 +13,8 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
+const notificationService = require('./notification.cjs');
+
 const app = express();
 
 // Database connection
