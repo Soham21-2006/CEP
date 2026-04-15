@@ -246,6 +246,7 @@
             text-align: center;
             border: 1px solid rgba(255,255,255,0.08);
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .stat-card:hover {
@@ -306,10 +307,6 @@
         .btn-secondary:hover {
             background: rgba(255,255,255,0.2);
             transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
         }
 
         .card {
@@ -413,7 +410,6 @@
             margin-bottom: 0.8rem;
             border-left: 3px solid #8b5cf6;
             transition: all 0.2s;
-            cursor: pointer;
         }
 
         .item-card:hover {
@@ -449,6 +445,7 @@
 
         .small-btn.delete { background: #ef4444; color: white; }
         .small-btn.claim { background: #22c55e; color: white; }
+        .small-btn.chat { background: #8b5cf6; color: white; }
 
         .profile-avatar-large {
             width: 100px;
@@ -478,7 +475,6 @@
             color: white;
         }
 
-        /* Two column layout for items */
         .two-column-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -559,47 +555,6 @@
         </div>
     </div>
 
-    <!-- Item Detail Modal (for viewing campus items) -->
-    <div id="itemDetailModal" class="modal">
-        <div class="modal-content">
-            <h2 id="itemDetailTitle">📦 Item Details</h2>
-            <div id="itemDetailContent">
-                <div class="info-row">
-                    <span class="info-label">Item Name:</span>
-                    <span class="info-value" id="detailItemName">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Description:</span>
-                    <span class="info-value" id="detailDescription">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Location:</span>
-                    <span class="info-value" id="detailLocation">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Date:</span>
-                    <span class="info-value" id="detailDate">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Reported By:</span>
-                    <span class="info-value" id="detailReporterName">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Contact:</span>
-                    <span class="info-value" id="detailReporterContact">-</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label style="color: #94a3b8;">Message to Owner (Optional):</label>
-                <textarea id="claimMessageInput2" rows="3" placeholder="Add a message explaining why this item belongs to you..."></textarea>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button class="btn-primary btn-success" id="claimFromDetailBtn" style="flex: 1;">📝 Claim This Item</button>
-                <button class="btn-secondary" onclick="closeItemDetailModal()" style="flex: 1;">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <main class="dashboard-main">
         <div class="stats-grid">
             <div class="stat-card">
@@ -609,10 +564,6 @@
             <div class="stat-card">
                 <div class="stat-value" id="statFound">0</div>
                 <div class="stat-label">My Found Items</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statClaims">0</div>
-                <div class="stat-label">My Claims</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statReputation">0</div>
@@ -736,7 +687,6 @@
 
         let currentUser = null;
         let notificationCheckInterval = null;
-        let currentSelectedItem = null;
         let currentCampusTab = 'lost';
         let campusLostItems = [];
         let campusFoundItems = [];
@@ -860,77 +810,44 @@
             }
             
             container.innerHTML = items.map(item => `
-                <div class="item-card" onclick="viewCampusItem(${item.item_id || item.found_id}, '${tab}')">
+                <div class="item-card" onclick="viewCampusItem(${JSON.stringify(escapeHtml(JSON.stringify(item))).replace(/"/g, '&quot;')})" style="cursor: pointer;">
                     <div class="item-title">${tab === 'lost' ? '📦' : '🔍'} ${escapeHtml(item.item_name)}</div>
                     <div class="item-meta">📍 ${escapeHtml(tab === 'lost' ? item.location_lost : item.location_found)}</div>
                     <div class="item-meta">📅 ${formatDate(tab === 'lost' ? item.date_lost : item.date_found)}</div>
                     <div class="item-meta">👤 Reported by: ${escapeHtml(item.full_name || 'Anonymous')}</div>
+                    <div class="item-meta">📞 Contact: ${escapeHtml(item.contact_phone || 'Not provided')}</div>
+                    <button class="small-btn claim" onclick="event.stopPropagation(); submitClaimDirect('${tab}', ${item.item_id || item.found_id}, '${escapeHtml(item.item_name)}', ${item.user_id})">📝 Claim This Item</button>
                 </div>
             `).join('');
         }
 
-        async function viewCampusItem(itemId, type) {
-            try {
-                const endpoint = type === 'lost' ? `lost-item/${itemId}` : `found-item/${itemId}`;
-                const response = await fetch(`${API_URL}/${endpoint}`);
-                const data = await response.json();
-                
-                if (data.success && data.item) {
-                    const item = data.item;
-                    const reporterResponse = await fetch(`${API_URL}/user/${item.user_id}`);
-                    const reporterData = await reporterResponse.json();
-                    
-                    currentSelectedItem = {
-                        id: itemId,
-                        type: type,
-                        itemName: item.item_name,
-                        description: item.description || 'No description',
-                        location: type === 'lost' ? item.location_lost : item.location_found,
-                        date: type === 'lost' ? item.date_lost : item.date_found,
-                        reporterId: item.user_id,
-                        reporterName: reporterData.success ? reporterData.user.full_name : 'Unknown',
-                        reporterContact: item.contact_phone || 'Not provided'
-                    };
-                    
-                    document.getElementById('itemDetailTitle').innerHTML = type === 'lost' ? '📦 Lost Item Details' : '🔍 Found Item Details';
-                    document.getElementById('detailItemName').innerText = currentSelectedItem.itemName;
-                    document.getElementById('detailDescription').innerText = currentSelectedItem.description;
-                    document.getElementById('detailLocation').innerText = currentSelectedItem.location;
-                    document.getElementById('detailDate').innerText = formatDate(currentSelectedItem.date);
-                    document.getElementById('detailReporterName').innerText = currentSelectedItem.reporterName;
-                    document.getElementById('detailReporterContact').innerText = currentSelectedItem.reporterContact;
-                    document.getElementById('claimMessageInput2').value = '';
-                    
-                    document.getElementById('claimFromDetailBtn').onclick = () => submitClaimFromCampusItem();
-                    document.getElementById('itemDetailModal').style.display = 'flex';
-                }
-            } catch (error) {
-                console.error('Error viewing item:', error);
-                showToast('Error loading item details', 'error');
-            }
+        function viewCampusItem(itemData) {
+            // Parse the item data - this is a workaround for the onclick issue
+            console.log('View item:', itemData);
         }
 
-        async function submitClaimFromCampusItem() {
+        async function submitClaimDirect(type, itemId, itemName, ownerId) {
             const user = getCurrentUser();
             if (!user) {
                 showToast('Please login again', 'error');
                 return;
             }
             
-            if (!currentSelectedItem) {
-                showToast('No item selected', 'error');
+            if (user.id === ownerId) {
+                showToast('You cannot claim your own item!', 'error');
                 return;
             }
             
-            const message = document.getElementById('claimMessageInput2').value;
+            const message = prompt(`Enter a message to the owner of "${itemName}":`, 'I believe this item belongs to me. Please contact me.');
+            if (!message) return;
             
             try {
                 const response = await fetch(`${API_URL}/submit-claim`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        lost_item_id: currentSelectedItem.type === 'lost' ? currentSelectedItem.id : null,
-                        found_item_id: currentSelectedItem.type === 'found' ? currentSelectedItem.id : null,
+                        lost_item_id: type === 'lost' ? itemId : null,
+                        found_item_id: type === 'found' ? itemId : null,
                         claimant_id: user.id,
                         message: message
                     })
@@ -938,19 +855,13 @@
                 const data = await response.json();
                 if (data.success) {
                     showToast('Claim submitted successfully! The owner will be notified.');
-                    closeItemDetailModal();
-                    loadStats();
+                    loadNotifications();
                 } else {
                     showToast(data.message, 'error');
                 }
             } catch (error) {
                 showToast('Error submitting claim', 'error');
             }
-        }
-
-        function closeItemDetailModal() {
-            document.getElementById('itemDetailModal').style.display = 'none';
-            currentSelectedItem = null;
         }
 
         // ============== PROFILE FUNCTIONS ==============
@@ -1161,7 +1072,7 @@
                     <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
                     <div class="item-meta">📍 ${escapeHtml(item.location_lost)}</div>
                     <div class="item-meta">📅 ${formatDate(item.date_lost)}</div>
-                    <button class="small-btn delete" onclick="event.stopPropagation(); deleteItem('lost', ${item.item_id})">Delete</button>
+                    <button class="small-btn delete" onclick="deleteItem('lost', ${item.item_id})">Delete</button>
                 </div>
             `).join('');
         }
@@ -1178,7 +1089,7 @@
                     <div class="item-meta">📝 ${escapeHtml(item.description)}</div>
                     <div class="item-meta">📍 ${escapeHtml(item.location_found)}</div>
                     <div class="item-meta">📅 ${formatDate(item.date_found)}</div>
-                    <button class="small-btn delete" onclick="event.stopPropagation(); deleteItem('found', ${item.found_id})">Delete</button>
+                    <button class="small-btn delete" onclick="deleteItem('found', ${item.found_id})">Delete</button>
                 </div>
             `).join('');
         }
@@ -1206,14 +1117,15 @@
             if (!user) return;
             
             try {
-                const response = await fetch(`${API_URL}/user-stats?user_id=${user.id}`);
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('statLost').innerText = data.lost_count || 0;
-                    document.getElementById('statFound').innerText = data.found_count || 0;
-                    document.getElementById('statClaims').innerText = data.pending_claims || 0;
-                    document.getElementById('statReputation').innerText = user.reputation_points || 0;
-                }
+                const [lostRes, foundRes] = await Promise.all([
+                    fetch(`${API_URL}/my-items?user_id=${user.id}`),
+                    fetch(`${API_URL}/my-items?user_id=${user.id}`)
+                ]);
+                const lostData = await lostRes.json();
+                
+                document.getElementById('statLost').innerText = (lostData.lostItems || []).length;
+                document.getElementById('statFound').innerText = (lostData.foundItems || []).length;
+                document.getElementById('statReputation').innerText = user.reputation_points || 0;
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
