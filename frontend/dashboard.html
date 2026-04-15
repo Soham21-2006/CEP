@@ -158,8 +158,8 @@
             position: absolute;
             right: 0;
             top: 50px;
-            width: 400px;
-            max-height: 500px;
+            width: 450px;
+            max-height: 550px;
             background: #1e293b;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
@@ -181,7 +181,7 @@
         }
         
         .notification-list {
-            max-height: 450px;
+            max-height: 500px;
             overflow-y: auto;
         }
         
@@ -303,6 +303,10 @@
             transform: translateY(-2px);
         }
 
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
         .card {
             background: rgba(30, 41, 59, 0.5);
             backdrop-filter: blur(10px);
@@ -356,7 +360,7 @@
             background: #1e293b;
             border-radius: 24px;
             padding: 2rem;
-            max-width: 550px;
+            max-width: 600px;
             width: 90%;
             max-height: 85vh;
             overflow-y: auto;
@@ -432,27 +436,7 @@
 
         .small-btn.delete { background: #ef4444; color: white; }
         .small-btn.edit { background: #3b82f6; color: white; }
-        .small-btn.view { background: #8b5cf6; color: white; }
-
-        .dashboard-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .left-section {
-            width: 100%;
-        }
-
-        .right-section {
-            width: 100%;
-        }
-
-        .two-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
+        .small-btn.claim { background: #22c55e; color: white; }
 
         .profile-avatar-large {
             width: 100px;
@@ -463,20 +447,27 @@
             cursor: pointer;
         }
         
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
+        .info-row {
+            display: flex;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
         }
         
-        .status-pending { background: #f59e0b; color: black; }
-        .status-approved { background: #22c55e; color: white; }
-        .status-rejected { background: #ef4444; color: white; }
+        .info-label {
+            width: 120px;
+            color: #8b5cf6;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: white;
+        }
 
         @media (max-width: 900px) {
-            .two-columns { grid-template-columns: 1fr; }
+            .notification-panel { width: 350px; right: -20px; }
         }
     </style>
 </head>
@@ -509,28 +500,57 @@
 
     <!-- Notification Panel -->
     <div class="notification-panel" id="notificationPanel">
-        <div class="notification-header">🔔 Notifications</div>
+        <div class="notification-header">🔔 All Notifications</div>
         <div class="notification-list" id="notificationList">
             <div class="empty-state">No notifications</div>
         </div>
     </div>
 
-    <!-- Claim Details Modal -->
-    <div id="claimDetailsModal" class="modal">
+    <!-- Lost Item Details Modal (for claiming) -->
+    <div id="lostItemDetailModal" class="modal">
         <div class="modal-content">
-            <h2>📋 Claim Request Details</h2>
-            <div id="claimDetailsContent">
-                <div class="form-group"><label style="color: #94a3b8;">Item Name:</label><p id="claimItemName" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Claimant Name:</label><p id="claimClaimantName" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Claimant Email:</label><p id="claimClaimantEmail" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Claimant Phone:</label><p id="claimClaimantPhone" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Claim Message:</label><p id="claimMessage" style="color: white;"></p></div>
-                <div class="form-group"><label style="color: #94a3b8;">Claim Date:</label><p id="claimDate" style="color: white;"></p></div>
+            <h2>📦 Lost Item Details</h2>
+            <div id="lostItemDetailContent">
+                <div class="info-row">
+                    <span class="info-label">Item Name:</span>
+                    <span class="info-value" id="detailItemName">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Description:</span>
+                    <span class="info-value" id="detailDescription">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Location Lost:</span>
+                    <span class="info-value" id="detailLocation">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date Lost:</span>
+                    <span class="info-value" id="detailDate">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Owner Name:</span>
+                    <span class="info-value" id="detailOwnerName">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Owner Email:</span>
+                    <span class="info-value" id="detailOwnerEmail">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Owner Phone:</span>
+                    <span class="info-value" id="detailOwnerPhone">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Owner Department:</span>
+                    <span class="info-value" id="detailOwnerDept">-</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="color: #94a3b8;">Message to Owner (Optional):</label>
+                <textarea id="claimMessageInput" rows="3" placeholder="Add a message explaining why this item belongs to you..."></textarea>
             </div>
             <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button class="btn-primary" onclick="approveClaim()" style="flex: 1; background: linear-gradient(135deg, #22c55e, #16a34a);">✓ Approve</button>
-                <button class="btn-secondary" onclick="rejectClaim()" style="flex: 1;">✗ Reject</button>
-                <button class="btn-secondary" onclick="closeClaimDetailsModal()" style="flex: 1;">Close</button>
+                <button class="btn-primary btn-success" onclick="submitClaimFromNotification()" style="flex: 1;">📝 Submit Claim</button>
+                <button class="btn-secondary" onclick="closeLostItemDetailModal()" style="flex: 1;">Cancel</button>
             </div>
         </div>
     </div>
@@ -549,46 +569,11 @@
                 <div class="stat-value" id="statReputation">0</div>
                 <div class="stat-label">Reputation Points</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statClaims">0</div>
-                <div class="stat-label">Pending Claims</div>
-            </div>
         </div>
 
         <div class="action-buttons">
             <button class="btn-primary" onclick="openLostItemModal()">📦 Report Lost Item</button>
             <button class="btn-primary" onclick="openFoundItemModal()">🔍 Report Found Item</button>
-        </div>
-
-        <!-- Two Column Layout for Claims -->
-        <div class="two-columns">
-            <div class="left-section">
-                <!-- Claims on My Items -->
-                <div class="card">
-                    <h3>📋 Claims on My Items</h3>
-                    <div class="item-list" id="claimsList">
-                        <div class="empty-state">No claims received</div>
-                    </div>
-                </div>
-                
-                <!-- My Claims (Submitted) -->
-                <div class="card">
-                    <h3>📝 My Claims (Submitted)</h3>
-                    <div class="item-list" id="myClaimsList">
-                        <div class="empty-state">No claims submitted</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="right-section">
-                <!-- Notifications Summary -->
-                <div class="card">
-                    <h3>🔔 Recent Notifications</h3>
-                    <div class="item-list" id="recentNotificationsList">
-                        <div class="empty-state">No notifications</div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- My Lost Items Section -->
@@ -599,7 +584,7 @@
             </div>
         </div>
 
-        <!-- My Found Items Section - Moved to bottom -->
+        <!-- My Found Items Section -->
         <div class="card">
             <h3>✅ My Found Items</h3>
             <div class="item-list" id="foundItemsList">
@@ -676,7 +661,7 @@
 
         let currentUser = null;
         let notificationCheckInterval = null;
-        let currentClaimId = null;
+        let currentSelectedLostItem = null;
 
         function getCurrentUser() {
             const user = JSON.parse(localStorage.getItem('user'));
@@ -731,22 +716,17 @@
                     document.getElementById('notificationBadge').innerText = unreadCount;
                     
                     const container = document.getElementById('notificationList');
-                    const recentContainer = document.getElementById('recentNotificationsList');
                     
                     if (!data.notifications || data.notifications.length === 0) {
                         container.innerHTML = '<div class="empty-state">No notifications</div>';
-                        if (recentContainer) recentContainer.innerHTML = '<div class="empty-state">No notifications</div>';
                     } else {
-                        const notifHtml = data.notifications.slice(0, 5).map(notif => `
+                        container.innerHTML = data.notifications.map(notif => `
                             <div class="notification-item ${!notif.is_read ? 'unread' : ''}" onclick="handleNotificationClick(${notif.id}, '${notif.type}', ${notif.related_id || 0})">
                                 <div class="notification-title">${escapeHtml(notif.title)}</div>
                                 <div class="notification-message">${escapeHtml(notif.message)}</div>
                                 <div class="notification-time">${new Date(notif.created_at).toLocaleString()}</div>
                             </div>
                         `).join('');
-                        
-                        container.innerHTML = notifHtml;
-                        if (recentContainer) recentContainer.innerHTML = notifHtml;
                     }
                 }
             } catch (error) {
@@ -755,9 +735,6 @@
         }
 
         async function handleNotificationClick(notifId, type, relatedId) {
-            if (type === 'claim_request') {
-                await viewClaimDetails(relatedId);
-            }
             // Mark as read
             try {
                 await fetch(`${API_URL}/notifications/${notifId}/read`, { method: 'PUT' });
@@ -765,64 +742,103 @@
             } catch (error) {
                 console.error('Error marking notification as read:', error);
             }
-        }
-
-        async function viewClaimDetails(claimId) {
-            currentClaimId = claimId;
-            try {
-                const response = await fetch(`${API_URL}/claim/${claimId}`);
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('claimItemName').innerText = data.claim.item_name;
-                    document.getElementById('claimClaimantName').innerText = data.claim.claimant_name;
-                    document.getElementById('claimClaimantEmail').innerText = data.claim.claimant_email;
-                    document.getElementById('claimClaimantPhone').innerText = data.claim.claimant_phone || 'Not provided';
-                    document.getElementById('claimMessage').innerText = data.claim.message || 'No message';
-                    document.getElementById('claimDate').innerText = new Date(data.claim.created_at).toLocaleString();
-                    document.getElementById('claimDetailsModal').style.display = 'flex';
-                }
-            } catch (error) {
-                showToast('Error loading claim details', 'error');
+            
+            // Handle based on notification type
+            if (type === 'lost' || type === 'found') {
+                await showLostItemDetails(relatedId, type);
+            } else {
+                showToast('Notification clicked', 'info');
             }
         }
 
-        async function approveClaim() {
-            if (!currentClaimId) return;
+        async function showLostItemDetails(itemId, type) {
             try {
-                const response = await fetch(`${API_URL}/claim/${currentClaimId}/approve`, { method: 'POST' });
+                const endpoint = type === 'lost' ? `lost-items/${itemId}` : `found-items/${itemId}`;
+                const response = await fetch(`${API_URL}/${endpoint}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const item = type === 'lost' ? data.item : data.item;
+                    // Get owner details
+                    const ownerResponse = await fetch(`${API_URL}/user/${item.user_id}`);
+                    const ownerData = await ownerResponse.json();
+                    
+                    if (ownerData.success) {
+                        currentSelectedLostItem = {
+                            itemId: itemId,
+                            itemName: item.item_name,
+                            description: item.description,
+                            location: type === 'lost' ? item.location_lost : item.location_found,
+                            date: type === 'lost' ? item.date_lost : item.date_found,
+                            ownerId: item.user_id,
+                            ownerName: ownerData.user.full_name,
+                            ownerEmail: ownerData.user.email,
+                            ownerPhone: ownerData.user.phone || 'Not provided',
+                            ownerDept: ownerData.user.department || 'Not specified',
+                            type: type
+                        };
+                        
+                        document.getElementById('detailItemName').innerText = currentSelectedLostItem.itemName;
+                        document.getElementById('detailDescription').innerText = currentSelectedLostItem.description;
+                        document.getElementById('detailLocation').innerText = currentSelectedLostItem.location;
+                        document.getElementById('detailDate').innerText = currentSelectedLostItem.date ? new Date(currentSelectedLostItem.date).toLocaleDateString() : 'Date not set';
+                        document.getElementById('detailOwnerName').innerText = currentSelectedLostItem.ownerName;
+                        document.getElementById('detailOwnerEmail').innerText = currentSelectedLostItem.ownerEmail;
+                        document.getElementById('detailOwnerPhone').innerText = currentSelectedLostItem.ownerPhone;
+                        document.getElementById('detailOwnerDept').innerText = currentSelectedLostItem.ownerDept;
+                        document.getElementById('claimMessageInput').value = '';
+                        
+                        document.getElementById('lostItemDetailModal').style.display = 'flex';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading item details:', error);
+                showToast('Error loading item details', 'error');
+            }
+        }
+
+        async function submitClaimFromNotification() {
+            const user = getCurrentUser();
+            if (!user) {
+                showToast('Please login again', 'error');
+                return;
+            }
+            
+            if (!currentSelectedLostItem) {
+                showToast('No item selected', 'error');
+                return;
+            }
+            
+            const message = document.getElementById('claimMessageInput').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/claim`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        item_id: currentSelectedLostItem.itemId,
+                        item_type: currentSelectedLostItem.type,
+                        claimant_id: user.id,
+                        owner_id: currentSelectedLostItem.ownerId,
+                        message: message
+                    })
+                });
                 const data = await response.json();
                 if (data.success) {
-                    showToast('Claim approved successfully!');
-                    closeClaimDetailsModal();
-                    loadMyItems();
-                    loadStats();
+                    showToast('Claim submitted successfully! The owner will be notified.');
+                    closeLostItemDetailModal();
                     loadNotifications();
+                } else {
+                    showToast(data.message, 'error');
                 }
             } catch (error) {
-                showToast('Error approving claim', 'error');
+                showToast('Error submitting claim', 'error');
             }
         }
 
-        async function rejectClaim() {
-            if (!currentClaimId) return;
-            try {
-                const response = await fetch(`${API_URL}/claim/${currentClaimId}/reject`, { method: 'POST' });
-                const data = await response.json();
-                if (data.success) {
-                    showToast('Claim rejected');
-                    closeClaimDetailsModal();
-                    loadMyItems();
-                    loadStats();
-                    loadNotifications();
-                }
-            } catch (error) {
-                showToast('Error rejecting claim', 'error');
-            }
-        }
-
-        function closeClaimDetailsModal() {
-            document.getElementById('claimDetailsModal').style.display = 'none';
-            currentClaimId = null;
+        function closeLostItemDetailModal() {
+            document.getElementById('lostItemDetailModal').style.display = 'none';
+            currentSelectedLostItem = null;
         }
 
         function openProfileModal() {
@@ -1011,8 +1027,6 @@
                 if (data.success) {
                     displayLostItems(data.lostItems);
                     displayFoundItems(data.foundItems);
-                    displayClaims(data.claims);
-                    displayMyClaims(data.myClaims);
                 }
             } catch (error) {
                 console.error('Error loading items:', error);
@@ -1053,39 +1067,6 @@
             `).join('');
         }
 
-        function displayClaims(claims) {
-            const container = document.getElementById('claimsList');
-            if (!claims || claims.length === 0) {
-                container.innerHTML = '<div class="empty-state">No claims received</div>';
-                return;
-            }
-            container.innerHTML = claims.map(claim => `
-                <div class="item-card">
-                    <div class="item-title">📋 Claim on: ${escapeHtml(claim.item_name)}</div>
-                    <div class="item-meta">From: ${escapeHtml(claim.claimant_name)}</div>
-                    <div class="item-meta">Status: <span class="status-badge status-${claim.status}">${claim.status.toUpperCase()}</span></div>
-                    <div class="item-meta">📅 ${new Date(claim.created_at).toLocaleString()}</div>
-                    <button class="small-btn view" onclick="viewClaimDetails(${claim.claim_id})">View Details</button>
-                </div>
-            `).join('');
-        }
-
-        function displayMyClaims(claims) {
-            const container = document.getElementById('myClaimsList');
-            if (!claims || claims.length === 0) {
-                container.innerHTML = '<div class="empty-state">No claims submitted</div>';
-                return;
-            }
-            container.innerHTML = claims.map(claim => `
-                <div class="item-card">
-                    <div class="item-title">📝 Claim on: ${escapeHtml(claim.item_name)}</div>
-                    <div class="item-meta">Owner: ${escapeHtml(claim.owner_name)}</div>
-                    <div class="item-meta">Status: <span class="status-badge status-${claim.status}">${claim.status.toUpperCase()}</span></div>
-                    <div class="item-meta">📅 ${new Date(claim.created_at).toLocaleString()}</div>
-                </div>
-            `).join('');
-        }
-
         async function deleteItem(type, id) {
             if (confirm('Delete this item?')) {
                 const user = getCurrentUser();
@@ -1113,7 +1094,6 @@
                 if (data.success) {
                     document.getElementById('statLost').innerText = data.lost_count || 0;
                     document.getElementById('statFound').innerText = data.found_count || 0;
-                    document.getElementById('statClaims').innerText = data.pending_claims || 0;
                     document.getElementById('statReputation').innerText = user.reputation_points || 0;
                 }
             } catch (error) {
