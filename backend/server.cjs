@@ -1,3 +1,7 @@
+require("dotenv").config();
+console.log("EMAIL:", process.env.EMAIL_USER);
+
+const sendEmail = require("./mailer");
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
@@ -6,7 +10,7 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const http = require('http');
 const socketIo = require('socket.io');
-require('dotenv').config();
+// require('dotenv').config();
 
 const multer = require('multer');
 const path = require('path');
@@ -1172,6 +1176,24 @@ app.get('/api/my-items', async (req, res) => {
 
 app.use('/api', messagingRoutes);
 
+// ============== TEST EMAIL ROUTE ==============
+app.get("/test-email", async (req, res) => {
+    try {
+        console.log("📧 Sending test email...");
+
+        await sendEmail(
+            "roshanmohod428@gmail.com", // 👉 replace with YOUR email
+            "Test Email",
+            "Your email system is working ✅"
+        );
+
+        res.send("✅ Email sent (check inbox)");
+    } catch (error) {
+        console.error("❌ Email error:", error);
+        res.send("❌ Failed to send email");
+    }
+});
+
 // ============== START SERVER ==============
 const PORT = process.env.PORT || 5000;
 
@@ -1179,3 +1201,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Open http://localhost:${PORT}`);
 });
+
+// console.log("EMAIL:", process.env.EMAIL_USER);
