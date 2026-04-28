@@ -15,6 +15,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const notificationService = require('./notification.cjs');
 const messagingRoutes = require('./messaging.cjs');
+const emailService = require('./emailService.cjs');
 
 const app = express();
 
@@ -57,6 +58,59 @@ app.use(session({
 }));
 
 app.use(express.json());
+
+// ============== EMAIL TRANSPORTER CONFIGURATION ==============
+let transporter;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.EMAIL_PORT) || 587,
+        secure: false,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+    
+    // Verify email connection
+    transporter.verify((error, success) => {
+        if (error) {
+            console.error('❌ Email service error:', error);
+        } else {
+            console.log('✅ Email service ready');
+        }
+    });
+} else {
+    console.log('⚠️ Email not configured - email features disabled');
+}
+
+// Email sending function
+async function sendEmail(to, subject, text, html = null) {
+    if (!transporter) {
+        console.log('Email not sent - transporter not configured');
+        return false;
+    }
+    
+    try {
+        const info = await transporter.sendMail({
+            from: process.env.EMAIL_FROM || `"CampusTrace" <${process.env.EMAIL_USER}>`,
+            to: to,
+            subject: subject,
+            text: text,
+            html: html || `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                            <h2 style="color: #8b5cf6;">🏫 CampusTrace</h2>
+                            <p>${text.replace(/\n/g, '<br>')}</p>
+                            <hr style="margin: 20px 0;">
+                            <p style="font-size: 12px; color: #666;">CampusTrace - Trace It, Claim It, Return It</p>
+                           </div>`,
+        });
+        console.log('✅ Email sent:', info.messageId);
+        return true;
+    } catch (error) {
+        console.error('❌ Email error:', error.message);
+        return false;
+    }
+}
 
 // ============== SERVE STATIC FILES ==============
 app.use(express.static(path.join(__dirname, '../frontend')));
@@ -163,6 +217,16 @@ app.post('/api/register', upload.single('profile_pic'), async (req, res) => {
         );
         
         console.log('User registered successfully with campus:', campus_name);
+        
+        // ========== SEND WELCOME EMAIL ==========
+        try {
+            const welcomeMessage = `Welcome to CampusTrace, ${full_name}! 🎉\n\nYour account has been created successfully.\n\nYou can now:\n• Report lost or found items\n• Connect with campus community\n• Earn reputation points\n\nLogin here: https://cep-eight-tau.vercel.app\n\nTrace It, Claim It, Return It!`;
+            await sendEmail(email, '🎉 Welcome to CampusTrace!', welcomeMessage);
+            console.log('Welcome email sent to:', email);
+        } catch (emailErr) {
+            console.error('Welcome email failed:', emailErr.message);
+            // Don't fail registration if email fails
+        }
         
         res.json({ success: true, message: 'Registration successful! You can now login.' });
     } catch (error) {
@@ -341,7 +405,7 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
         if (campusId) {
             // Get all users from same campus except the reporter
             const sameCampusUsers = await pool.query(
-                'SELECT id FROM users WHERE campus_id = $1 AND id != $2',
+                'SELECT id, email FROM users WHERE campus_id = $1 AND id != $2',
                 [campusId, userId]
             );
             
@@ -354,6 +418,19 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
                 );
             }
             console.log(`Created ${sameCampusUsers.rows.length} notifications for lost item`);
+            
+            // ========== SEND EMAIL NOTIFICATIONS FOR LOST ITEM ==========
+            if (transporter && sameCampusUsers.rows.length > 0) {
+                for (const user of sameCampusUsers.rows) {
+                    try {
+                        const emailBody = `🔍 New Lost Item Alert!\n\n${userName} reported a lost item:\n\nItem: ${item_name}\nLocation: ${location_lost}\nCategory: ${category || 'N/A'}\nDescription: ${description || 'N/A'}\nContact: ${contact_phone || userName}\n\nIf you found this item, please contact them or report it as found.\n\nLogin: https://cep-eight-tau.vercel.app/dashboard.html`;
+                        await sendEmail(user.email, '🔍 New Lost Item on CampusTrace!', emailBody);
+                        console.log('Lost item email sent to:', user.email);
+                    } catch(emailErr) {
+                        console.error('Lost item email failed:', emailErr.message);
+                    }
+                }
+            }
         }
         
         res.json({ success: true, message: 'Lost item reported!', item_id: result.rows[0].item_id });
@@ -436,29 +513,9 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
         if (campusId) {
 
             const sameCampusUsers = await pool.query(
-                'SELECT id,email FROM users WHERE campus_id=$1 AND id != $2',
+                'SELECT id, email FROM users WHERE campus_id=$1 AND id != $2',
                 [campusId, userId]
             );
-
-            // EMAIL notifications
-            for (let user of sameCampusUsers.rows) {
-                try {
-                    await sendEmail(
-                        user.email,
-                        'New Found Item Reported',
-                        `${userName} found "${item_name}" at ${location_found}`
-                    );
-
-                    console.log('Email sent to', user.email);
-
-                } catch(err){
-                    console.error(
-                        'Email failed:',
-                        user.email,
-                        err.message
-                    );
-                }
-            }
 
             // Database notifications
             for (let user of sameCampusUsers.rows) {
@@ -473,6 +530,19 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
                         'found'
                     ]
                 );
+            }
+
+            // ========== EMAIL NOTIFICATIONS FOR FOUND ITEM ==========
+            if (transporter && sameCampusUsers.rows.length > 0) {
+                for (let user of sameCampusUsers.rows) {
+                    try {
+                        const emailBody = `🎉 New Found Item Alert!\n\n${userName} found "${item_name}"!\n\nItem details:\n- Category: ${category || 'N/A'}\n- Location: ${location_found}\n- Description: ${description || 'N/A'}\n- Contact: ${contact_phone || userName}\n\nIf this is your lost item, login now to claim it!\n\nLogin: https://cep-eight-tau.vercel.app/dashboard.html`;
+                        await sendEmail(user.email, '🎉 New Found Item on CampusTrace!', emailBody);
+                        console.log('Found item email sent to:', user.email);
+                    } catch(err){
+                        console.error('Email failed:', user.email, err.message);
+                    }
+                }
             }
 
             console.log(
@@ -495,7 +565,6 @@ app.post('/api/found-item', upload.single('image'), async (req, res) => {
         });
     }
 });       
-        // ========== CREATE NOTIFICATIONS FOR SAME CAMPUS USERS ==========
         
 // ============== SUBMIT CLAIM ==============
 app.post('/api/submit-claim', async (req, res) => {
@@ -549,24 +618,34 @@ app.post('/api/submit-claim', async (req, res) => {
         const claimId = result.rows[0].claim_id;
         
         // Get claimant name for notification
-        const claimant = await pool.query('SELECT full_name FROM users WHERE id = $1', [claimantId]);
+        const claimant = await pool.query('SELECT full_name, email FROM users WHERE id = $1', [claimantId]);
         const claimantName = claimant.rows[0]?.full_name || 'Someone';
+        const claimantEmail = claimant.rows[0]?.email;
         
-        // ========== USE NOTIFICATION SERVICE (if available) ==========
-        // Check if notification service is loaded
-        if (notificationService && typeof notificationService.notifyClaimRequest === 'function') {
-            await notificationService.notifyClaimRequest(claimId, owner_id, claimantName, itemName);
-        } else {
-            // Fallback: Create notification directly
-            await pool.query(
-                `INSERT INTO notifications (user_id, title, message, type, is_read, related_id) 
-                 VALUES ($1, $2, $3, $4, false, $5)`,
-                [owner_id, '📋 New Claim Request', 
-                 `${claimantName} wants to claim "${itemName}". Please review the claim.`, 
-                 'claim', claimId]
-            );
+        // Get owner details for email
+        const owner = await pool.query('SELECT full_name, email FROM users WHERE id = $1', [owner_id]);
+        const ownerName = owner.rows[0]?.full_name;
+        const ownerEmail = owner.rows[0]?.email;
+        
+        // ========== CREATE NOTIFICATION ==========
+        await pool.query(
+            `INSERT INTO notifications (user_id, title, message, type, is_read, related_id) 
+             VALUES ($1, $2, $3, $4, false, $5)`,
+            [owner_id, '📋 New Claim Request', 
+             `${claimantName} wants to claim "${itemName}". Please review the claim.`, 
+             'claim', claimId]
+        );
+        
+        // ========== SEND EMAIL TO OWNER ==========
+        if (transporter && ownerEmail) {
+            try {
+                const emailBody = `📋 New Claim Request!\n\n${claimantName} has submitted a claim for your item: "${itemName}".\n\nMessage from claimant: ${message || 'No message provided'}\n\nPlease login to review and respond to this claim.\n\nLogin: https://cep-eight-tau.vercel.app/dashboard.html`;
+                await sendEmail(ownerEmail, '📋 New Claim on Your Item', emailBody);
+                console.log('Claim notification email sent to owner:', ownerEmail);
+            } catch(emailErr) {
+                console.error('Claim owner email failed:', emailErr.message);
+            }
         }
-        // ============================================================
         
         res.json({ success: true, message: 'Claim submitted successfully! The owner will be notified.' });
     } catch (error) {
@@ -574,6 +653,91 @@ app.post('/api/submit-claim', async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 });
+
+// ============== UPDATE CLAIM STATUS ==============
+app.put('/api/update-claim-status', async (req, res) => {
+    const { claim_id, status, user_id } = req.body;
+    
+    if (!user_id) {
+        return res.json({ success: false, message: 'User ID required!' });
+    }
+    
+    try {
+        // Get claim details
+        const claimResult = await pool.query(
+            `SELECT c.*, 
+                    li.item_name as lost_item_name, 
+                    fi.item_name as found_item_name,
+                    u.full_name as owner_name,
+                    claimant.id as claimant_id,
+                    claimant.email as claimant_email,
+                    claimant.full_name as claimant_name
+             FROM claims c
+             LEFT JOIN lost_items li ON c.lost_item_id = li.item_id
+             LEFT JOIN found_items fi ON c.found_item_id = fi.found_id
+             JOIN users u ON c.owner_id = u.id
+             JOIN users claimant ON c.claimant_id = claimant.id
+             WHERE c.claim_id = $1`,
+            [claim_id]
+        );
+        
+        if (claimResult.rows.length === 0) {
+            return res.json({ success: false, message: 'Claim not found!' });
+        }
+        
+        const claim = claimResult.rows[0];
+        const itemName = claim.lost_item_name || claim.found_item_name;
+        
+        // Update claim status
+        await pool.query(
+            'UPDATE claims SET status = $1 WHERE claim_id = $2',
+            [status, claim_id]
+        );
+        
+        // If approved, update reputation points
+        if (status === 'approved') {
+            await pool.query(
+                'UPDATE users SET items_returned = items_returned + 1, reputation_points = reputation_points + 20 WHERE id = $1',
+                [claim.claimant_id]
+            );
+        }
+        
+        // ========== SEND EMAIL TO CLAIMANT ==========
+        if (transporter && claim.claimant_email) {
+            try {
+                let statusText, emailBody;
+                if (status === 'approved') {
+                    statusText = 'APPROVED ✅';
+                    emailBody = `🎉 Congratulations! Your claim for "${itemName}" has been APPROVED!\n\nThe owner (${claim.owner_name}) has approved your claim.\n\nPlease contact them to arrange the return of your item.\n\nLogin to view details: https://cep-eight-tau.vercel.app/dashboard.html`;
+                } else {
+                    statusText = 'REJECTED ❌';
+                    emailBody = `Sorry, your claim for "${itemName}" has been REJECTED.\n\nThe owner did not approve your claim.\n\nDon't worry! Keep browsing other items that might match yours.\n\nLogin to continue: https://cep-eight-tau.vercel.app/dashboard.html`;
+                }
+                
+                await sendEmail(claim.claimant_email, `Claim ${status.toUpperCase()}: ${itemName}`, emailBody);
+                console.log('Claim status email sent to claimant:', claim.claimant_email);
+            } catch(emailErr) {
+                console.error('Claim status email failed:', emailErr.message);
+            }
+        }
+        
+        // Create notification for claimant
+        await pool.query(
+            `INSERT INTO notifications (user_id, title, message, type, is_read) 
+             VALUES ($1, $2, $3, $4, false)`,
+            [claim.claimant_id, 
+             status === 'approved' ? '✅ Claim Approved!' : '❌ Claim Rejected', 
+             `Your claim for "${itemName}" has been ${status}.`,
+             'claim_status']
+        );
+        
+        res.json({ success: true, message: `Claim ${status}!` });
+    } catch (error) {
+        console.error('Error updating claim:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
 // ============== TEST NOTIFICATION (for debugging) ==============
 app.post('/api/test-notification', async (req, res) => {
     const { user_id, title, message } = req.body;
@@ -589,8 +753,6 @@ app.post('/api/test-notification', async (req, res) => {
         res.json({ success: false, error: error.message });
     }
 });
-
-
 
 // GET ALL LOST ITEMS (for stats/public view)
 app.get('/api/lost-items', async (req, res) => {
@@ -714,6 +876,20 @@ app.post('/api/send-message', async (req, res) => {
              VALUES ($1, $2, $3, $4)`,
             [parseInt(receiver_id), 'New Message', 'You have a new message', 'message']
         );
+        
+        // ========== SEND EMAIL NOTIFICATION FOR NEW MESSAGE ==========
+        try {
+            const senderResult = await pool.query('SELECT full_name, email FROM users WHERE id = $1', [senderId]);
+            const receiverResult = await pool.query('SELECT full_name, email FROM users WHERE id = $1', [parseInt(receiver_id)]);
+            
+            if (senderResult.rows[0] && receiverResult.rows[0] && transporter) {
+                const emailBody = `💬 New Message from ${senderResult.rows[0].full_name}!\n\nMessage: "${message}"\n\nLogin to reply: https://cep-eight-tau.vercel.app/messaging.html`;
+                await sendEmail(receiverResult.rows[0].email, '💬 New Message on CampusTrace', emailBody);
+                console.log('Message notification email sent to:', receiverResult.rows[0].email);
+            }
+        } catch(emailErr) {
+            console.error('Message email failed:', emailErr.message);
+        }
         
         res.json({ success: true, message: 'Message sent!' });
     } catch (error) {
@@ -1044,6 +1220,27 @@ app.post('/api/admin/create-announcement', async (req, res) => {
             'INSERT INTO announcements (title, content, created_by, is_active) VALUES ($1, $2, $3, true)',
             [title, content, parseInt(user_id)]
         );
+        
+        // ========== SEND ANNOUNCEMENT EMAILS TO ALL USERS ==========
+        if (transporter) {
+            try {
+                const allUsers = await pool.query('SELECT email, full_name FROM users WHERE is_verified = true');
+                for (const user of allUsers.rows) {
+                    try {
+                        const emailBody = `📢 New Campus Announcement!\n\n${title}\n\n${content}\n\nLogin to view: https://cep-eight-tau.vercel.app/dashboard.html`;
+                        await sendEmail(user.email, `📢 ${title}`, emailBody);
+                        // Small delay to avoid rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch(emailErr) {
+                        console.error('Announcement email failed for:', user.email, emailErr.message);
+                    }
+                }
+                console.log(`Announcement emails sent to ${allUsers.rows.length} users`);
+            } catch(emailErr) {
+                console.error('Announcement broadcast failed:', emailErr.message);
+            }
+        }
+        
         res.json({ success: true, message: 'Announcement created!' });
     } catch (error) {
         console.error('Error creating announcement:', error);
@@ -1319,8 +1516,9 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Open http://localhost:${PORT}`);
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.log('⚠️ Email features are DISABLED. Add EMAIL_USER and EMAIL_PASS to .env file to enable.');
+    } else {
+        console.log('✅ Email features are ENABLED');
+    }
 });
-<<<<<<< HEAD
-// console.log("EMAIL:", process.env.EMAIL_USER)
-=======
->>>>>>> 17e514b28811a24b8438ae4f9f192bfdfc913623
