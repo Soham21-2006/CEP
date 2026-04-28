@@ -5,14 +5,8 @@
 const { Pool } = require('pg');
 const { sendEmail } = require('./emailService.cjs');
 
-// Database connection pool
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-});
+// Use the existing pool from config.js instead of creating a new one
+const pool = require('./config.js');
 
 // ============== NOTIFICATION TYPES ==============
 const NOTIFICATION_TYPES = {
@@ -173,7 +167,7 @@ async function notifyNewLostItem(lostItemId, userId, itemName, location) {
         
         if (campusId) {
             const sameCampusUsers = await pool.query(
-                `SELECT id FROM users WHERE campus_id = $1 AND id != $2`,
+                `SELECT id, email FROM users WHERE campus_id = $1 AND id != $2`,
                 [campusId, userId]
             );
             
@@ -187,6 +181,17 @@ async function notifyNewLostItem(lostItemId, userId, itemName, location) {
                     NOTIFICATION_TYPES.LOST_ITEM,
                     lostItemId
                 );
+                
+                // Send emails
+                for (const user of sameCampusUsers.rows) {
+                    if (user.email) {
+                        await sendEmail(
+                            user.email,
+                            '🔍 New Lost Item on CampusTrace',
+                            `${userName} reported a lost item: "${itemName}" at ${location}\n\nLogin to help: https://cep-eight-tau.vercel.app/dashboard.html`
+                        );
+                    }
+                }
             }
         }
         return { success: true };
@@ -197,9 +202,56 @@ async function notifyNewLostItem(lostItemId, userId, itemName, location) {
 }
 
 // ============== NOTIFICATION FOR NEW FOUND ITEM ==============
+async function notifyNewFoundItem(foundItemId, userId, itemName, location) {
+    try {
+        const userResult = await pool.query(
+            `SELECT campus_id, full_name FROM users WHERE id = $1`,
+            [userId]
+        );
+
+        const campusId = userResult.rows[0]?.campus_id;
+        const userName = userResult.rows[0]?.full_name;
+
+        if (campusId) {
+            const sameCampusUsers = await pool.query(
+                `SELECT id, email FROM users WHERE campus_id = $1 AND id != $2`,
+                [campusId, userId]
+            );
+
+            const userIds = sameCampusUsers.rows.map(row => row.id);
+
+            if (userIds.length > 0) {
+                await createBulkNotifications(
+                    userIds,
+                    '🔍 New Found Item Reported',
+                    `${userName} found an item: "${itemName}" at ${location}. Is this yours?`,
+                    NOTIFICATION_TYPES.FOUND_ITEM,
+                    foundItemId
+                );
+                
+                // Send emails
+                for (const user of sameCampusUsers.rows) {
+                    if (user.email) {
+                        await sendEmail(
+                            user.email,
+                            '🎉 New Found Item on CampusTrace',
+                            `${userName} found: "${itemName}" at ${location}\n\nIf this is yours, login to claim it!\n\nhttps://cep-eight-tau.vercel.app/dashboard.html`
+                        );
+                    }
+                }
+            }
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error notifying new found item:', error);
+        return { success: false, message: error.message };
+    }
+}
+
+// ============== NOTIFICATION FOR CLAIM REQUEST ==============
 async function notifyClaimRequest(claimId, ownerId, claimantName, itemName) {
     try {
-
         // in-app notification
         await createNotification(
             ownerId,
@@ -221,68 +273,11 @@ async function notifyClaimRequest(claimId, ownerId, claimantName, itemName) {
         if (ownerEmail) {
             await sendEmail(
                 ownerEmail,
-                "Someone Claimed Your Item",
-                `${claimantName} wants to claim "${itemName}". Login to review the claim.`
+                "📋 Someone Claimed Your Item",
+                `${claimantName} wants to claim "${itemName}".\n\nLogin to review the claim:\nhttps://cep-eight-tau.vercel.app/dashboard.html`
             );
         }
 
-        return { success: true };
-
-    } catch (error) {
-        console.error('Error notifying claim request:', error);
-        return { success: false, message: error.message };
-    }
-}
-// ============== NOTIFICATION FOR NEW FOUND ITEM ==============
-async function notifyNewFoundItem(foundItemId, userId, itemName, location) {
-    try {
-        const userResult = await pool.query(
-            `SELECT campus_id, full_name FROM users WHERE id = $1`,
-            [userId]
-        );
-
-        const campusId = userResult.rows[0]?.campus_id;
-        const userName = userResult.rows[0]?.full_name;
-
-        if (campusId) {
-            const sameCampusUsers = await pool.query(
-                `SELECT id FROM users WHERE campus_id = $1 AND id != $2`,
-                [campusId, userId]
-            );
-
-            const userIds = sameCampusUsers.rows.map(row => row.id);
-
-            if (userIds.length > 0) {
-                await createBulkNotifications(
-                    userIds,
-                    '🔍 New Found Item Reported',
-                    `${userName} found an item: "${itemName}" at ${location}. Is this yours?`,
-                    NOTIFICATION_TYPES.FOUND_ITEM,
-                    foundItemId
-                );
-            }
-        }
-
-        return { success: true };
-
-    } catch (error) {
-        console.error('Error notifying new found item:', error);
-        return {
-            success: false,
-            message: error.message
-        };
-    }
-}
-// ============== NOTIFICATION FOR CLAIM REQUEST ==============
-async function notifyClaimRequest(claimId, ownerId, claimantName, itemName)  {
-    try {
-        await createNotification(
-            ownerId,
-            '📋 New Claim Request',
-            `${claimantName} wants to claim "${itemName}". Click to review the claim.`,
-            NOTIFICATION_TYPES.CLAIM_REQUEST,
-            claimId
-        );
         return { success: true };
     } catch (error) {
         console.error('Error notifying claim request:', error);
@@ -300,14 +295,30 @@ async function notifyClaimApproved(claimId, claimantId, ownerName, itemName) {
             NOTIFICATION_TYPES.CLAIM_APPROVED,
             claimId
         );
+        
+        // Get claimant email
+        const userResult = await pool.query(
+            `SELECT email FROM users WHERE id = $1`,
+            [claimantId]
+        );
+        
+        const claimantEmail = userResult.rows[0]?.email;
+        
+        if (claimantEmail) {
+            await sendEmail(
+                claimantEmail,
+                '✅ Your Claim Was Approved!',
+                `Good news! ${ownerName} approved your claim for "${itemName}".\n\nLogin to contact them:\nhttps://cep-eight-tau.vercel.app/dashboard.html`
+            );
+        }
 
         return { success: true };
-
     } catch (error) {
         console.error('Error notifying claim approved:', error);
         return { success: false, message: error.message };
     }
 }
+
 // ============== NOTIFICATION FOR CLAIM REJECTED ==============
 async function notifyClaimRejected(claimId, claimantId, ownerName, itemName, reason = null) {
     try {
@@ -322,6 +333,23 @@ async function notifyClaimRejected(claimId, claimantId, ownerName, itemName, rea
             NOTIFICATION_TYPES.CLAIM_REJECTED,
             claimId
         );
+        
+        // Get claimant email
+        const userResult = await pool.query(
+            `SELECT email FROM users WHERE id = $1`,
+            [claimantId]
+        );
+        
+        const claimantEmail = userResult.rows[0]?.email;
+        
+        if (claimantEmail) {
+            await sendEmail(
+                claimantEmail,
+                '❌ Your Claim Was Rejected',
+                `Sorry, ${ownerName} rejected your claim for "${itemName}".\n\nKeep looking for other items:\nhttps://cep-eight-tau.vercel.app/dashboard.html`
+            );
+        }
+
         return { success: true };
     } catch (error) {
         console.error('Error notifying claim rejected:', error);
@@ -338,6 +366,23 @@ async function notifyNewMessage(receiverId, senderName, message) {
             `${senderName} sent you a message: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`,
             NOTIFICATION_TYPES.NEW_MESSAGE
         );
+        
+        // Get receiver email
+        const userResult = await pool.query(
+            `SELECT email FROM users WHERE id = $1`,
+            [receiverId]
+        );
+        
+        const receiverEmail = userResult.rows[0]?.email;
+        
+        if (receiverEmail) {
+            await sendEmail(
+                receiverEmail,
+                '💬 New Message on CampusTrace',
+                `${senderName} sent you: "${message}"\n\nLogin to reply:\nhttps://cep-eight-tau.vercel.app/messaging.html`
+            );
+        }
+        
         return { success: true };
     } catch (error) {
         console.error('Error notifying new message:', error);
