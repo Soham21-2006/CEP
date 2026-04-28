@@ -3,7 +3,7 @@
 // ==========================================
 
 const { Pool } = require('pg');
-const sendEmail = require('./mailer');
+const { sendEmail } = require('./emailService.cjs');
 
 // Database connection pool
 const pool = new Pool({
