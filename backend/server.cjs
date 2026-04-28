@@ -1,7 +1,3 @@
-require("dotenv").config();
-console.log("EMAIL:", process.env.EMAIL_USER);
-
-const sendEmail = require("./mailer");
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
@@ -10,7 +6,7 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const http = require('http');
 const socketIo = require('socket.io');
-// require('dotenv').config();
+require('dotenv').config();
 
 const multer = require('multer');
 const path = require('path');
@@ -1174,25 +1170,77 @@ app.get('/api/my-items', async (req, res) => {
     }
 });
 
-app.use('/api', messagingRoutes);
+// ============== FORGOT PASSWORD ROUTES (No Email) ==============
 
-// ============== TEST EMAIL ROUTE ==============
-app.get("/test-email", async (req, res) => {
+// Check if user exists (step 1)
+app.post('/api/check-user', async (req, res) => {
+    const { email } = req.body;
+    
     try {
-        console.log("📧 Sending test email...");
-
-        await sendEmail(
-            "roshanmohod428@gmail.com", // 👉 replace with YOUR email
-            "Test Email",
-            "Your email system is working ✅"
+        const result = await pool.query(
+            'SELECT id, email, full_name, roll_number FROM users WHERE email = $1',
+            [email.toLowerCase().trim()]
         );
-
-        res.send("✅ Email sent (check inbox)");
+        
+        if (result.rows.length === 0) {
+            return res.json({ success: false, message: 'No account found with this email!' });
+        }
+        
+        res.json({ 
+            success: true, 
+            user: {
+                id: result.rows[0].id,
+                email: result.rows[0].email,
+                full_name: result.rows[0].full_name,
+                roll_number: result.rows[0].roll_number
+            }
+        });
     } catch (error) {
-        console.error("❌ Email error:", error);
-        res.send("❌ Failed to send email");
+        console.error('Check user error:', error);
+        res.json({ success: false, message: error.message });
     }
 });
+
+// Reset password (step 2)
+app.post('/api/reset-password', async (req, res) => {
+    const { email, new_password } = req.body;
+    
+    try {
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+        
+        await pool.query(
+            `UPDATE users SET password_hash = $1 WHERE email = $2`,
+            [hashedPassword, email.toLowerCase().trim()]
+        );
+        
+        res.json({ success: true, message: 'Password reset successful!' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// Get user by roll number (for security code hint)
+app.post('/api/get-user-by-roll', async (req, res) => {
+    const { roll_number } = req.body;
+    
+    try {
+        const result = await pool.query(
+            'SELECT id, email, full_name, roll_number FROM users WHERE roll_number = $1',
+            [roll_number]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ success: false, message: 'No account found!' });
+        }
+        
+        res.json({ success: true, user: result.rows[0] });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+app.use('/api', messagingRoutes);
 
 // ============== START SERVER ==============
 const PORT = process.env.PORT || 5000;
@@ -1201,5 +1249,3 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Open http://localhost:${PORT}`);
 });
-
-// console.log("EMAIL:", process.env.EMAIL_USER);
