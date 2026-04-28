@@ -53,18 +53,8 @@
             color: transparent;
         }
 
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-            animation: gentleFloat 3s infinite ease-in-out;
-        }
-
-        @keyframes gentleFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
-        }
+        .logo-icon { font-size: 2rem; animation: gentleFloat 3s infinite ease-in-out; }
+        @keyframes gentleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
 
         .nav-links { display: flex; gap: 2.2rem; list-style: none; }
         .nav-links a {
@@ -345,15 +335,29 @@
             font-weight: 600;
             cursor: pointer;
         }
+
+        .forgot-password {
+            text-align: right;
+            margin: 0.5rem 0 1rem 0;
+        }
+
+        .forgot-password a {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .forgot-password a:hover {
+            color: #8b5cf6;
+        }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="nav-container">
-            <div class="logo">
-                <img src="" class="logo-icon" alt="CampusLost&Found Logo" onerror="this.style.display='none'">
-                <span>CampusLost&Found</span>
-            </div>
+            <div class="logo"><span class="logo-icon">🪪</span><span>CampusLost&Found</span></div>
             <ul class="nav-links">
                 <li><a onclick="scrollToSection('home')">🏠 Home</a></li>
                 <li><a onclick="scrollToSection('about')">📖 About</a></li>
@@ -385,8 +389,15 @@
                                 </div>
                                 <h2>Welcome Back 👋</h2>
                                 <form id="loginForm">
-                                    <div class="form-group"><input type="email" id="loginEmail" placeholder="Student Email" required></div>
-                                    <div class="form-group"><input type="password" id="loginPassword" placeholder="Password" required></div>
+                                    <div class="form-group">
+                                        <input type="email" id="loginEmail" placeholder="Student Email" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" id="loginPassword" placeholder="Password" required>
+                                    </div>
+                                    <div class="forgot-password">
+                                        <a onclick="openForgotPasswordModal()">Forgot Password?</a>
+                                    </div>
                                     <button type="submit" class="btn">🔐 Login to Dashboard</button>
                                 </form>
                             </div>
@@ -461,8 +472,8 @@
                     <div class="contact-info">
                         <h3>📍 Contact Desk</h3>
                         <p style="margin: 1rem 0;">📧 help@campuslostfound.edu</p>
-                        <p style="margin: 1rem 0;">📞 +91 8830862537 </p>
-                        <p>🏛️ Room No 15,Hostel-D,GCEK,Karad</p>
+                        <p style="margin: 1rem 0;">📞 +1 (800) 234-LOST</p>
+                        <p>🏛️ Student Union Building, Room 204</p>
                         <p style="margin-top: 2rem;">⏰ Mon - Fri : 9AM – 6PM</p>
                     </div>
                     <div class="contact-form">
@@ -479,6 +490,33 @@
         </section>
     </main>
 
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="color: white; margin-bottom: 1rem;">🔐 Reset Password</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">Enter your registered email to reset your password.</p>
+            <div class="form-group">
+                <input type="email" id="resetEmail" placeholder="Enter your registered email" required>
+            </div>
+            <div id="resetCodeSection" style="display: none;">
+                <div class="form-group">
+                    <input type="text" id="resetCode" placeholder="Enter security code" maxlength="4">
+                    <small style="color: #94a3b8;">Hint: Last 4 digits of your Roll Number</small>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="newPassword" placeholder="New Password">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="confirmNewPassword" placeholder="Confirm New Password">
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-primary" id="resetStepBtn" style="flex: 1;">Verify Email</button>
+                <button class="btn-secondary" onclick="closeForgotPasswordModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="footer-container">
             <div><h3 style="margin-bottom:1rem; color:white;">CampusLost&Found</h3><p>Reuniting community, one item at a time.</p></div>
@@ -489,7 +527,7 @@
     </footer>
 
     <script>
-        // API Configuration - Update this with your Render backend URL
+        // API Configuration
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
             ? 'http://localhost:5000/api'
             : 'https://cep-nxqq.onrender.com/api';
@@ -637,7 +675,7 @@
                 setDefaultStats();
             }
         }
-        
+
         function setDefaultStats() {
             document.getElementById('lostCount').innerText = "150+";
             document.getElementById('foundCount').innerText = "89+";
@@ -667,7 +705,7 @@
             if (profilePic && profilePic.files && profilePic.files.length > 0) {
                 formData.append('profile_pic', profilePic.files[0]);
             }
-        
+
             try {
                 const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
@@ -763,6 +801,106 @@
                 showToast("Error sending message", "error");
             }
         });
+
+        // Forgot Password Functions
+        let resetUserData = null;
+
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) modal.style.display = 'flex';
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetCodeSection').style.display = 'none';
+            document.getElementById('resetCode').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            const resetBtn = document.getElementById('resetStepBtn');
+            if (resetBtn) resetBtn.innerText = 'Verify Email';
+            resetUserData = null;
+        }
+
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Make sure the button exists before adding onclick
+        const resetBtn = document.getElementById('resetStepBtn');
+        if (resetBtn) {
+            resetBtn.onclick = async function() {
+                const email = document.getElementById('resetEmail').value.trim();
+                
+                if (!resetUserData) {
+                    if (!email) {
+                        showToast('Please enter your email address!', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`${API_URL}/check-user`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email })
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success && data.user) {
+                            resetUserData = data.user;
+                            document.getElementById('resetCodeSection').style.display = 'block';
+                            const resetStepBtn = document.getElementById('resetStepBtn');
+                            if (resetStepBtn) resetStepBtn.innerText = 'Reset Password';
+                            const rollHint = resetUserData.roll_number ? resetUserData.roll_number.slice(-4) : 'XXXX';
+                            document.getElementById('resetCode').placeholder = `Enter ${rollHint}`;
+                            showToast(`User verified! Enter security code: Last 4 digits of roll number (${rollHint})`, 'success');
+                        } else {
+                            showToast('No account found with this email!', 'error');
+                        }
+                    } catch (error) {
+                        showToast('Error verifying user!', 'error');
+                    }
+                } else {
+                    const enteredCode = document.getElementById('resetCode').value.trim();
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmNewPassword').value;
+                    const expectedCode = resetUserData.roll_number ? resetUserData.roll_number.slice(-4) : '';
+                    
+                    if (enteredCode !== expectedCode) {
+                        showToast('Invalid security code!', 'error');
+                        return;
+                    }
+                    
+                    if (newPassword.length < 6) {
+                        showToast('Password must be at least 6 characters!', 'error');
+                        return;
+                    }
+                    
+                    if (newPassword !== confirmPassword) {
+                        showToast('Passwords do not match!', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`${API_URL}/reset-password`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                email: resetUserData.email, 
+                                new_password: newPassword 
+                            })
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showToast('Password reset successful! You can now login.', 'success');
+                            closeForgotPasswordModal();
+                        } else {
+                            showToast(data.message, 'error');
+                        }
+                    } catch (error) {
+                        showToast('Error resetting password!', 'error');
+                    }
+                }
+            };
+        }
         
         // Initialize
         fetchStats();
