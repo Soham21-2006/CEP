@@ -357,7 +357,6 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
                     [user.id, 'New Lost Item', `${userName} reported a lost item: ${item_name} at ${location_lost}`, 'lost']
                 );
             }
-            
             console.log(`Created ${sameCampusUsers.rows.length} notifications for lost item`);
         }
         
@@ -371,65 +370,137 @@ app.post('/api/lost-item', upload.single('image'), async (req, res) => {
 // ============== REPORT FOUND ITEM ==============
 app.post('/api/found-item', upload.single('image'), async (req, res) => {
     try {
-        const { item_name, category, description, location_found, date_found, time_found, contact_phone, latitude, longitude, user_id } = req.body;
-        
-        let userId = user_id ? parseInt(user_id) : (req.session.userId ? parseInt(req.session.userId) : null);
-        
+        const {
+            item_name,
+            category,
+            description,
+            location_found,
+            date_found,
+            time_found,
+            contact_phone,
+            latitude,
+            longitude,
+            user_id
+        } = req.body;
+
+        let userId = user_id
+            ? parseInt(user_id)
+            : (req.session.userId ? parseInt(req.session.userId) : null);
+
         if (!userId) {
-            return res.json({ success: false, message: 'User ID required!' });
+            return res.json({
+                success: false,
+                message: 'User ID required!'
+            });
         }
-        
+
         let image_url = req.file ? '/uploads/' + req.file.filename : null;
-        
+
+        // Save found item
         const result = await pool.query(
-            `INSERT INTO found_items (user_id, item_name, category, description, image_url, location_found, 
-             latitude, longitude, date_found, time_found, contact_phone) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING found_id`,
-            [userId, item_name, category, description, image_url, location_found, 
-             latitude, longitude, date_found, time_found, contact_phone]
+            `INSERT INTO found_items
+            (user_id, item_name, category, description, image_url,
+             location_found, latitude, longitude, date_found,
+             time_found, contact_phone)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+             RETURNING found_id`,
+            [
+                userId,
+                item_name,
+                category,
+                description,
+                image_url,
+                location_found,
+                latitude,
+                longitude,
+                date_found,
+                time_found,
+                contact_phone
+            ]
         );
-        
+
+        // reward finder
         await pool.query(
-            `UPDATE users SET items_found = items_found + 1, reputation_points = reputation_points + 10 
+            `UPDATE users
+             SET items_found = items_found + 1,
+                 reputation_points = reputation_points + 10
              WHERE id = $1`,
             [userId]
         );
-        
-        // ========== CREATE NOTIFICATIONS FOR SAME CAMPUS USERS ==========
-        // Get the user's campus_id
+
+        // get same campus users
         const userCampus = await pool.query(
-            'SELECT campus_id, full_name FROM users WHERE id = $1',
+            'SELECT campus_id, full_name FROM users WHERE id=$1',
             [userId]
         );
+
         const campusId = userCampus.rows[0]?.campus_id;
         const userName = userCampus.rows[0]?.full_name;
-        
+
         if (campusId) {
-            // Get all users from same campus except the reporter
+
             const sameCampusUsers = await pool.query(
-                'SELECT id FROM users WHERE campus_id = $1 AND id != $2',
+                'SELECT id,email FROM users WHERE campus_id=$1 AND id != $2',
                 [campusId, userId]
             );
-            
-            // Create notification for each user
-            for (const user of sameCampusUsers.rows) {
+
+            // EMAIL notifications
+            for (let user of sameCampusUsers.rows) {
+                try {
+                    await sendEmail(
+                        user.email,
+                        'New Found Item Reported',
+                        `${userName} found "${item_name}" at ${location_found}`
+                    );
+
+                    console.log('Email sent to', user.email);
+
+                } catch(err){
+                    console.error(
+                        'Email failed:',
+                        user.email,
+                        err.message
+                    );
+                }
+            }
+
+            // Database notifications
+            for (let user of sameCampusUsers.rows) {
                 await pool.query(
-                    `INSERT INTO notifications (user_id, title, message, type, is_read) 
-                     VALUES ($1, $2, $3, $4, false)`,
-                    [user.id, 'New Found Item', `${userName} found an item: ${item_name} at ${location_found}`, 'found']
+                    `INSERT INTO notifications
+                    (user_id,title,message,type,is_read)
+                    VALUES ($1,$2,$3,$4,false)`,
+                    [
+                        user.id,
+                        'New Found Item',
+                        `${userName} found ${item_name} at ${location_found}`,
+                        'found'
+                    ]
                 );
             }
-            
-            console.log(`Created ${sameCampusUsers.rows.length} notifications for found item`);
-        }
-        
-        res.json({ success: true, message: 'Found item reported!', found_id: result.rows[0].found_id });
-    } catch (error) {
-        console.error('Error reporting found item:', error);
-        res.json({ success: false, message: error.message });
-    }
-});
 
+            console.log(
+                `${sameCampusUsers.rows.length} notifications created`
+            );
+        }
+
+        res.json({
+            success:true,
+            message:'Found item reported successfully!',
+            found_id: result.rows[0].found_id
+        });
+
+    } catch(error){
+        console.error('Error reporting found item:', error);
+
+        res.json({
+            success:false,
+            message:error.message
+        });
+    }
+});       
+        // ========== CREATE NOTIFICATIONS FOR SAME CAMPUS USERS ==========
+        
 // ============== SUBMIT CLAIM ==============
 app.post('/api/submit-claim', async (req, res) => {
     const { claimant_id, lost_item_id, found_item_id, message } = req.body;
@@ -1201,5 +1272,4 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Open http://localhost:${PORT}`);
 });
-
-// console.log("EMAIL:", process.env.EMAIL_USER);
+// console.log("EMAIL:", process.env.EMAIL_USER)

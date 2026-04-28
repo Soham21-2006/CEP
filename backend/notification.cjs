@@ -3,6 +3,7 @@
 // ==========================================
 
 const { Pool } = require('pg');
+const sendEmail = require('./mailer');
 
 // Database connection pool
 const pool = new Pool({
@@ -196,24 +197,61 @@ async function notifyNewLostItem(lostItemId, userId, itemName, location) {
 }
 
 // ============== NOTIFICATION FOR NEW FOUND ITEM ==============
+async function notifyClaimRequest(claimId, ownerId, claimantName, itemName) {
+    try {
+
+        // in-app notification
+        await createNotification(
+            ownerId,
+            '📋 New Claim Request',
+            `${claimantName} wants to claim "${itemName}". Click to review the claim.`,
+            NOTIFICATION_TYPES.CLAIM_REQUEST,
+            claimId
+        );
+
+        // get owner's email
+        const userResult = await pool.query(
+            `SELECT email FROM users WHERE id = $1`,
+            [ownerId]
+        );
+
+        const ownerEmail = userResult.rows[0]?.email;
+
+        // send email
+        if (ownerEmail) {
+            await sendEmail(
+                ownerEmail,
+                "Someone Claimed Your Item",
+                `${claimantName} wants to claim "${itemName}". Login to review the claim.`
+            );
+        }
+
+        return { success: true };
+
+    } catch (error) {
+        console.error('Error notifying claim request:', error);
+        return { success: false, message: error.message };
+    }
+}
+// ============== NOTIFICATION FOR NEW FOUND ITEM ==============
 async function notifyNewFoundItem(foundItemId, userId, itemName, location) {
     try {
         const userResult = await pool.query(
             `SELECT campus_id, full_name FROM users WHERE id = $1`,
             [userId]
         );
-        
+
         const campusId = userResult.rows[0]?.campus_id;
         const userName = userResult.rows[0]?.full_name;
-        
+
         if (campusId) {
             const sameCampusUsers = await pool.query(
                 `SELECT id FROM users WHERE campus_id = $1 AND id != $2`,
                 [campusId, userId]
             );
-            
+
             const userIds = sameCampusUsers.rows.map(row => row.id);
-            
+
             if (userIds.length > 0) {
                 await createBulkNotifications(
                     userIds,
@@ -224,15 +262,19 @@ async function notifyNewFoundItem(foundItemId, userId, itemName, location) {
                 );
             }
         }
+
         return { success: true };
+
     } catch (error) {
         console.error('Error notifying new found item:', error);
-        return { success: false, message: error.message };
+        return {
+            success: false,
+            message: error.message
+        };
     }
 }
-
 // ============== NOTIFICATION FOR CLAIM REQUEST ==============
-async function notifyClaimRequest(claimId, ownerId, claimantName, itemName) {
+async function notifyClaimRequest(claimId, ownerId, claimantName, itemName)  {
     try {
         await createNotification(
             ownerId,
@@ -258,13 +300,14 @@ async function notifyClaimApproved(claimId, claimantId, ownerName, itemName) {
             NOTIFICATION_TYPES.CLAIM_APPROVED,
             claimId
         );
+
         return { success: true };
+
     } catch (error) {
         console.error('Error notifying claim approved:', error);
         return { success: false, message: error.message };
     }
 }
-
 // ============== NOTIFICATION FOR CLAIM REJECTED ==============
 async function notifyClaimRejected(claimId, claimantId, ownerName, itemName, reason = null) {
     try {

@@ -1,14 +1,15 @@
-const sendEmail = require("./email");
+require("dotenv").config();
+const sendEmail = require("./mailer");
 
 async function test() {
   try {
-    const res = await sendEmail(
-      "YOUR_PERSONAL_EMAIL@gmail.com",
+    await sendEmail(
+      "roshanmohod428@gmail.com",
       "Test Email",
-      "<h1>If you see this, email works ✅</h1>"
+      "If you see this, email works"
     );
 
-    console.log("✅ Email sent:", res);
+    console.log("✅ Email sent");
   } catch (err) {
     console.error("❌ Email failed:", err);
   }
