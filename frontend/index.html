@@ -296,62 +296,62 @@
             .hero-left h1 { font-size: 2.6rem; }
         }
         .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(8px);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
 
-.modal-content {
-    background: #1e293b;
-    border-radius: 28px;
-    padding: 2rem;
-    border: 1px solid rgba(255,255,255,0.1);
-}
+        .modal-content {
+            background: #1e293b;
+            border-radius: 28px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
 
-.btn-primary {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-.btn-secondary {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 0.8rem 1.5rem;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-.forgot-password {
-    text-align: right;
-    margin: 0.5rem 0 1rem 0;
-}
+        .forgot-password {
+            text-align: right;
+            margin: 0.5rem 0 1rem 0;
+        }
 
-.forgot-password a {
-    color: #94a3b8;
-    font-size: 0.85rem;
-    text-decoration: none;
-    cursor: pointer;
-    transition: color 0.3s;
-}
+        .forgot-password a {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
 
-.forgot-password a:hover {
-    color: #8b5cf6;
-}
+        .forgot-password a:hover {
+            color: #8b5cf6;
+        }
     </style>
 </head>
 <body>
@@ -388,18 +388,18 @@
                                     <button class="flip-toggle-btn" id="toggleRegisterBtn">📝 Register</button>
                                 </div>
                                 <h2>Welcome Back 👋</h2>
-<form id="loginForm">
-    <div class="form-group">
-        <input type="email" id="loginEmail" placeholder="Student Email" required>
-    </div>
-    <div class="form-group">
-        <input type="password" id="loginPassword" placeholder="Password" required>
-    </div>
-    <div class="forgot-password">
-        <a onclick="openForgotPasswordModal()">Forgot Password?</a>
-    </div>
-    <button type="submit" class="btn">🔐 Login to Dashboard</button>
-</form>
+                                <form id="loginForm">
+                                    <div class="form-group">
+                                        <input type="email" id="loginEmail" placeholder="Student Email" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" id="loginPassword" placeholder="Password" required>
+                                    </div>
+                                    <div class="forgot-password">
+                                        <a onclick="openForgotPasswordModal()">Forgot Password?</a>
+                                    </div>
+                                    <button type="submit" class="btn">🔐 Login to Dashboard</button>
+                                </form>
                             </div>
                             <div class="flip-card-back">
                                 <div class="flip-toggle-bar">
@@ -409,32 +409,32 @@
                                 <h2>Join Campus Community 🚀</h2>
                                 <form id="registerForm">
                                     <div class="two-columns">
-    <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name" required></div>
-    <div class="form-group"><input type="email" id="regEmail" placeholder="Email Address" required></div>
-    <div class="form-group"><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
-    <div class="form-group"><input type="text" id="regRollNumber" placeholder="Roll Number" required></div>
-    <div class="form-group">
-        <select id="regDepartment" required>
-            <option value="">Select Department</option>
-            <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <input type="text" id="regCampusCode" placeholder="Campus Code *" required>
-        <small style="color: #94a3b8; font-size: 0.7rem;">Enter the unique code provided by your campus admin</small>
-    </div>
-    <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
-    <div class="form-group full-width">
-        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-        <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
-        <span class="strength-text" id="strengthText">Enter password</span>
-        <div class="match-status" id="matchStatus"></div>
-    </div>
-    <div class="form-group full-width">
-        <label style="color: #94a3b8; font-size: 0.9rem;">Profile Picture (Optional)</label>
-        <input type="file" id="regProfilePic" accept="image/*" style="padding: 0.5rem;">
-    </div>
-</div>
+                                        <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name" required></div>
+                                        <div class="form-group"><input type="email" id="regEmail" placeholder="Email Address" required></div>
+                                        <div class="form-group"><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
+                                        <div class="form-group"><input type="text" id="regRollNumber" placeholder="Roll Number" required></div>
+                                        <div class="form-group">
+                                            <select id="regDepartment" required>
+                                                <option value="">Select Department</option>
+                                                <option>IT</option><option>ENTC</option><option>MECHANICAL</option><option>CIVIL</option><option>ELECTRICAL</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" id="regCampusCode" placeholder="Campus Code *" required>
+                                            <small style="color: #94a3b8; font-size: 0.7rem;">Enter the unique code provided by your campus admin</small>
+                                        </div>
+                                        <div class="form-group"><input type="password" id="regPassword" placeholder="Password" required></div>
+                                        <div class="form-group full-width">
+                                            <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+                                            <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
+                                            <span class="strength-text" id="strengthText">Enter password</span>
+                                            <div class="match-status" id="matchStatus"></div>
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label style="color: #94a3b8; font-size: 0.9rem;">Profile Picture (Optional)</label>
+                                            <input type="file" id="regProfilePic" accept="image/*" style="padding: 0.5rem;">
+                                        </div>
+                                    </div>
                                     <button type="submit" class="btn" id="registerBtn">📝 Register Now</button>
                                 </form>
                             </div>
@@ -490,7 +490,32 @@
         </section>
     </main>
 
-
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="color: white; margin-bottom: 1rem;">🔐 Reset Password</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">Enter your registered email to reset your password.</p>
+            <div class="form-group">
+                <input type="email" id="resetEmail" placeholder="Enter your registered email" required>
+            </div>
+            <div id="resetCodeSection" style="display: none;">
+                <div class="form-group">
+                    <input type="text" id="resetCode" placeholder="Enter security code" maxlength="4">
+                    <small style="color: #94a3b8;">Hint: Last 4 digits of your Roll Number</small>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="newPassword" placeholder="New Password">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="confirmNewPassword" placeholder="Confirm New Password">
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-primary" id="resetStepBtn" style="flex: 1;">Verify Email</button>
+                <button class="btn-secondary" onclick="closeForgotPasswordModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="footer">
         <div class="footer-container">
@@ -502,10 +527,10 @@
     </footer>
 
     <script>
-        // API Configuration - Update this with your Render backend URL
+        // API Configuration
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:5000/api'
-    : 'https://cep-nxqq.onrender.com/api';
+            ? 'http://localhost:5000/api'
+            : 'https://cep-nxqq.onrender.com/api';
         
         const flipCardInner = document.getElementById('flipCard');
         
@@ -630,15 +655,14 @@
         async function fetchStats() {
             try {
                 const response = await fetch(`${API_URL}/stats`);
-               const text = await response.text();
-let data;
-
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("Not JSON:", text);
+                    throw new Error("Invalid response from server");
+                }
                 if (data.success) {
                     document.getElementById('lostCount').innerText = data.lostCount + '+';
                     document.getElementById('foundCount').innerText = data.foundCount + '+';
@@ -652,97 +676,93 @@ try {
             }
         }
 
-        
-        
         function setDefaultStats() {
             document.getElementById('lostCount').innerText = "150+";
             document.getElementById('foundCount').innerText = "89+";
             document.getElementById('recoveredCount').innerText = "67+";
         }
         
-// Register User with Campus Code
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const campusCode = document.getElementById('regCampusCode').value.trim();
-    if (!campusCode) {
-        showToast('Please enter your campus code!', 'error');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('full_name', document.getElementById('regFullName').value);
-    formData.append('email', document.getElementById('regEmail').value);
-    formData.append('password', document.getElementById('regPassword').value);
-    formData.append('phone', document.getElementById('regPhone').value);
-    formData.append('roll_number', document.getElementById('regRollNumber').value);
-    formData.append('department', document.getElementById('regDepartment').value);
-    formData.append('campus_code', campusCode);
-    
-    const profilePic = document.getElementById('regProfilePic');
-    if (profilePic && profilePic.files && profilePic.files.length > 0) {
-        formData.append('profile_pic', profilePic.files[0]);
-    }
+        // Register User with Campus Code
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const campusCode = document.getElementById('regCampusCode').value.trim();
+            if (!campusCode) {
+                showToast('Please enter your campus code!', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('full_name', document.getElementById('regFullName').value);
+            formData.append('email', document.getElementById('regEmail').value);
+            formData.append('password', document.getElementById('regPassword').value);
+            formData.append('phone', document.getElementById('regPhone').value);
+            formData.append('roll_number', document.getElementById('regRollNumber').value);
+            formData.append('department', document.getElementById('regDepartment').value);
+            formData.append('campus_code', campusCode);
+            
+            const profilePic = document.getElementById('regProfilePic');
+            if (profilePic && profilePic.files && profilePic.files.length > 0) {
+                formData.append('profile_pic', profilePic.files[0]);
+            }
 
-    try {
-        const response = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            body: formData
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Registration successful! You can now login.', 'success');
+                    document.getElementById('registerForm').reset();
+                    flipToLogin();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast('Registration failed! Please try again.', 'error');
+            }
         });
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast('Registration successful! You can now login.', 'success');
-            document.getElementById('registerForm').reset();
-            flipToLogin();
-        } else {
-            showToast(data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
-        showToast('Registration failed! Please try again.', 'error');
-    }
-});
         
         // Login User
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        showToast("Please fill all fields", "error");
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showToast("Please fill all fields", "error");
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showToast("Login successful! Redirecting...", "success");
+                    setTimeout(() => {
+                        if (data.user.is_admin === true) {
+                            window.location.href = '/admin.html';
+                        } else {
+                            window.location.href = '/dashboard.html';
+                        }
+                    }, 1000);
+                } else {
+                    showToast(data.message || "Invalid credentials", "error");
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast("Login failed! Please try again.", "error");
+            }
         });
-        const data = await response.json();
-        
-        if (data.success) {
-    localStorage.setItem('user', JSON.stringify(data.user));
-
-    showToast("Login successful! Redirecting...", "success");
-
-    setTimeout(() => {
-        if (data.user.is_admin === true) {
-            window.location.href = '/admin.html';
-        } else {
-            window.location.href = '/dashboard.html';
-        }
-    }, 1000);
-} else {
-            showToast(data.message || "Invalid credentials", "error");
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showToast("Login failed! Please try again.", "error");
-    }
-});
         
         // Contact Form
         document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
@@ -764,14 +784,13 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
                     body: JSON.stringify({ name, email, subject, message })
                 });
                 const text = await response.text();
-let data;
-
-try {
-    data = JSON.parse(text);
-} catch (e) {
-    console.error("Not JSON:", text);
-    throw new Error("Invalid response from server");
-}
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("Not JSON:", text);
+                    throw new Error("Invalid response from server");
+                }
                 if (data.success) {
                     showToast("Message sent successfully!", "success");
                     document.getElementById('contactForm').reset();
@@ -783,184 +802,110 @@ try {
             }
         });
 
-        // Add these verification functions INSIDE your existing script tag
-        // async function verifyEmail() {
-        //     const code = document.getElementById('verificationCode').value;
-        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
-            
-        //     if (!code || code.length !== 6) {
-        //         showToast('Please enter valid 6-digit code', 'error');
-        //         return;
-        //     }
-            
-        //     try {
-        //         const response = await fetch('/api/verify-email', {
-        //             method: 'POST',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify({ email, verification_code: code })
-        //         });
-        //         const data = await response.json();
+        // Forgot Password Functions
+        let resetUserData = null;
+
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) modal.style.display = 'flex';
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetCodeSection').style.display = 'none';
+            document.getElementById('resetCode').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            const resetBtn = document.getElementById('resetStepBtn');
+            if (resetBtn) resetBtn.innerText = 'Verify Email';
+            resetUserData = null;
+        }
+
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Make sure the button exists before adding onclick
+        const resetBtn = document.getElementById('resetStepBtn');
+        if (resetBtn) {
+            resetBtn.onclick = async function() {
+                const email = document.getElementById('resetEmail').value.trim();
                 
-        //         if (data.success) {
-        //             showToast('Email verified! You can now login.');
-        //             document.getElementById('verificationModal').style.display = 'none';
-        //             // Clear form and show login
-        //             flipToLogin();
-        //         } else {
-        //             showToast(data.message, 'error');
-        //         }
-        //     } catch (error) {
-        //         showToast('Verification failed!', 'error');
-        //     }
-        // }
-        
-        // async function resendCode() {
-        //     const email = document.getElementById('regEmail')?.value || localStorage.getItem('pendingEmail');
-            
-        //     try {
-        //         const response = await fetch('/api/resend-verification', {
-        //             method: 'POST',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify({ email })
-        //         });
-        //         const data = await response.json();
-                
-        //         if (data.success) {
-        //             showToast('New verification code sent to your email!');
-        //         } else {
-        //             showToast(data.message, 'error');
-        //         }
-        //     } catch (error) {
-        //         showToast('Failed to resend code!', 'error');
-        //     }
-        // }
-        // Forgot Password Functions (No Email Required)
-let resetUserData = null;
-
-function openForgotPasswordModal() {
-    document.getElementById('forgotPasswordModal').style.display = 'flex';
-    document.getElementById('resetEmail').value = '';
-    document.getElementById('resetCodeSection').style.display = 'none';
-    document.getElementById('resetCode').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmNewPassword').value = '';
-    document.getElementById('resetStepBtn').innerText = 'Verify Email';
-    resetUserData = null;
-}
-
-function closeForgotPasswordModal() {
-    document.getElementById('forgotPasswordModal').style.display = 'none';
-}
-
-document.getElementById('resetStepBtn').onclick = async () => {
-    const email = document.getElementById('resetEmail').value.trim();
-    
-    if (!resetUserData) {
-        // Step 1: Verify email exists
-        if (!email) {
-            showToast('Please enter your email address!', 'error');
-            return;
+                if (!resetUserData) {
+                    if (!email) {
+                        showToast('Please enter your email address!', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`${API_URL}/check-user`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email })
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success && data.user) {
+                            resetUserData = data.user;
+                            document.getElementById('resetCodeSection').style.display = 'block';
+                            const resetStepBtn = document.getElementById('resetStepBtn');
+                            if (resetStepBtn) resetStepBtn.innerText = 'Reset Password';
+                            const rollHint = resetUserData.roll_number ? resetUserData.roll_number.slice(-4) : 'XXXX';
+                            document.getElementById('resetCode').placeholder = `Enter ${rollHint}`;
+                            showToast(`User verified! Enter security code: Last 4 digits of roll number (${rollHint})`, 'success');
+                        } else {
+                            showToast('No account found with this email!', 'error');
+                        }
+                    } catch (error) {
+                        showToast('Error verifying user!', 'error');
+                    }
+                } else {
+                    const enteredCode = document.getElementById('resetCode').value.trim();
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmNewPassword').value;
+                    const expectedCode = resetUserData.roll_number ? resetUserData.roll_number.slice(-4) : '';
+                    
+                    if (enteredCode !== expectedCode) {
+                        showToast('Invalid security code!', 'error');
+                        return;
+                    }
+                    
+                    if (newPassword.length < 6) {
+                        showToast('Password must be at least 6 characters!', 'error');
+                        return;
+                    }
+                    
+                    if (newPassword !== confirmPassword) {
+                        showToast('Passwords do not match!', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`${API_URL}/reset-password`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                email: resetUserData.email, 
+                                new_password: newPassword 
+                            })
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showToast('Password reset successful! You can now login.', 'success');
+                            closeForgotPasswordModal();
+                        } else {
+                            showToast(data.message, 'error');
+                        }
+                    } catch (error) {
+                        showToast('Error resetting password!', 'error');
+                    }
+                }
+            };
         }
-        
-        try {
-            const response = await fetch(`${API_URL}/check-user`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            const data = await response.json();
-            
-            if (data.success && data.user) {
-                resetUserData = data.user;
-                document.getElementById('resetCodeSection').style.display = 'block';
-                document.getElementById('resetStepBtn').innerText = 'Reset Password';
-                // Auto-fill hint for security code (roll number last 4 digits)
-                const rollHint = resetUserData.roll_number ? resetUserData.roll_number.slice(-4) : '1234';
-                document.getElementById('resetCode').placeholder = `Enter ${rollHint}`;
-                showToast(`User verified! Enter security code: ${rollHint}`, 'info');
-            } else {
-                showToast('No account found with this email!', 'error');
-            }
-        } catch (error) {
-            showToast('Error verifying user!', 'error');
-        }
-    } else {
-        // Step 2: Reset password
-        const enteredCode = document.getElementById('resetCode').value.trim();
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmNewPassword').value;
-        
-        // Security code is last 4 digits of roll number
-        const expectedCode = resetUserData.roll_number ? resetUserData.roll_number.slice(-4) : '';
-        
-        if (enteredCode !== expectedCode) {
-            showToast('Invalid security code!', 'error');
-            return;
-        }
-        
-        if (newPassword.length < 6) {
-            showToast('Password must be at least 6 characters!', 'error');
-            return;
-        }
-        
-        if (newPassword !== confirmPassword) {
-            showToast('Passwords do not match!', 'error');
-            return;
-        }
-        
-        try {
-            const response = await fetch(`${API_URL}/reset-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: resetUserData.email, 
-                    new_password: newPassword 
-                })
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                showToast('Password reset successful! You can now login.', 'success');
-                closeForgotPasswordModal();
-            } else {
-                showToast(data.message, 'error');
-            }
-        } catch (error) {
-            showToast('Error resetting password!', 'error');
-        }
-    }
-};
         
         // Initialize
         fetchStats();
         updateToggleActiveState('login');
         if (registerBtn) registerBtn.disabled = false;
     </script>
-    <!-- Forgot Password Modal -->
-<div id="forgotPasswordModal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-        <h2 style="color: white; margin-bottom: 1rem;">🔐 Reset Password</h2>
-        <p style="color: #94a3b8; margin-bottom: 1rem;">Enter your registered email to reset your password.</p>
-        <div class="form-group">
-            <input type="email" id="resetEmail" placeholder="Enter your registered email" required>
-        </div>
-        <div id="resetCodeSection" style="display: none;">
-            <div class="form-group">
-                <input type="text" id="resetCode" placeholder="Enter security code" maxlength="4">
-                <small style="color: #94a3b8;">Hint: Your roll number last 4 digits</small>
-            </div>
-            <div class="form-group">
-                <input type="password" id="newPassword" placeholder="New Password">
-            </div>
-            <div class="form-group">
-                <input type="password" id="confirmNewPassword" placeholder="Confirm New Password">
-            </div>
-        </div>
-        <div style="display: flex; gap: 1rem;">
-            <button class="btn-primary" id="resetStepBtn" style="flex: 1;">Verify & Reset</button>
-            <button class="btn-secondary" onclick="closeForgotPasswordModal()" style="flex: 1;">Cancel</button>
-        </div>
-    </div>
-</div>
 </body>
 </html>
